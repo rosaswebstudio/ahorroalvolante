@@ -20,9 +20,8 @@ const canonicalURL = new URL(canonicalPath, Astro.site ?? siteFallback).href;
 const imageURL = new URL(image, Astro.site ?? siteFallback).href;
 
 const adsenseClient = 'ca-pub-7893833945255002';
-// Crear una propiedad NUEVA de GA4 para ahorroalvolante.es y pegar aquí su Measurement ID.
-// Con el placeholder (contiene 'X') el bloque de GA4 no se renderiza, así el deploy no rompe.
-const ga4Id = 'G-XXXXXXXXXX';
+// Propiedad GA4 "Ahorro al Volante" (cuenta Rosas Web Studio). Independiente de la de mivatio.
+const ga4Id = 'G-F9MGGNWNK6';
 // Código de la etiqueta HTML de Google Search Console (misma cuenta). Placeholder hasta darlo de alta.
 const siteVerification = 'GOOGLE_SITE_VERIFICATION_PENDIENTE';
 
