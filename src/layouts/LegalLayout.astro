@@ -1,0 +1,37 @@
+---
+// Layout para las páginas legales de Ahorro al Volante (tema oscuro, texto legible).
+import Layout from './Layout.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  canonicalPath: string;
+}
+
+const { title, description, canonicalPath } = Astro.props;
+---
+<Layout title={title} description={description} canonicalPath={canonicalPath}>
+  <div class="min-h-screen w-full" style="background-color:#0B0D12;">
+    <div class="mx-auto max-w-2xl px-4 py-10">
+      <a href="/" class="inline-flex items-center gap-2 text-sm text-[#8A8F9C] hover:text-amber-400">
+        ← Volver a Ahorro al Volante
+      </a>
+      <article class="legal mt-6">
+        <slot />
+      </article>
+      <p class="mt-10 text-xs text-[#5A6070]">© {new Date().getFullYear()} Ahorro al Volante</p>
+    </div>
+  </div>
+</Layout>
+
+<style is:global>
+  .legal h1 { color: #eceae3; font-size: 1.5rem; font-weight: 800; letter-spacing: -0.01em; }
+  .legal h2 { color: #eceae3; font-size: 1.05rem; font-weight: 700; margin-top: 1.75rem; }
+  .legal p, .legal li { color: #8a8f9c; font-size: 0.875rem; line-height: 1.7; margin-top: 0.6rem; }
+  .legal ul { list-style: disc; padding-left: 1.25rem; }
+  .legal strong { color: #c8ccd6; }
+  .legal a { color: #f59e0b; text-decoration: underline; }
+  .legal table { width: 100%; border-collapse: collapse; margin-top: 0.75rem; font-size: 0.8rem; }
+  .legal th, .legal td { border: 1px solid #232733; padding: 0.5rem 0.6rem; color: #8a8f9c; text-align: left; }
+  .legal th { color: #c8ccd6; background: #14171f; }
+</style>

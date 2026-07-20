@@ -1,0 +1,231 @@
+---
+import Layout from '../layouts/Layout.astro';
+import BuscadorGasolineras from '../components/BuscadorGasolineras.astro';
+import CalculadoraViaje from '../components/CalculadoraViaje.astro';
+
+const title = 'Gasolineras baratas cerca de ti + calculadora de coste del viaje';
+const description =
+  'Encuentra la gasolinera más barata cerca de ti (gasolina 95, 98, diésel y GLP, datos oficiales del Ministerio) y calcula cuánto te costará un viaje en coche según el combustible, la carga, el aire acondicionado y tu forma de conducir.';
+
+const faqs = [
+  {
+    q: '¿Cuánto cuesta un viaje en coche?',
+    a: 'Depende de la distancia, del consumo de tu coche (l/100 km), del precio del combustible y de las condiciones del trayecto. La fórmula base es: kilómetros × (consumo ÷ 100) × precio por litro. Nuestra calculadora la aplica y le suma el efecto del aire acondicionado, la carga, la baca del techo o tu estilo de conducción, mostrándote el desglose de cuánto añade cada cosa.',
+  },
+  {
+    q: '¿Cuánto gasta de más el aire acondicionado y las ventanillas bajadas?',
+    a: 'El aire acondicionado incrementa el consumo en torno a un 5-10% de media (más en trayectos cortos de ciudad y con mucho calor). Llevar las ventanillas bajadas a alta velocidad añade otro 5% aproximado por la resistencia del aire. La regla práctica: en ciudad, ventanillas; en autopista, aire acondicionado. Una baca o cofre en el techo es de lo que más suma (un 10-18%).',
+  },
+  {
+    q: '¿Cada cuánto se actualizan los precios?',
+    a: 'Las estaciones de servicio están obligadas por ley a comunicar sus precios al Ministerio, y el listado oficial (Geoportal Gasolineras) se actualiza aproximadamente cada 30 minutos. Esta web consulta esos datos en directo cada vez que buscas.',
+  },
+  {
+    q: '¿Cómo encuentro la gasolinera más barata cerca de mí?',
+    a: 'Pulsa "Cerca de mí" y permite la ubicación: ordenaremos las gasolineras de tu zona por cercanía, con el precio de cada una en color (verde = barata, rojo = cara). También puedes elegir provincia y filtrar por municipio.',
+  },
+  {
+    q: '¿La gasolina low cost es de peor calidad?',
+    a: 'No. Todo el combustible que se vende en España cumple la misma normativa y sale de las mismas refinerías y depósitos logísticos. Las diferencias están en los aditivos propios de cada marca y en los servicios de la estación, no en la calidad base del carburante.',
+  },
+  {
+    q: '¿Cuándo es más barato repostar?',
+    a: 'Los precios cambian a diario y cada estación decide los suyos. Como norma general, las gasolineras de hipermercados y las automatizadas (low cost) son las más baratas de cada zona, y conviene evitar repostar en autopistas y justo antes de puentes u operaciones salida.',
+  },
+  {
+    q: '¿Por qué la misma marca tiene precios distintos en cada gasolinera?',
+    a: 'Porque cada estación fija su precio según sus costes, la competencia de la zona y su política comercial. Por eso merece la pena comparar: entre gasolineras de una misma ciudad puede haber más de 20 céntimos por litro de diferencia.',
+  },
+  {
+    q: '¿Qué hacéis con mi ubicación?',
+    a: 'Nada: solo se usa dentro de tu navegador para calcular la distancia a cada gasolinera y ordenarlas por cercanía. No se envía ni se guarda en ningún servidor.',
+  },
+];
+
+const siteFallback = 'https://ahorroalvolante.es';
+const siteUrl = (Astro.site ?? new URL(siteFallback)).href.replace(/\/$/, '');
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebApplication',
+      '@id': `${siteUrl}/#app`,
+      name: 'Buscador de gasolineras baratas',
+      url: `${siteUrl}/`,
+      description,
+      applicationCategory: 'UtilitiesApplication',
+      operatingSystem: 'Web',
+      inLanguage: 'es-ES',
+      isAccessibleForFree: true,
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR' },
+      featureList: [
+        'Precios de hoy de gasolina 95, 98, diésel, diésel premium y GLP',
+        'Gasolineras ordenadas por precio o por cercanía',
+        'Datos oficiales del Ministerio actualizados cada 30 minutos',
+        'Cómo llegar a cada gasolinera con un clic',
+      ],
+    },
+    {
+      '@type': 'FAQPage',
+      '@id': `${siteUrl}/#faq`,
+      mainEntity: faqs.map((f) => ({
+        '@type': 'Question',
+        name: f.q,
+        acceptedAnswer: { '@type': 'Answer', text: f.a },
+      })),
+    },
+  ],
+};
+
+const adBox = 'flex flex-col items-center justify-center rounded-2xl border border-dashed border-[#232733] bg-[#14171F]/60 px-4 py-3 text-center';
+---
+<Layout title={title} description={description} canonicalPath="/">
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify(jsonLd)} />
+
+  <div class="min-h-screen w-full" style="background-color:#0B0D12;">
+    <div class="mx-auto flex max-w-5xl justify-center gap-8">
+      <!-- Columna principal -->
+      <main class="w-full max-w-2xl">
+        <!-- Cabecera -->
+        <header class="px-4 pt-7 pb-1">
+          <div class="mb-3 flex items-center gap-2">
+            <span class="grid h-8 w-8 place-items-center rounded-lg bg-[#14171F] ring-1 ring-inset ring-[#232733]">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="1.8" class="h-4 w-4"><path stroke-linecap="round" stroke-linejoin="round" d="M5 21V6a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v15M4 21h11M8 7h4v3H8zM15 10h1.5l2.5 3v5.5a1.5 1.5 0 1 1-3 0V15h-1"/></svg>
+            </span>
+            <span class="font-mono text-sm font-bold tracking-wide text-slate-100 sm:text-base">AHORRO AL VOLANTE</span>
+          </div>
+          <h1 class="text-xl font-bold tracking-tight text-[#ECEAE3] sm:text-2xl">
+            La gasolina más barata <span class="text-amber-400">cerca de ti</span>, hoy
+          </h1>
+          <p class="mt-2 text-sm leading-relaxed text-[#8A8F9C]">
+            Compara el precio de la gasolina 95, 98, diésel y GLP en las gasolineras de tu zona
+            con los datos oficiales del Ministerio, y calcula cuánto te costará tu próximo viaje.
+          </p>
+        </header>
+
+        <!-- Conmutador de herramientas -->
+        <div class="px-4 pt-4">
+          <div class="flex gap-1 rounded-full border border-[#232733] bg-[#14171F] p-1">
+            <button id="tab-gas" type="button" data-panel="panel-gasolineras"
+              class="flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold transition-colors bg-amber-500 text-[#0B0D12]">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4"><circle cx="11" cy="11" r="7"/><path stroke-linecap="round" d="m21 21-4.3-4.3"/></svg>
+              Gasolineras baratas
+            </button>
+            <button id="tab-calc" type="button" data-panel="panel-calculadora"
+              class="flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold transition-colors text-slate-400">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4"><rect x="5" y="3" width="14" height="18" rx="2"/><path stroke-linecap="round" d="M9 7h6M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15v-4"/></svg>
+              Coste del viaje
+            </button>
+          </div>
+        </div>
+
+        <div id="panel-gasolineras" class="px-4 pt-4">
+          <BuscadorGasolineras />
+        </div>
+
+        <div id="panel-calculadora" class="hidden px-4 pt-4">
+          <CalculadoraViaje />
+        </div>
+
+        <script is:inline>
+          (function () {
+            var tabs = document.querySelectorAll('[data-panel]');
+            var ACTIVE = 'flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold transition-colors bg-amber-500 text-[#0B0D12]';
+            var INACTIVE = 'flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold transition-colors text-slate-400';
+            function activar(panelId) {
+              tabs.forEach(function (t) {
+                var on = t.dataset.panel === panelId;
+                t.className = on ? ACTIVE : INACTIVE;
+                var panel = document.getElementById(t.dataset.panel);
+                if (panel) panel.classList.toggle('hidden', !on);
+              });
+            }
+            tabs.forEach(function (t) { t.addEventListener('click', function () { activar(t.dataset.panel); }); });
+          })();
+        </script>
+
+        {/* CTA de afiliado y hueco de AdSense: OCULTOS hasta tener el enlace real de
+            Awin (comparador de seguros de coche) y la cuenta de AdSense aprobada para este
+            dominio. Para reactivarlos, quitar este comentario y poner el href real.
+        <div class="px-4">
+          <a href="#" rel="sponsored nofollow noopener"
+            class="mt-4 flex items-center justify-between gap-3 rounded-2xl px-4 py-3.5"
+            style="background-color:#14171F;border:1px solid #232733;">
+            <div>
+              <p class="text-sm font-semibold text-[#ECEAE3]">¿Pagas de más por tu seguro de coche?</p>
+              <p class="text-xs text-[#8A8F9C]">Compara aseguradoras en 3 minutos</p>
+            </div>
+            <span class="shrink-0 rounded-full bg-amber-500 px-3 py-1.5 text-xs font-semibold text-[#0B0D12]">Comparar</span>
+          </a>
+
+          <div class={`mt-4 min-h-[100px] w-full ${adBox}`}>
+            <span class="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#5A6070]">Publicidad</span>
+            <span class="mt-1 text-xs text-[#5A6070]">Banner responsive (AdSense)</span>
+          </div>
+        </div>
+        */}
+
+        <!-- FAQ -->
+        <section id="faq" class="px-4 pt-8">
+          <h2 class="text-base font-bold text-[#ECEAE3]">Preguntas frecuentes</h2>
+          <div class="mt-3 divide-y divide-[#232733]">
+            {faqs.map((f) => (
+              <details class="group py-3">
+                <summary class="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-medium text-[#ECEAE3]">
+                  <span>{f.q}</span>
+                  <span class="text-amber-400 transition-transform group-open:rotate-45">+</span>
+                </summary>
+                <p class="mt-2 text-sm leading-relaxed text-[#8A8F9C]">{f.a}</p>
+              </details>
+            ))}
+          </div>
+        </section>
+
+        <!-- Texto SEO -->
+        <section class="px-4 pt-8">
+          <h2 class="text-base font-bold text-[#ECEAE3]">Ahorra cada vez que repostas</h2>
+          <div class="mt-2 space-y-3 text-sm leading-relaxed text-[#8A8F9C]">
+            <p>
+              El precio del combustible puede variar más de 20 céntimos por litro entre gasolineras
+              de la misma ciudad. En un depósito de 50 litros, eso son más de 10 euros de diferencia
+              en cada repostaje: comparar antes de echar gasolina es de los ahorros más fáciles que
+              existen.
+            </p>
+            <p>
+              Esta web usa el listado oficial de precios que todas las estaciones de España están
+              obligadas a comunicar al Ministerio (Geoportal Gasolineras), así que ves los mismos
+              datos que maneja la administración, sin registros y al momento.
+            </p>
+          </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="px-4 pt-8 pb-8">
+          <p class="text-xs leading-relaxed text-[#5A6070]">
+            Ahorro al Volante es una herramienta informativa. Los precios provienen del listado
+            oficial del Ministerio (Geoportal Gasolineras) y pueden variar respecto al surtidor
+            en el momento del repostaje. Tu ubicación solo se usa en tu navegador para ordenar
+            por cercanía. No es asesoramiento de ningún tipo.
+          </p>
+          <div class="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-xs">
+            <a href="/aviso-legal" class="text-[#8A8F9C] hover:text-amber-400">Aviso legal</a>
+            <a href="/privacidad" class="text-[#8A8F9C] hover:text-amber-400">Privacidad</a>
+            <a href="/cookies" class="text-[#8A8F9C] hover:text-amber-400">Cookies</a>
+          </div>
+          <p class="mt-3 text-xs text-[#5A6070]">© {new Date().getFullYear()} Ahorro al Volante</p>
+        </footer>
+      </main>
+
+      {/* Anuncio lateral fijo (solo escritorio): OCULTO hasta tener AdSense aprobado.
+          Al reactivarlo, sustituir el marcador por la unidad real <ins class="adsbygoogle">.
+      <aside class="hidden shrink-0 pt-7 pr-4 lg:block" style="width:300px;">
+        <div class={`sticky top-6 min-h-[600px] w-[300px] ${adBox}`}>
+          <span class="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#5A6070]">Publicidad</span>
+          <span class="mt-1 text-xs text-[#5A6070]">Rascacielos 300x600 (fijo)</span>
+        </div>
+      </aside>
+      */}
+    </div>
+  </div>
+</Layout>

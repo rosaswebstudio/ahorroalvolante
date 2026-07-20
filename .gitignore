@@ -1,0 +1,16 @@
+# build
+dist/
+.astro/
+
+# deps
+node_modules/
+
+# entorno
+.env
+
+# logs
+*.log
+
+# sistema
+.DS_Store
+Thumbs.db

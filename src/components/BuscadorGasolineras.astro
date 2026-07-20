@@ -1,0 +1,209 @@
+---
+import { PROVINCIAS, COMBUSTIBLES } from '../lib/gasolineras.js';
+const field = 'w-full rounded-lg border border-[#232733] bg-[#0B0D12] px-3 py-2 text-sm text-slate-200 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25';
+---
+<section id="buscador" class="scroll-mt-24">
+  <div class="rounded-2xl border border-[#232733] bg-[#14171F] p-4 sm:p-6">
+    <!-- Controles -->
+    <div class="grid gap-3 sm:grid-cols-2">
+      <label class="block">
+        <span class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Combustible</span>
+        <select id="gs-fuel" class={field}>
+          {COMBUSTIBLES.map((c) => <option value={c.id}>{c.label}</option>)}
+        </select>
+      </label>
+      <label class="block">
+        <span class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Provincia</span>
+        <select id="gs-prov" class={field}>
+          {PROVINCIAS.map((p) => <option value={p.id} selected={p.id === '28'}>{p.nombre}</option>)}
+        </select>
+      </label>
+    </div>
+
+    <div class="mt-3 flex flex-wrap items-center gap-2">
+      <button id="gs-geo" type="button"
+        class="inline-flex items-center gap-1.5 rounded-lg bg-amber-500 px-3 py-2 text-sm font-semibold text-[#0B0D12] transition hover:bg-amber-400">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21s-7-5.1-7-11a7 7 0 1 1 14 0c0 5.9-7 11-7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg>
+        Cerca de mí
+      </button>
+      <div class="flex gap-1 rounded-lg border border-[#232733] bg-[#0B0D12] p-1 text-sm">
+        <button id="gs-orden-precio" type="button" class="rounded-md px-3 py-1 font-medium">Más baratas</button>
+        <button id="gs-orden-dist" type="button" class="rounded-md px-3 py-1 font-medium" disabled>Más cercanas</button>
+      </div>
+      <input id="gs-filtro" type="search" placeholder="Filtrar por municipio…" class={`${field} ml-auto max-w-56 flex-1`} />
+    </div>
+
+    <p id="gs-status" class="mt-3 text-sm text-slate-500" aria-live="polite"></p>
+
+    <!-- Stats -->
+    <div id="gs-stats" class="mt-3 hidden gap-2 sm:flex">
+      <div class="flex-1 rounded-xl border border-[#232733] bg-[#0B0D12] px-3 py-3">
+        <p class="text-xs uppercase tracking-wider text-slate-500">Más barata</p>
+        <p id="gs-min" class="mt-1 font-mono text-lg font-semibold text-emerald-400">—</p>
+      </div>
+      <div class="flex-1 rounded-xl border border-[#232733] bg-[#0B0D12] px-3 py-3">
+        <p class="text-xs uppercase tracking-wider text-slate-500">Media</p>
+        <p id="gs-avg" class="mt-1 font-mono text-lg font-semibold text-slate-200">—</p>
+      </div>
+      <div class="flex-1 rounded-xl border border-[#232733] bg-[#0B0D12] px-3 py-3">
+        <p class="text-xs uppercase tracking-wider text-slate-500">Más cara</p>
+        <p id="gs-max" class="mt-1 font-mono text-lg font-semibold text-red-400">—</p>
+      </div>
+    </div>
+
+    <!-- Lista -->
+    <div id="gs-lista" class="mt-4 space-y-1.5"></div>
+    <button id="gs-mas" type="button" class="mt-3 hidden w-full rounded-lg border border-[#232733] px-4 py-2 text-sm font-medium text-slate-300 transition hover:border-slate-500">Mostrar más gasolineras</button>
+
+    <!-- Pie -->
+    <div class="mt-4 flex items-center justify-between gap-3">
+      <p id="gs-fuente" class="text-xs leading-snug text-slate-500">
+        Precios oficiales del Ministerio (Geoportal Gasolineras).
+      </p>
+      <button id="gs-refresh" type="button" aria-label="Actualizar precios"
+        class="rounded-full border border-[#232733] bg-[#0B0D12] p-2 text-slate-400 transition hover:border-slate-500">
+        <svg id="gs-refresh-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      </button>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { cargarProvincia, distanciaKm, provinciaMasCercana, COMBUSTIBLES } from '../lib/gasolineras.js';
+
+  const $ = (id: string) => document.getElementById(id);
+  const fuelSel = $('gs-fuel') as HTMLSelectElement;
+  const provSel = $('gs-prov') as HTMLSelectElement;
+  const filtroInp = $('gs-filtro') as HTMLInputElement;
+  const lista = $('gs-lista')!;
+  const status = $('gs-status')!;
+  const statsBox = $('gs-stats')!;
+  const masBtn = $('gs-mas')!;
+  const ordenPrecioBtn = $('gs-orden-precio') as HTMLButtonElement;
+  const ordenDistBtn = $('gs-orden-dist') as HTMLButtonElement;
+
+  let data: any = null;
+  let userPos: { lat: number; lng: number } | null = null;
+  let orden: 'precio' | 'dist' = 'precio';
+  let visibles = 25;
+
+  const CHEAP = [52, 211, 153], MIDC = [245, 158, 11], EXP = [248, 113, 113];
+  const lerp = (a: number[], b: number[], t: number) => a.map((v, i) => Math.round(v + (b[i] - v) * t));
+  const colorFor = (t: number) => {
+    const c = t < 0.5 ? lerp(CHEAP, MIDC, t / 0.5) : lerp(MIDC, EXP, (t - 0.5) / 0.5);
+    return `rgb(${c.join(',')})`;
+  };
+  const norm = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const fmt = (n: number) => n.toLocaleString('es-ES', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+
+  const setOrden = (o: 'precio' | 'dist') => {
+    orden = o;
+    const on = 'rounded-md px-3 py-1 font-medium bg-amber-500 text-[#0B0D12]';
+    const off = 'rounded-md px-3 py-1 font-medium text-slate-400';
+    ordenPrecioBtn.className = o === 'precio' ? on : off;
+    ordenDistBtn.className = o === 'dist' ? on : off;
+  };
+
+  function render() {
+    if (!data) return;
+    const fuel = fuelSel.value as 'g95' | 'ga' | 'g98' | 'gap' | 'glp';
+    const filtro = norm(filtroInp.value.trim());
+
+    let l = data.e.filter((e: any) => e.p[fuel] != null);
+    if (filtro) l = l.filter((e: any) => norm(`${e.muni} ${e.loc} ${e.rotulo} ${e.dir}`).includes(filtro));
+    if (userPos) l.forEach((e: any) => { e.dist = distanciaKm(userPos!.lat, userPos!.lng, e.lat, e.lng); });
+
+    if (l.length === 0) {
+      lista.innerHTML = '';
+      statsBox.classList.add('hidden');
+      masBtn.classList.add('hidden');
+      status.textContent = 'No hay gasolineras con ese combustible y filtro.';
+      return;
+    }
+
+    let min = Infinity, max = -Infinity, sum = 0;
+    l.forEach((e: any) => { const p = e.p[fuel]; if (p < min) min = p; if (p > max) max = p; sum += p; });
+    ($('gs-min') as HTMLElement).textContent = fmt(min) + ' €';
+    ($('gs-avg') as HTMLElement).textContent = fmt(sum / l.length) + ' €';
+    ($('gs-max') as HTMLElement).textContent = fmt(max) + ' €';
+    statsBox.classList.remove('hidden');
+
+    l.sort((a: any, b: any) => (orden === 'dist' && userPos) ? a.dist - b.dist : a.p[fuel] - b.p[fuel]);
+
+    const fuelLabel = (COMBUSTIBLES.find((c) => c.id === fuel) || {}).label;
+    status.textContent = `${l.length} gasolineras con ${fuelLabel} · ordenadas por ${orden === 'dist' ? 'cercanía' : 'precio'}`;
+
+    lista.innerHTML = l.slice(0, visibles).map((e: any) => {
+      const p = e.p[fuel];
+      const t = max > min ? (p - min) / (max - min) : 0.5;
+      const color = colorFor(t);
+      const maps = `https://www.google.com/maps/dir/?api=1&destination=${e.lat},${e.lng}`;
+      return `
+      <div class="flex items-center gap-3 rounded-xl border border-[#232733] bg-[#0B0D12] px-3 py-2.5">
+        <div class="w-20 shrink-0 text-center">
+          <span class="font-mono text-base font-bold" style="color:${color}">${fmt(p)}</span>
+          <span class="block text-[10px] text-slate-600">€/litro</span>
+        </div>
+        <div class="min-w-0 flex-1">
+          <p class="truncate text-sm font-semibold text-slate-200">${esc(e.rotulo)}</p>
+          <p class="truncate text-xs text-slate-500">${esc(e.dir)} · ${esc(e.loc || e.muni)}</p>
+          ${e.horario ? `<p class="truncate text-[11px] text-slate-600">${esc(e.horario)}</p>` : ''}
+        </div>
+        <div class="shrink-0 text-right">
+          ${e.dist != null ? `<p class="font-mono text-xs text-slate-400">${e.dist < 10 ? e.dist.toFixed(1) : Math.round(e.dist)} km</p>` : ''}
+          <a href="${maps}" target="_blank" rel="noopener nofollow" class="mt-0.5 inline-block rounded-md border border-[#232733] px-2 py-1 text-[11px] font-medium text-amber-400 transition hover:border-amber-500">Cómo llegar</a>
+        </div>
+      </div>`;
+    }).join('');
+
+    masBtn.classList.toggle('hidden', l.length <= visibles);
+    (window as any).gtag?.('event', 'fuel_prices_checked', { prov: provSel.value, fuel });
+  }
+
+  async function load(force = false) {
+    status.textContent = 'Cargando precios…';
+    $('gs-refresh-icon')!.classList.add('spin');
+    lista.innerHTML = '';
+    masBtn.classList.add('hidden');
+    try {
+      data = await cargarProvincia(provSel.value, force);
+      ($('gs-fuente') as HTMLElement).textContent =
+        `Precios oficiales del Ministerio (Geoportal Gasolineras)${data.fecha ? ' · Actualizado: ' + data.fecha : ''}`;
+      visibles = 25;
+      render();
+    } catch {
+      status.textContent = 'No se han podido cargar los precios. Comprueba tu conexión e inténtalo de nuevo.';
+    } finally {
+      $('gs-refresh-icon')!.classList.remove('spin');
+    }
+  }
+
+  fuelSel.addEventListener('change', () => { visibles = 25; render(); });
+  provSel.addEventListener('change', () => { userPos = null; ordenDistBtn.disabled = true; setOrden('precio'); load(); });
+  filtroInp.addEventListener('input', () => { visibles = 25; render(); });
+  ordenPrecioBtn.addEventListener('click', () => { setOrden('precio'); render(); });
+  ordenDistBtn.addEventListener('click', () => { if (userPos) { setOrden('dist'); render(); } });
+  masBtn.addEventListener('click', () => { visibles += 25; render(); });
+  $('gs-refresh')!.addEventListener('click', () => load(true));
+
+  $('gs-geo')!.addEventListener('click', () => {
+    if (!('geolocation' in navigator)) { status.textContent = 'Tu navegador no permite la geolocalización.'; return; }
+    status.textContent = 'Obteniendo tu ubicación…';
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        const prov = provinciaMasCercana(userPos.lat, userPos.lng);
+        ordenDistBtn.disabled = false;
+        setOrden('dist');
+        if (prov.id !== provSel.value) { provSel.value = prov.id; await load(); }
+        else render();
+      },
+      () => { status.textContent = 'No se pudo obtener tu ubicación (permiso denegado o conexión no segura). Elige provincia manualmente.'; },
+      { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 }
+    );
+  });
+
+  setOrden('precio');
+  load();
+</script>

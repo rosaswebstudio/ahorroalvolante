@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# Cambia el dominio por el tuyo cuando despliegues.
+Sitemap: https://gasolineras.example.com/sitemap-index.xml

@@ -1,0 +1,99 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description: string;
+  canonicalPath?: string;
+  image?: string;
+}
+
+const {
+  title,
+  description,
+  canonicalPath = '/',
+  image = '/og-image.png',
+} = Astro.props;
+
+const siteFallback = 'https://ahorroalvolante.es';
+const canonicalURL = new URL(canonicalPath, Astro.site ?? siteFallback).href;
+const imageURL = new URL(image, Astro.site ?? siteFallback).href;
+
+const adsenseClient = 'ca-pub-7893833945255002';
+// Crear una propiedad NUEVA de GA4 para ahorroalvolante.es y pegar aquí su Measurement ID.
+// Con el placeholder (contiene 'X') el bloque de GA4 no se renderiza, así el deploy no rompe.
+const ga4Id = 'G-XXXXXXXXXX';
+// Código de la etiqueta HTML de Google Search Console (misma cuenta). Placeholder hasta darlo de alta.
+const siteVerification = 'GOOGLE_SITE_VERIFICATION_PENDIENTE';
+
+const ga4Active = ga4Id && !ga4Id.includes('X');
+const verificationActive = siteVerification && !siteVerification.includes('PENDIENTE');
+---
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalURL} />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    {verificationActive && <meta name="google-site-verification" content={siteVerification} />}
+
+    <meta name="theme-color" content="#0B0D12" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:image" content={imageURL} />
+    <meta property="og:locale" content="es_ES" />
+    <meta property="og:site_name" content="Ahorro al Volante" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={imageURL} />
+
+    <!-- Consent Mode v2: todo denegado por defecto. La CMP certificada (Privacidad y
+         mensajes de AdSense) actualizará el estado cuando el usuario elija en el banner. -->
+    <script is:inline>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){ dataLayer.push(arguments); }
+      gtag('consent', 'default', {
+        ad_storage: 'denied',
+        ad_user_data: 'denied',
+        ad_personalization: 'denied',
+        analytics_storage: 'denied',
+        wait_for_update: 500
+      });
+    </script>
+
+    <!-- Google AdSense (código de verificación del sitio). El banner de cookies (CMP) se
+         gestiona desde AdSense -> Privacidad y mensajes. -->
+    <script async src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseClient}`} crossorigin="anonymous"></script>
+
+    <!-- Google Analytics 4 (se activa al poner el Measurement ID real arriba) -->
+    {ga4Active && (
+      <>
+        <script async src={`https://www.googletagmanager.com/gtag/js?id=${ga4Id}`}></script>
+        <script is:inline define:vars={{ ga4Id }}>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){ dataLayer.push(arguments); }
+          gtag('js', new Date());
+          gtag('config', ga4Id);
+        </script>
+      </>
+    )}
+
+    <slot name="head" />
+  </head>
+  <body class="min-h-screen font-sans text-slate-200 antialiased">
+    <slot />
+  </body>
+</html>

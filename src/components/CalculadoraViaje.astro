@@ -1,0 +1,186 @@
+---
+// Calculadora de coste de un viaje en coche. 100% cliente.
+// Ventaja frente a la competencia: muestra el desglose de cuánto suma cada factor.
+const field = 'w-full rounded-lg border border-[#232733] bg-[#0B0D12] px-3 py-2 text-sm text-slate-200 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25';
+const label = 'mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500';
+---
+<section id="calculadora" class="scroll-mt-24">
+  <div class="rounded-2xl border border-[#232733] bg-[#14171F] p-4 sm:p-6">
+    <h2 class="text-lg font-bold text-[#ECEAE3]">Calculadora de coste del viaje</h2>
+    <p class="mt-1 text-sm text-[#8A8F9C]">Calcula lo que te costará un trayecto según el precio del combustible y las condiciones reales del viaje.</p>
+
+    <div class="mt-4 grid gap-3 sm:grid-cols-2">
+      <div>
+        <span class={label}>Distancia (km)</span>
+        <div class="flex gap-2">
+          <input id="cv-km" type="number" min="0" step="10" value="300" inputmode="decimal" class={field} />
+          <label class="flex shrink-0 items-center gap-1.5 rounded-lg border border-[#232733] bg-[#0B0D12] px-3 text-sm text-slate-300">
+            <input id="cv-idavuelta" type="checkbox" class="accent-amber-500" /> Ida y vuelta
+          </label>
+        </div>
+      </div>
+
+      <label class="block">
+        <span class={label}>Consumo medio del coche (l/100 km)</span>
+        <input id="cv-consumo" type="number" min="1" max="30" step="0.1" value="6.5" inputmode="decimal" class={field} />
+      </label>
+
+      <label class="block">
+        <span class={label}>Combustible</span>
+        <select id="cv-fuel" class={field}>
+          <option value="gasolina">Gasolina</option>
+          <option value="diesel">Diésel</option>
+          <option value="glp">GLP (autogas)</option>
+        </select>
+      </label>
+
+      <label class="block">
+        <span class={label}>Precio del combustible (€/litro)</span>
+        <input id="cv-precio" type="number" min="0" step="0.001" value="1.60" inputmode="decimal" class={field} />
+        <span class="mt-1 block text-[11px] text-slate-600">Usa el precio de la gasolinera más barata que ves arriba.</span>
+      </label>
+
+      <label class="block">
+        <span class={label}>Ocupantes (para el coste por persona)</span>
+        <input id="cv-ocupantes" type="number" min="1" max="9" step="1" value="1" inputmode="numeric" class={field} />
+      </label>
+
+      <label class="block">
+        <span class={label}>Estilo de conducción</span>
+        <select id="cv-estilo" class={field}>
+          <option value="0.92">Suave / eco (-8%)</option>
+          <option value="1" selected>Normal</option>
+          <option value="1.20">Deportivo / brusco (+20%)</option>
+        </select>
+      </label>
+    </div>
+
+    <!-- Factores -->
+    <div class="mt-4">
+      <span class={label}>¿Qué condiciones tendrá el viaje?</span>
+      <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+        <label class="flex items-center gap-2 rounded-lg border border-[#232733] bg-[#0B0D12] px-3 py-2 text-sm text-slate-300"><input id="cv-ac" type="checkbox" class="accent-amber-500" /> Aire acondicionado <span class="ml-auto text-xs text-slate-600">+8%</span></label>
+        <label class="flex items-center gap-2 rounded-lg border border-[#232733] bg-[#0B0D12] px-3 py-2 text-sm text-slate-300"><input id="cv-vent" type="checkbox" class="accent-amber-500" /> Ventanillas bajadas a alta velocidad <span class="ml-auto text-xs text-slate-600">+5%</span></label>
+        <label class="flex items-center gap-2 rounded-lg border border-[#232733] bg-[#0B0D12] px-3 py-2 text-sm text-slate-300"><input id="cv-carga" type="checkbox" class="accent-amber-500" /> Coche muy cargado <span class="ml-auto text-xs text-slate-600">+5%</span></label>
+        <label class="block rounded-lg border border-[#232733] bg-[#0B0D12] px-3 py-2 text-sm text-slate-300">
+          <span class="mb-1 block">Portaequipajes en el techo</span>
+          <select id="cv-techo" class="w-full rounded-md border border-[#232733] bg-[#14171F] px-2 py-1 text-sm text-slate-200 outline-none focus:border-amber-500">
+            <option value="1">No llevo</option>
+            <option value="1.12">Baca o cofre (+12%)</option>
+            <option value="1.18">Portabicis o portaesquís (+18%)</option>
+          </select>
+        </label>
+      </div>
+    </div>
+
+    <!-- Resultado -->
+    <div class="mt-5 grid gap-3 sm:grid-cols-2">
+      <div class="rounded-xl bg-amber-500 p-4 text-center text-[#0B0D12]">
+        <p class="text-xs font-semibold uppercase tracking-widest opacity-70">Coste del viaje</p>
+        <p id="cv-total" class="mt-1 text-3xl font-extrabold">—</p>
+        <p id="cv-porpersona" class="text-sm font-medium opacity-80">—</p>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div class="rounded-xl border border-[#232733] bg-[#0B0D12] p-3 text-center">
+          <p class="text-xs uppercase tracking-wide text-slate-500">Litros</p>
+          <p id="cv-litros" class="mt-1 font-mono text-lg font-semibold text-slate-200">—</p>
+        </div>
+        <div class="rounded-xl border border-[#232733] bg-[#0B0D12] p-3 text-center">
+          <p class="text-xs uppercase tracking-wide text-slate-500">Consumo real</p>
+          <p id="cv-consumoreal" class="mt-1 font-mono text-lg font-semibold text-slate-200">—</p>
+        </div>
+        <div class="rounded-xl border border-[#232733] bg-[#0B0D12] p-3 text-center">
+          <p class="text-xs uppercase tracking-wide text-slate-500">Coste/100 km</p>
+          <p id="cv-por100" class="mt-1 font-mono text-lg font-semibold text-slate-200">—</p>
+        </div>
+        <div class="rounded-xl border border-[#232733] bg-[#0B0D12] p-3 text-center">
+          <p class="text-xs uppercase tracking-wide text-slate-500">CO₂</p>
+          <p id="cv-co2" class="mt-1 font-mono text-lg font-semibold text-slate-200">—</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Desglose de factores (el diferenciador) -->
+    <div id="cv-desglose" class="mt-3"></div>
+
+    <p class="mt-3 text-[11px] leading-relaxed text-slate-600">
+      Cálculo orientativo. Los porcentajes de cada factor son estimaciones medias (el impacto real
+      varía con la velocidad, el coche y la temperatura). El consumo base que introduces es el que
+      más manda: ponlo lo más cercano posible al de tu coche.
+    </p>
+  </div>
+</section>
+
+<script>
+  const $ = (id: string) => document.getElementById(id);
+  const kmEl = $('cv-km') as HTMLInputElement | null;
+
+  if (kmEl) {
+    const CO2 = { gasolina: 2.31, diesel: 2.64, glp: 1.61 } as Record<string, number>; // kg CO2 por litro
+    const eur = (n: number, d = 2) => new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', minimumFractionDigits: d, maximumFractionDigits: d }).format(n);
+    const num = (id: string, fb = 0) => { const v = parseFloat((($(id) as HTMLInputElement)?.value ?? '').replace(',', '.')); return Number.isFinite(v) ? v : fb; };
+    const chk = (id: string) => ($(id) as HTMLInputElement)?.checked;
+
+    const update = () => {
+      let km = Math.max(0, num('cv-km'));
+      if (chk('cv-idavuelta')) km *= 2;
+      const consumoBase = Math.max(0.1, num('cv-consumo', 6.5));
+      const precio = Math.max(0, num('cv-precio', 1.6));
+      const ocupantes = Math.min(9, Math.max(1, Math.round(num('cv-ocupantes', 1))));
+      const fuel = ($('cv-fuel') as HTMLSelectElement).value;
+
+      // Factores (multiplicadores sobre el consumo base)
+      const factores: { nombre: string; extra: number }[] = [];
+      let mult = 1;
+      const add = (nombre: string, f: number) => { factores.push({ nombre, extra: f }); mult *= f; };
+      if (chk('cv-ac')) add('Aire acondicionado', 1.08);
+      if (chk('cv-vent')) add('Ventanillas bajadas', 1.05);
+      if (chk('cv-carga')) add('Coche muy cargado', 1.05);
+      const techo = Number(($('cv-techo') as HTMLSelectElement).value);
+      if (techo > 1) add(techo >= 1.18 ? 'Portabicis / portaesquís' : 'Baca o cofre', techo);
+      const estilo = Number(($('cv-estilo') as HTMLSelectElement).value);
+      if (estilo !== 1) add(estilo < 1 ? 'Conducción suave' : 'Conducción deportiva', estilo);
+
+      const consumoReal = consumoBase * mult;
+      const litros = (km * consumoReal) / 100;
+      const total = litros * precio;
+      const litrosBase = (km * consumoBase) / 100;
+      const totalBase = litrosBase * precio;
+
+      ($('cv-total') as HTMLElement).textContent = eur(total);
+      ($('cv-porpersona') as HTMLElement).textContent = ocupantes > 1 ? `${eur(total / ocupantes)} por persona (${ocupantes})` : 'para 1 ocupante';
+      ($('cv-litros') as HTMLElement).textContent = litros.toLocaleString('es-ES', { maximumFractionDigits: 1 }) + ' L';
+      ($('cv-consumoreal') as HTMLElement).textContent = consumoReal.toLocaleString('es-ES', { maximumFractionDigits: 1 }) + ' l';
+      ($('cv-por100') as HTMLElement).textContent = km > 0 ? eur((total / km) * 100) : '—';
+      ($('cv-co2') as HTMLElement).textContent = (litros * (CO2[fuel] || 2.31)).toLocaleString('es-ES', { maximumFractionDigits: 0 }) + ' kg';
+
+      // Desglose: cuánto suma cada factor en euros (sobre el coste base)
+      const desglose = $('cv-desglose')!;
+      if (factores.length && precio > 0 && km > 0) {
+        // Reparto proporcional del sobrecoste total entre los factores activos
+        const sobrecoste = total - totalBase;
+        const pesoTotal = factores.reduce((s, f) => s + (f.extra - 1) * (f.extra >= 1 ? 1 : -1), 0);
+        desglose.innerHTML =
+          '<p class="mb-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500">Cuánto suma o resta cada condición</p>' +
+          '<div class="space-y-1">' +
+          factores.map((f) => {
+            const parte = pesoTotal !== 0 ? (Math.abs(f.extra - 1) / Math.abs(pesoTotal)) * sobrecoste : 0;
+            const sube = f.extra > 1;
+            return `<div class="flex items-center justify-between rounded-lg border border-[#232733] bg-[#0B0D12] px-3 py-1.5 text-sm">
+              <span class="text-slate-300">${f.nombre}</span>
+              <span class="font-mono ${sube ? 'text-red-400' : 'text-emerald-400'}">${sube ? '+' : '−'}${eur(Math.abs(parte))}</span>
+            </div>`;
+          }).join('') +
+          '</div>';
+      } else {
+        desglose.innerHTML = '';
+      }
+
+      (window as any).gtag?.('event', 'calculation_completed', { tool: 'coste_viaje' });
+    };
+
+    const ids = ['cv-km', 'cv-idavuelta', 'cv-consumo', 'cv-fuel', 'cv-precio', 'cv-ocupantes', 'cv-estilo', 'cv-ac', 'cv-vent', 'cv-carga', 'cv-techo'];
+    ids.forEach((id) => { const el = $(id); el?.addEventListener('input', update); el?.addEventListener('change', update); });
+    update();
+  }
+</script>
