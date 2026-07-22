@@ -69,6 +69,17 @@ const verificationActive = siteVerification && !siteVerification.includes('PENDI
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={imageURL} />
 
+    <!-- El navegador lanza beforeinstallprompt muy pronto, antes de que cargue el bundle
+         del buscador. Se guarda aquí para poder ofrecer la instalación más tarde. -->
+    <script is:inline>
+      window.__instalable = null;
+      window.addEventListener('beforeinstallprompt', function (e) {
+        e.preventDefault();
+        window.__instalable = e;
+        window.dispatchEvent(new Event('gs:instalable'));
+      });
+    </script>
+
     <!-- Consent Mode v2: todo denegado por defecto. La CMP certificada (Privacidad y
          mensajes de AdSense) actualizará el estado cuando el usuario elija en el banner. -->
     <script is:inline>

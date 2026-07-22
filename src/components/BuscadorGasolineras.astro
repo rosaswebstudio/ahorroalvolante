@@ -11,6 +11,25 @@ const field = 'w-full rounded-lg border border-[#232733] bg-[#0B0D12] px-3 py-2 
         <span class="text-[11px] text-slate-600">Guardadas en este dispositivo</span>
       </div>
       <div id="gs-favs" class="space-y-1.5"></div>
+
+      <!-- Aviso de instalación: solo si hay favoritos que perder, la web no está
+           instalada y el visitante no lo ha descartado antes. -->
+      <div id="gs-instalar" class="mt-2 hidden rounded-xl border border-amber-500/30 bg-amber-500/5 px-3 py-2.5">
+        <p class="text-xs leading-relaxed text-slate-300">
+          <strong class="text-amber-400">Para no perderlas:</strong>
+          <span id="gs-instalar-texto"></span>
+        </p>
+        <div class="mt-2 flex items-center gap-2">
+          <button id="gs-instalar-si" type="button"
+            class="hidden rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-semibold text-[#0B0D12] transition hover:bg-amber-400">
+            Instalar la app
+          </button>
+          <button id="gs-instalar-no" type="button"
+            class="rounded-lg px-2 py-1.5 text-xs font-medium text-slate-500 transition hover:text-slate-300">
+            No, gracias
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Controles -->
@@ -220,6 +239,7 @@ const field = 'w-full rounded-lg border border-[#232733] bg-[#0B0D12] px-3 py-2 
     const cont = $('gs-favs')!;
     if (!favs.length) { box.classList.add('hidden'); cont.innerHTML = ''; return; }
     box.classList.remove('hidden');
+    renderAvisoInstalar(true);
 
     const fuel = fuelSel.value;
     // Los favoritos pueden estar en provincias distintas a la que se está viendo.
@@ -251,6 +271,70 @@ const field = 'w-full rounded-lg border border-[#232733] bg-[#0B0D12] px-3 py-2 
       </div>`;
     }).join('');
   }
+
+  // --- Aviso de instalación -------------------------------------------------
+  // En iOS, Safari borra el almacenamiento local tras 7 días sin visitar la web,
+  // pero las apps añadidas a la pantalla de inicio están exentas. Como se reposta
+  // cada una o dos semanas, sin instalar se perderían justo entre repostajes.
+  const INSTALL_KEY = 'gs_install_no';
+
+  const yaInstalada = () =>
+    window.matchMedia('(display-mode: standalone)').matches ||
+    (navigator as any).standalone === true;
+
+  // iPadOS se hace pasar por Mac, de ahí la comprobación táctil.
+  const esIOS = () =>
+    /iphone|ipod|ipad/i.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+  function renderAvisoInstalar(hayFavoritos: boolean) {
+    const caja = $('gs-instalar')!;
+    const descartado = (() => {
+      try { return localStorage.getItem(INSTALL_KEY) === '1'; } catch { return false; }
+    })();
+    if (!hayFavoritos || descartado || yaInstalada()) {
+      caja.classList.add('hidden');
+      return;
+    }
+    const prompt = (window as any).__instalable;
+    const texto = $('gs-instalar-texto')!;
+    const btnSi = $('gs-instalar-si')!;
+
+    if (esIOS()) {
+      texto.textContent =
+        'en iPhone, el navegador borra lo guardado si pasas una semana sin entrar. Añade la web a tu pantalla de inicio: pulsa Compartir y luego "Añadir a pantalla de inicio".';
+      btnSi.classList.add('hidden');
+    } else if (prompt) {
+      texto.textContent =
+        'instala la web como app y tus gasolineras dejarán de depender de la limpieza del navegador.';
+      btnSi.classList.remove('hidden');
+    } else {
+      texto.textContent =
+        'añade la web a tu pantalla de inicio desde el menú del navegador y tus gasolineras no dependerán de su limpieza.';
+      btnSi.classList.add('hidden');
+    }
+    caja.classList.remove('hidden');
+  }
+
+  $('gs-instalar-no')!.addEventListener('click', () => {
+    try { localStorage.setItem(INSTALL_KEY, '1'); } catch { /* sin espacio */ }
+    $('gs-instalar')!.classList.add('hidden');
+  });
+
+  $('gs-instalar-si')!.addEventListener('click', async () => {
+    const prompt = (window as any).__instalable;
+    if (!prompt) return;
+    $('gs-instalar')!.classList.add('hidden');
+    prompt.prompt();
+    try {
+      await prompt.userChoice;
+    } finally {
+      (window as any).__instalable = null;
+    }
+  });
+
+  // El evento puede llegar después de pintar los favoritos.
+  window.addEventListener('gs:instalable', () => renderAvisoInstalar(leerFavs().length > 0));
 
   function toggleFav(id: string) {
     const favs = leerFavs();
