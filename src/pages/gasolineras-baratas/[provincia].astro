@@ -2,8 +2,16 @@
 // Página por provincia. Se genera en el build con los precios oficiales del Ministerio,
 // así el contenido (estaciones, medias y municipios) llega ya en el HTML y es indexable.
 import Layout from '../../layouts/Layout.astro';
+import TendenciaPrecios from '../../components/TendenciaPrecios.astro';
 import { COMBUSTIBLES, PROVINCIAS, slugProvincia } from '../../lib/gasolineras.js';
 import { resumenPorProvincia } from '../../lib/datos-build.js';
+import historicoJson from '../../data/historico.json';
+
+const historico = historicoJson as {
+  fechas: string[];
+  nacional: Record<string, (number | null)[]>;
+  provincias: Record<string, Record<string, (number | null)[]>>;
+};
 
 export async function getStaticPaths() {
   const resumenes = await resumenPorProvincia();
@@ -59,6 +67,15 @@ const p2 = (n: number | null) => (n === null ? '-' : n.toFixed(2).replace('.', '
 const dia = (fecha || '').split(' ')[0];
 
 const ahorroDeposito = g95 ? (g95.media - g95.min) * DEPOSITO : 0;
+
+// Evolución histórica de esta provincia (si aún no hay datos, el componente no pinta nada).
+const serieProv = historico.provincias?.[prov.id];
+const seriesTendencia = serieProv
+  ? [
+      { id: 'g95', label: 'Gasolina 95', valores: serieProv.g95 ?? [] },
+      { id: 'ga', label: 'Diésel', valores: serieProv.ga ?? [] },
+    ]
+  : [];
 const mapa = (e: Estacion) =>
   e.lat && e.lng ? `https://www.google.com/maps/search/?api=1&query=${e.lat},${e.lng}` : null;
 
@@ -228,6 +245,8 @@ const colorPrecio = (v: number | null, m: number) =>
             <span class="shrink-0 rounded-full bg-amber-500 px-3 py-1.5 text-xs font-semibold text-[#0B0D12]">Abrir</span>
           </a>
         </section>
+
+        <TendenciaPrecios ambito={prov.nombre} fechas={historico.fechas} series={seriesTendencia} />
 
         <!-- Diésel -->
         {ga && (

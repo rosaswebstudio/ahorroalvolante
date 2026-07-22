@@ -1,20 +1,51 @@
+# Cada día: añade el precio medio de hoy al histórico y redespliega la web.
+#
 # Las páginas de provincia se generan en el build con los precios del Ministerio, así que
-# hay que volver a desplegar cada día para que no envejezcan. Este workflow solo llama al
-# deploy hook de Vercel: el build real lo hace Vercel, aquí no se compila nada.
+# sin este workflow envejecerían. Si el histórico cambia (lo normal), el propio commit
+# dispara el despliegue de Vercel; si no cambiase, se llama al deploy hook igualmente.
 name: Rebuild diario
 
 on:
   schedule:
     # 05:30 UTC = 07:30 en la península (horario de verano). Los precios del día ya están
-    # publicados y la web queda fresca antes de la hora punta de mañana.
+    # publicados y la web queda fresca antes de la hora punta de la mañana.
     - cron: '30 5 * * *'
   workflow_dispatch: # permite lanzarlo a mano desde la pestaña Actions
 
 jobs:
-  redeploy:
+  actualizar:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # necesario para comitear el histórico
     steps:
-      - name: Lanzar despliegue en Vercel
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Añadir el día de hoy al histórico
+        run: node scripts/historico.mjs
+
+      - name: Comitear si hay cambios
+        id: commit
+        run: |
+          if git diff --quiet -- src/data/historico.json; then
+            echo "cambios=no" >> "$GITHUB_OUTPUT"
+            echo "El histórico no ha cambiado."
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add src/data/historico.json
+            git commit -m "Histórico de precios: $(date -u +%Y-%m-%d)"
+            git push
+            echo "cambios=si" >> "$GITHUB_OUTPUT"
+          fi
+
+      # El push anterior ya dispara el despliegue. Este paso solo cubre el caso raro
+      # de que el histórico no cambie y aun así queramos refrescar los precios.
+      - name: Redesplegar si no hubo commit
+        if: steps.commit.outputs.cambios == 'no'
         env:
           HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
         run: |

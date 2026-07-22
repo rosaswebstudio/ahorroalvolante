@@ -2,9 +2,20 @@
 import Layout from '../layouts/Layout.astro';
 import BuscadorGasolineras from '../components/BuscadorGasolineras.astro';
 import CalculadoraViaje from '../components/CalculadoraViaje.astro';
+import TendenciaPrecios from '../components/TendenciaPrecios.astro';
 import { PROVINCIAS, slugProvincia } from '../lib/gasolineras.js';
+import historicoJson from '../data/historico.json';
 
 const provinciasOrdenadas = [...PROVINCIAS].sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+
+const historico = historicoJson as {
+  fechas: string[];
+  nacional: Record<string, (number | null)[]>;
+};
+const seriesNacional = [
+  { id: 'g95', label: 'Gasolina 95', valores: historico.nacional?.g95 ?? [] },
+  { id: 'ga', label: 'Diésel', valores: historico.nacional?.ga ?? [] },
+];
 
 const title = 'Gasolineras baratas cerca de ti + calculadora de coste del viaje';
 const description =
@@ -202,6 +213,8 @@ const adBox = 'flex flex-col items-center justify-center rounded-2xl border bord
             </p>
           </div>
         </section>
+
+        <TendenciaPrecios ambito="España" fechas={historico.fechas} series={seriesNacional} />
 
         <!-- Provincias (enlazado interno hacia las páginas con precios de cada provincia) -->
         <section class="px-4 pt-8">
