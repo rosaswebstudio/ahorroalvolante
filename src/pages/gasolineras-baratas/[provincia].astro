@@ -10,6 +10,42 @@ export async function getStaticPaths() {
   return resumenes.map((datos) => ({ params: { provincia: datos.slug }, props: { datos } }));
 }
 
+interface Estacion {
+  rotulo: string;
+  dir: string;
+  muni: string;
+  horario: string;
+  lat: number | null;
+  lng: number | null;
+  p: Record<string, number | null>;
+}
+
+interface ResumenCombustible {
+  n: number;
+  min: number;
+  max: number;
+  media: number;
+  baratas: Estacion[];
+}
+
+interface MediaMunicipio {
+  muni: string;
+  n: number;
+  media: number;
+}
+
+interface Props {
+  datos: {
+    prov: { id: string; nombre: string };
+    slug: string;
+    fecha: string;
+    total: number;
+    combustibles: Record<string, ResumenCombustible | null>;
+    municipiosBaratos: MediaMunicipio[];
+    municipiosCaros: MediaMunicipio[];
+  };
+}
+
 const { datos } = Astro.props;
 const { prov, slug, fecha, total, combustibles, municipiosBaratos, municipiosCaros } = datos;
 
@@ -17,12 +53,13 @@ const g95 = combustibles.g95;
 const ga = combustibles.ga;
 
 const DEPOSITO = 55; // litros, depósito tipo de un turismo
-const p3 = (n) => n.toFixed(3).replace('.', ',');
-const p2 = (n) => n.toFixed(2).replace('.', ',');
+// Aceptan nulos porque no todas las estaciones sirven todos los combustibles.
+const p3 = (n: number | null) => (n === null ? '-' : n.toFixed(3).replace('.', ','));
+const p2 = (n: number | null) => (n === null ? '-' : n.toFixed(2).replace('.', ','));
 const dia = (fecha || '').split(' ')[0];
 
 const ahorroDeposito = g95 ? (g95.media - g95.min) * DEPOSITO : 0;
-const mapa = (e) =>
+const mapa = (e: Estacion) =>
   e.lat && e.lng ? `https://www.google.com/maps/search/?api=1&query=${e.lat},${e.lng}` : null;
 
 const title = `Gasolineras baratas en ${prov.nombre}: precios de hoy`;
@@ -30,24 +67,27 @@ const description = g95
   ? `Las gasolineras más baratas de ${prov.nombre} hoy: ${total} estaciones con precios oficiales del Ministerio. Gasolina 95 desde ${p3(g95.min)} €/L y media provincial de ${p3(g95.media)} €/L.`
   : `Precios de las ${total} gasolineras de ${prov.nombre} con datos oficiales del Ministerio, actualizados a diario.`;
 
-const faqs = [
-  g95 && {
+const faqs: { q: string; a: string }[] = [];
+if (g95) {
+  faqs.push({
     q: `¿Cuál es la gasolinera más barata de ${prov.nombre}?`,
     a: `Según el listado oficial del ${dia}, la gasolina 95 más barata de ${prov.nombre} está en ${g95.baratas[0].rotulo} (${g95.baratas[0].muni}), a ${p3(g95.min)} € por litro. Los precios los fija cada estación y cambian a diario, así que conviene comprobarlos antes de salir.`,
-  },
-  g95 && {
+  });
+  faqs.push({
     q: `¿Cuánto cuesta llenar el depósito en ${prov.nombre}?`,
     a: `Con la media provincial de ${p3(g95.media)} €/L, llenar ${DEPOSITO} litros de gasolina 95 sale por unos ${p2(g95.media * DEPOSITO)} €. En la estación más barata de la provincia serían ${p2(g95.min * DEPOSITO)} €, es decir ${p2(ahorroDeposito)} € menos en un solo repostaje.`,
-  },
-  municipiosBaratos.length > 1 && {
+  });
+}
+if (municipiosBaratos.length > 1) {
+  faqs.push({
     q: `¿En qué municipios de ${prov.nombre} está más barata la gasolina?`,
     a: `De media, los municipios más baratos de la provincia son ${municipiosBaratos.slice(0, 3).map((m) => m.muni).join(', ')}. La media se calcula solo con municipios que tienen al menos 3 estaciones, para que un único surtidor barato no distorsione el dato.`,
-  },
-  {
-    q: '¿Cada cuánto se actualizan estos precios?',
-    a: 'Las estaciones están obligadas por ley a comunicar sus precios al Ministerio, y el listado oficial se actualiza aproximadamente cada 30 minutos. Esta página se regenera a diario, y el buscador de la portada consulta los datos en directo cada vez que lo usas.',
-  },
-].filter(Boolean);
+  });
+}
+faqs.push({
+  q: '¿Cada cuánto se actualizan estos precios?',
+  a: 'Las estaciones están obligadas por ley a comunicar sus precios al Ministerio, y el listado oficial se actualiza aproximadamente cada 30 minutos. Esta página se regenera a diario, y el buscador de la portada consulta los datos en directo cada vez que lo usas.',
+});
 
 const siteUrl = (Astro.site ?? new URL('https://ahorroalvolante.es')).href.replace(/\/$/, '');
 const rutaCanonica = `/gasolineras-baratas/${slug}/`;
@@ -86,7 +126,8 @@ const otras = PROVINCIAS.filter((p) => p.id !== prov.id).map((p) => ({
 
 const card = 'rounded-2xl border border-[#232733] bg-[#14171F] p-4';
 // Verde por debajo de la media provincial, ámbar por encima.
-const colorPrecio = (v, m) => (v < m ? 'text-green-400' : 'text-amber-400');
+const colorPrecio = (v: number | null, m: number) =>
+  v !== null && v < m ? 'text-green-400' : 'text-amber-400';
 ---
 <Layout title={title} description={description} canonicalPath={rutaCanonica}>
   <script type="application/ld+json" slot="head" set:html={JSON.stringify(jsonLd)} />

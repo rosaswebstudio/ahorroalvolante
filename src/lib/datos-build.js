@@ -47,9 +47,16 @@ export async function cargarNacional() {
   );
 }
 
+// Algunas estaciones comunican el rótulo como "-" o vacío: sin letras ni números
+// no es un nombre, y en la web se vería una gasolinera sin identificar.
+const rotulo = (v) => {
+  const s = String(v ?? '').trim();
+  return /[\p{L}\p{N}]/u.test(s) ? s : 'Sin rótulo';
+};
+
 function reducir(e) {
   return {
-    rotulo: (e['Rótulo'] || 'Sin rótulo').trim(),
+    rotulo: rotulo(e['Rótulo']),
     dir: (e['Dirección'] || '').trim(),
     muni: (e['Municipio'] || '').trim(),
     horario: (e['Horario'] || '').trim(),
