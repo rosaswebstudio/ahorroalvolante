@@ -34,15 +34,27 @@ const label = 'mb-1 block text-xs font-semibold uppercase tracking-wide text-sla
         </select>
       </label>
 
-      <label class="block">
+      <div>
         <span class={label}>Precio del combustible (€/litro)</span>
-        <input id="cv-precio" type="number" min="0" step="0.001" value="1.60" inputmode="decimal" class={field} />
-        <span class="mt-1 block text-[11px] text-slate-600">Usa el precio de la gasolinera más barata que ves arriba.</span>
-      </label>
+        <div class="flex gap-2">
+          <input id="cv-precio" type="number" min="0" step="0.001" value="1.60" inputmode="decimal" class={field} />
+          <button id="cv-barata" type="button"
+            class="shrink-0 rounded-lg border border-[#232733] bg-[#0B0D12] px-3 text-xs font-semibold text-amber-400 transition hover:border-amber-500 disabled:opacity-50">
+            Más barata
+          </button>
+        </div>
+        <span id="cv-precio-nota" class="mt-1 block text-[11px] text-slate-600">Pulsa "Más barata" y ponemos el precio mínimo de tu provincia.</span>
+      </div>
 
       <label class="block">
         <span class={label}>Ocupantes (para el coste por persona)</span>
         <input id="cv-ocupantes" type="number" min="1" max="9" step="1" value="1" inputmode="numeric" class={field} />
+      </label>
+
+      <label class="block">
+        <span class={label}>Capacidad del depósito (litros)</span>
+        <input id="cv-deposito" type="number" min="10" max="140" step="1" value="55" inputmode="numeric" class={field} />
+        <span id="cv-llenar" class="mt-1 block text-[11px] text-slate-600">—</span>
       </label>
 
       <label class="block">
@@ -103,6 +115,20 @@ const label = 'mb-1 block text-xs font-semibold uppercase tracking-wide text-sla
     <!-- Desglose de factores (el diferenciador) -->
     <div id="cv-desglose" class="mt-3"></div>
 
+    <!-- Compartir: útil para repartir gastos con quienes van en el coche -->
+    <div class="mt-4 flex flex-wrap items-center gap-2">
+      <a id="cv-wa" href="#" target="_blank" rel="noopener"
+        class="inline-flex items-center gap-1.5 rounded-lg bg-amber-500 px-3 py-2 text-sm font-semibold text-[#0B0D12] transition hover:bg-amber-400">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-4 w-4"><path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2Zm5.8 14.2c-.2.7-1.4 1.3-2 1.4-.5.1-1.1.1-1.8-.1-.4-.1-1-.3-1.7-.6-3-1.3-4.9-4.3-5-4.5-.2-.2-1.2-1.6-1.2-3s.7-2.1 1-2.4c.3-.3.6-.4.8-.4h.6c.2 0 .4 0 .7.5l.9 2.2c.1.2.1.4 0 .6l-.4.5-.3.4c-.1.1-.3.3-.1.6.2.3.7 1.2 1.6 2 1.1 1 2 1.3 2.3 1.4.3.1.4.1.6-.1l.9-1c.2-.2.4-.2.6-.1l2 1c.3.1.5.2.5.3.1.2.1.8-.1 1.4Z"/></svg>
+        Compartir por WhatsApp
+      </a>
+      <button id="cv-copiar" type="button"
+        class="rounded-lg border border-[#232733] bg-[#0B0D12] px-3 py-2 text-sm font-medium text-slate-300 transition hover:border-slate-500">
+        Copiar resultado
+      </button>
+      <span id="cv-copiado" class="text-xs text-emerald-400 opacity-0 transition-opacity">Copiado</span>
+    </div>
+
     <p class="mt-3 text-[11px] leading-relaxed text-slate-600">
       Cálculo orientativo. Los porcentajes de cada factor son estimaciones medias (el impacto real
       varía con la velocidad, el coche y la temperatura). El consumo base que introduces es el que
@@ -112,12 +138,15 @@ const label = 'mb-1 block text-xs font-semibold uppercase tracking-wide text-sla
 </section>
 
 <script>
-  import { leerPref, guardarPref } from '../lib/gasolineras.js';
+  import { leerPref, guardarPref, cargarProvincia, PROVINCIAS } from '../lib/gasolineras.js';
 
   const $ = (id: string) => document.getElementById(id);
   const kmEl = $('cv-km') as HTMLInputElement | null;
 
   if (kmEl) {
+    // El combustible de la calculadora es genérico; la API distingue más tipos.
+    const FUEL_API: Record<string, string> = { gasolina: 'g95', diesel: 'ga', glp: 'glp' };
+    let textoCompartir = '';
     const CO2 = { gasolina: 2.31, diesel: 2.64, glp: 1.61 } as Record<string, number>; // kg CO2 por litro
     const eur = (n: number, d = 2) => new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', minimumFractionDigits: d, maximumFractionDigits: d }).format(n);
     const num = (id: string, fb = 0) => { const v = parseFloat((($(id) as HTMLInputElement)?.value ?? '').replace(',', '.')); return Number.isFinite(v) ? v : fb; };
@@ -178,6 +207,19 @@ const label = 'mb-1 block text-xs font-semibold uppercase tracking-wide text-sla
         desglose.innerHTML = '';
       }
 
+      // Coste de llenar el depósito a ese mismo precio.
+      const deposito = Math.max(0, num('cv-deposito', 55));
+      ($('cv-llenar') as HTMLElement).textContent =
+        deposito > 0 && precio > 0 ? `Llenarlo cuesta ${eur(deposito * precio)}` : '—';
+
+      // Texto para compartir: pensado para repartir gastos con los acompañantes.
+      textoCompartir =
+        `Coste del viaje: ${km.toLocaleString('es-ES', { maximumFractionDigits: 0 })} km, ` +
+        `${eur(total)} de combustible` +
+        (ocupantes > 1 ? `, ${eur(total / ocupantes)} por persona entre ${ocupantes}` : '') +
+        `. Calculado en https://ahorroalvolante.es`;
+      ($('cv-wa') as HTMLAnchorElement).href = 'https://wa.me/?text=' + encodeURIComponent(textoCompartir);
+
       // "Mi coche": lo único que no cambia de un viaje a otro.
       guardarPref({ consumo: consumoBase, cocheFuel: fuel });
 
@@ -194,7 +236,44 @@ const label = 'mb-1 block text-xs font-semibold uppercase tracking-wide text-sla
       fuelSel.value = pref.cocheFuel;
     }
 
-    const ids = ['cv-km', 'cv-idavuelta', 'cv-consumo', 'cv-fuel', 'cv-precio', 'cv-ocupantes', 'cv-estilo', 'cv-ac', 'cv-vent', 'cv-carga', 'cv-techo'];
+    // Trae el precio más bajo de la provincia que el visitante usa en el buscador,
+    // para no obligarle a mirarlo arriba y copiarlo a mano.
+    const barataBtn = $('cv-barata') as HTMLButtonElement;
+    const precioNota = $('cv-precio-nota') as HTMLElement;
+    barataBtn.addEventListener('click', async () => {
+      const prov = leerPref().prov || '28';
+      const apiFuel = FUEL_API[($('cv-fuel') as HTMLSelectElement).value] || 'g95';
+      const nombreProv = PROVINCIAS.find((p) => p.id === prov)?.nombre ?? '';
+      barataBtn.disabled = true;
+      precioNota.textContent = 'Buscando el precio más bajo…';
+      try {
+        const d = await cargarProvincia(prov);
+        const precios = d.e.map((e: any) => e.p[apiFuel]).filter((p: any) => p != null);
+        if (!precios.length) {
+          precioNota.textContent = `No hay estaciones con ese combustible en ${nombreProv}.`;
+          return;
+        }
+        const min = Math.min(...precios);
+        ($('cv-precio') as HTMLInputElement).value = String(min);
+        precioNota.textContent = `Precio más bajo hoy en ${nombreProv}: ${min.toLocaleString('es-ES', { minimumFractionDigits: 3 })} €/L.`;
+        update();
+      } catch {
+        precioNota.textContent = 'No se han podido cargar los precios. Inténtalo de nuevo.';
+      } finally {
+        barataBtn.disabled = false;
+      }
+    });
+
+    $('cv-copiar')!.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(textoCompartir);
+        const ok = $('cv-copiado')!;
+        ok.classList.remove('opacity-0');
+        setTimeout(() => ok.classList.add('opacity-0'), 1800);
+      } catch { /* el navegador puede denegar el portapapeles */ }
+    });
+
+    const ids = ['cv-km', 'cv-idavuelta', 'cv-consumo', 'cv-fuel', 'cv-precio', 'cv-ocupantes', 'cv-estilo', 'cv-ac', 'cv-vent', 'cv-carga', 'cv-techo', 'cv-deposito'];
     ids.forEach((id) => { const el = $(id); el?.addEventListener('input', update); el?.addEventListener('change', update); });
     update();
   }
