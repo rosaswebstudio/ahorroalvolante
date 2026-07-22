@@ -143,6 +143,25 @@ export function distanciaKm(lat1, lng1, lat2, lng2) {
   return 2 * R * Math.asin(Math.sqrt(a));
 }
 
+/** Convierte un nombre en slug de URL (sin acentos ni signos). */
+export const slugify = (s) =>
+  String(s)
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+
+// El nombre corto de la API no da un slug decente, se fija a mano.
+const SLUG_PROVINCIA = { 38: 'santa-cruz-de-tenerife' };
+
+/** Slug de URL de una provincia (p. ej. "A Coruña" -> "a-coruna"). */
+export const slugProvincia = (p) => SLUG_PROVINCIA[Number(p.id)] || slugify(p.nombre);
+
+/** Busca una provincia por su slug. */
+export const provinciaPorSlug = (slug) =>
+  PROVINCIAS.find((p) => slugProvincia(p) === slug) || null;
+
 /** Provincia más cercana a unas coordenadas (por capital). */
 export function provinciaMasCercana(lat, lng) {
   let mejor = PROVINCIAS[0];

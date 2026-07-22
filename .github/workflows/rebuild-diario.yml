@@ -1,0 +1,26 @@
+# Las páginas de provincia se generan en el build con los precios del Ministerio, así que
+# hay que volver a desplegar cada día para que no envejezcan. Este workflow solo llama al
+# deploy hook de Vercel: el build real lo hace Vercel, aquí no se compila nada.
+name: Rebuild diario
+
+on:
+  schedule:
+    # 05:30 UTC = 07:30 en la península (horario de verano). Los precios del día ya están
+    # publicados y la web queda fresca antes de la hora punta de mañana.
+    - cron: '30 5 * * *'
+  workflow_dispatch: # permite lanzarlo a mano desde la pestaña Actions
+
+jobs:
+  redeploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Lanzar despliegue en Vercel
+        env:
+          HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$HOOK" ]; then
+            echo "::error::Falta el secreto VERCEL_DEPLOY_HOOK (Settings > Secrets and variables > Actions)."
+            exit 1
+          fi
+          curl -fsS -X POST "$HOOK" -o /dev/null
+          echo "Despliegue solicitado a Vercel."

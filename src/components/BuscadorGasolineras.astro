@@ -204,6 +204,12 @@ const field = 'w-full rounded-lg border border-[#232733] bg-[#0B0D12] px-3 py-2 
     );
   });
 
+  // Las páginas de provincia enlazan aquí con ?prov=28 para abrir ya su provincia.
+  const provParam = new URLSearchParams(location.search).get('prov');
+  if (provParam && Array.from(provSel.options).some((o) => o.value === provParam)) {
+    provSel.value = provParam;
+  }
+
   setOrden('precio');
   load();
 </script>

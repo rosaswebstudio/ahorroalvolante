@@ -2,6 +2,9 @@
 import Layout from '../layouts/Layout.astro';
 import BuscadorGasolineras from '../components/BuscadorGasolineras.astro';
 import CalculadoraViaje from '../components/CalculadoraViaje.astro';
+import { PROVINCIAS, slugProvincia } from '../lib/gasolineras.js';
+
+const provinciasOrdenadas = [...PROVINCIAS].sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
 
 const title = 'Gasolineras baratas cerca de ti + calculadora de coste del viaje';
 const description =
@@ -197,6 +200,21 @@ const adBox = 'flex flex-col items-center justify-center rounded-2xl border bord
               obligadas a comunicar al Ministerio (Geoportal Gasolineras), así que ves los mismos
               datos que maneja la administración, sin registros y al momento.
             </p>
+          </div>
+        </section>
+
+        <!-- Provincias (enlazado interno hacia las páginas con precios de cada provincia) -->
+        <section class="px-4 pt-8">
+          <h2 class="text-base font-bold text-[#ECEAE3]">Gasolineras baratas por provincia</h2>
+          <p class="mt-2 text-sm leading-relaxed text-[#8A8F9C]">
+            Consulta las estaciones más baratas, el precio medio y los municipios donde mejor sale
+            repostar en cada provincia.
+          </p>
+          <div class="mt-3 flex flex-wrap gap-x-3 gap-y-1.5">
+            {provinciasOrdenadas.map((p) => (
+              <a href={`/gasolineras-baratas/${slugProvincia(p)}/`}
+                class="text-xs text-[#8A8F9C] hover:text-amber-400">{p.nombre}</a>
+            ))}
           </div>
         </section>
 

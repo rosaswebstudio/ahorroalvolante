@@ -1,0 +1,323 @@
+---
+// Página por provincia. Se genera en el build con los precios oficiales del Ministerio,
+// así el contenido (estaciones, medias y municipios) llega ya en el HTML y es indexable.
+import Layout from '../../layouts/Layout.astro';
+import { COMBUSTIBLES, PROVINCIAS, slugProvincia } from '../../lib/gasolineras.js';
+import { resumenPorProvincia } from '../../lib/datos-build.js';
+
+export async function getStaticPaths() {
+  const resumenes = await resumenPorProvincia();
+  return resumenes.map((datos) => ({ params: { provincia: datos.slug }, props: { datos } }));
+}
+
+const { datos } = Astro.props;
+const { prov, slug, fecha, total, combustibles, municipiosBaratos, municipiosCaros } = datos;
+
+const g95 = combustibles.g95;
+const ga = combustibles.ga;
+
+const DEPOSITO = 55; // litros, depósito tipo de un turismo
+const p3 = (n) => n.toFixed(3).replace('.', ',');
+const p2 = (n) => n.toFixed(2).replace('.', ',');
+const dia = (fecha || '').split(' ')[0];
+
+const ahorroDeposito = g95 ? (g95.media - g95.min) * DEPOSITO : 0;
+const mapa = (e) =>
+  e.lat && e.lng ? `https://www.google.com/maps/search/?api=1&query=${e.lat},${e.lng}` : null;
+
+const title = `Gasolineras baratas en ${prov.nombre}: precios de hoy`;
+const description = g95
+  ? `Las gasolineras más baratas de ${prov.nombre} hoy: ${total} estaciones con precios oficiales del Ministerio. Gasolina 95 desde ${p3(g95.min)} €/L y media provincial de ${p3(g95.media)} €/L.`
+  : `Precios de las ${total} gasolineras de ${prov.nombre} con datos oficiales del Ministerio, actualizados a diario.`;
+
+const faqs = [
+  g95 && {
+    q: `¿Cuál es la gasolinera más barata de ${prov.nombre}?`,
+    a: `Según el listado oficial del ${dia}, la gasolina 95 más barata de ${prov.nombre} está en ${g95.baratas[0].rotulo} (${g95.baratas[0].muni}), a ${p3(g95.min)} € por litro. Los precios los fija cada estación y cambian a diario, así que conviene comprobarlos antes de salir.`,
+  },
+  g95 && {
+    q: `¿Cuánto cuesta llenar el depósito en ${prov.nombre}?`,
+    a: `Con la media provincial de ${p3(g95.media)} €/L, llenar ${DEPOSITO} litros de gasolina 95 sale por unos ${p2(g95.media * DEPOSITO)} €. En la estación más barata de la provincia serían ${p2(g95.min * DEPOSITO)} €, es decir ${p2(ahorroDeposito)} € menos en un solo repostaje.`,
+  },
+  municipiosBaratos.length > 1 && {
+    q: `¿En qué municipios de ${prov.nombre} está más barata la gasolina?`,
+    a: `De media, los municipios más baratos de la provincia son ${municipiosBaratos.slice(0, 3).map((m) => m.muni).join(', ')}. La media se calcula solo con municipios que tienen al menos 3 estaciones, para que un único surtidor barato no distorsione el dato.`,
+  },
+  {
+    q: '¿Cada cuánto se actualizan estos precios?',
+    a: 'Las estaciones están obligadas por ley a comunicar sus precios al Ministerio, y el listado oficial se actualiza aproximadamente cada 30 minutos. Esta página se regenera a diario, y el buscador de la portada consulta los datos en directo cada vez que lo usas.',
+  },
+].filter(Boolean);
+
+const siteUrl = (Astro.site ?? new URL('https://ahorroalvolante.es')).href.replace(/\/$/, '');
+const rutaCanonica = `/gasolineras-baratas/${slug}/`;
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Inicio', item: `${siteUrl}/` },
+        {
+          '@type': 'ListItem',
+          position: 2,
+          name: `Gasolineras baratas en ${prov.nombre}`,
+          item: siteUrl + rutaCanonica,
+        },
+      ],
+    },
+    {
+      '@type': 'FAQPage',
+      mainEntity: faqs.map((f) => ({
+        '@type': 'Question',
+        name: f.q,
+        acceptedAnswer: { '@type': 'Answer', text: f.a },
+      })),
+    },
+  ],
+};
+
+// Resto de provincias, para el enlazado interno.
+const otras = PROVINCIAS.filter((p) => p.id !== prov.id).map((p) => ({
+  nombre: p.nombre,
+  slug: slugProvincia(p),
+}));
+
+const card = 'rounded-2xl border border-[#232733] bg-[#14171F] p-4';
+// Verde por debajo de la media provincial, ámbar por encima.
+const colorPrecio = (v, m) => (v < m ? 'text-green-400' : 'text-amber-400');
+---
+<Layout title={title} description={description} canonicalPath={rutaCanonica}>
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify(jsonLd)} />
+
+  <div class="min-h-screen w-full" style="background-color:#0B0D12;">
+    <div class="mx-auto flex max-w-5xl justify-center gap-8">
+      <main class="w-full max-w-2xl">
+        <!-- Migas -->
+        <nav aria-label="Migas de pan" class="px-4 pt-6 text-xs text-[#5A6070]">
+          <a href="/" class="hover:text-amber-400">Inicio</a>
+          <span class="mx-1.5">/</span>
+          <span class="text-[#8A8F9C]">Gasolineras baratas en {prov.nombre}</span>
+        </nav>
+
+        <header class="px-4 pt-4">
+          <h1 class="text-2xl font-bold tracking-tight text-[#ECEAE3] sm:text-3xl">
+            Gasolineras baratas en <span class="text-amber-400">{prov.nombre}</span>
+          </h1>
+          <p class="mt-3 text-sm leading-relaxed text-[#8A8F9C]">
+            {g95 ? (
+              <>
+                Hemos revisado las <strong class="text-[#ECEAE3]">{total} gasolineras</strong> de
+                {' '}{prov.nombre} en el listado oficial del Ministerio. Ahora mismo la gasolina 95
+                más barata está a <strong class="text-green-400">{p3(g95.min)} €/L</strong> en
+                {' '}{g95.baratas[0].muni}, frente a una media provincial de
+                {' '}<strong class="text-[#ECEAE3]">{p3(g95.media)} €/L</strong>.
+              </>
+            ) : (
+              <>Precios de las {total} gasolineras de {prov.nombre} con datos oficiales del Ministerio.</>
+            )}
+          </p>
+          <p class="mt-2 text-xs text-[#5A6070]">Datos oficiales del Ministerio. Actualizado el {fecha}.</p>
+        </header>
+
+        {g95 && (
+          <>
+            <!-- Cifras clave -->
+            <section class="grid grid-cols-2 gap-3 px-4 pt-5">
+              <div class={card}>
+                <p class="text-xs font-semibold uppercase tracking-wide text-[#5A6070]">Media 95</p>
+                <p class="mt-1 text-xl font-bold text-[#ECEAE3]">{p3(g95.media)} <span class="text-sm font-semibold text-[#8A8F9C]">€/L</span></p>
+              </div>
+              <div class={card}>
+                <p class="text-xs font-semibold uppercase tracking-wide text-[#5A6070]">Media diésel</p>
+                <p class="mt-1 text-xl font-bold text-[#ECEAE3]">{ga ? p3(ga.media) : '-'} <span class="text-sm font-semibold text-[#8A8F9C]">€/L</span></p>
+              </div>
+              <div class={card}>
+                <p class="text-xs font-semibold uppercase tracking-wide text-[#5A6070]">95 más barata</p>
+                <p class="mt-1 text-xl font-bold text-green-400">{p3(g95.min)} <span class="text-sm font-semibold text-[#8A8F9C]">€/L</span></p>
+              </div>
+              <div class={card}>
+                <p class="text-xs font-semibold uppercase tracking-wide text-[#5A6070]">Ahorro al llenar</p>
+                <p class="mt-1 text-xl font-bold text-amber-400">{p2(ahorroDeposito)} <span class="text-sm font-semibold text-[#8A8F9C]">€</span></p>
+              </div>
+            </section>
+            <p class="px-4 pt-2 text-xs leading-relaxed text-[#5A6070]">
+              El ahorro compara repostar {DEPOSITO} litros en la estación más barata de la provincia
+              en lugar de en una de precio medio.
+            </p>
+
+            <!-- Top gasolina 95 -->
+            <section class="px-4 pt-8">
+              <h2 class="text-base font-bold text-[#ECEAE3]">
+                Las {g95.baratas.length} gasolineras más baratas de {prov.nombre} (gasolina 95)
+              </h2>
+              <ol class="mt-3 divide-y divide-[#232733] rounded-2xl border border-[#232733] bg-[#14171F]">
+                {g95.baratas.map((e, i) => (
+                  <li class="flex items-center gap-3 px-4 py-3">
+                    <span class="w-5 shrink-0 text-sm font-bold text-[#5A6070]">{i + 1}</span>
+                    <div class="min-w-0 flex-1">
+                      <p class="truncate text-sm font-semibold text-[#ECEAE3]">{e.rotulo}</p>
+                      <p class="truncate text-xs text-[#8A8F9C]">{e.muni}{e.dir ? ' · ' + e.dir : ''}</p>
+                    </div>
+                    <div class="shrink-0 text-right">
+                      <p class={`text-base font-bold ${colorPrecio(e.p.g95, g95.media)}`}>{p3(e.p.g95)}</p>
+                      <p class="text-[10px] font-semibold text-[#5A6070]">€/L</p>
+                    </div>
+                    {mapa(e) && (
+                      <a href={mapa(e)} target="_blank" rel="noopener nofollow"
+                        class="shrink-0 rounded-lg border border-[#232733] px-2 py-1 text-xs text-[#8A8F9C] hover:text-amber-400"
+                        aria-label={`Cómo llegar a ${e.rotulo}`}>Ir</a>
+                    )}
+                  </li>
+                ))}
+              </ol>
+            </section>
+          </>
+        )}
+
+        <!-- CTA al buscador en directo -->
+        <section class="px-4 pt-6">
+          <a href={`/?prov=${prov.id}`}
+            class="flex items-center justify-between gap-3 rounded-2xl border border-[#232733] bg-[#14171F] px-4 py-3.5 transition-colors hover:border-amber-500/50">
+            <div>
+              <p class="text-sm font-semibold text-[#ECEAE3]">Busca por cercanía en {prov.nombre}</p>
+              <p class="text-xs text-[#8A8F9C]">Precios en directo y ordenados por distancia a ti</p>
+            </div>
+            <span class="shrink-0 rounded-full bg-amber-500 px-3 py-1.5 text-xs font-semibold text-[#0B0D12]">Abrir</span>
+          </a>
+        </section>
+
+        <!-- Diésel -->
+        {ga && (
+          <section class="px-4 pt-8">
+            <h2 class="text-base font-bold text-[#ECEAE3]">Diésel más barato en {prov.nombre}</h2>
+            <ol class="mt-3 divide-y divide-[#232733] rounded-2xl border border-[#232733] bg-[#14171F]">
+              {ga.baratas.map((e, i) => (
+                <li class="flex items-center gap-3 px-4 py-3">
+                  <span class="w-5 shrink-0 text-sm font-bold text-[#5A6070]">{i + 1}</span>
+                  <div class="min-w-0 flex-1">
+                    <p class="truncate text-sm font-semibold text-[#ECEAE3]">{e.rotulo}</p>
+                    <p class="truncate text-xs text-[#8A8F9C]">{e.muni}{e.dir ? ' · ' + e.dir : ''}</p>
+                  </div>
+                  <div class="shrink-0 text-right">
+                    <p class={`text-base font-bold ${colorPrecio(e.p.ga, ga.media)}`}>{p3(e.p.ga)}</p>
+                    <p class="text-[10px] font-semibold text-[#5A6070]">€/L</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </section>
+        )}
+
+        <!-- Medias por combustible -->
+        <section class="px-4 pt-8">
+          <h2 class="text-base font-bold text-[#ECEAE3]">Precio medio por combustible en {prov.nombre}</h2>
+          <div class="mt-3 overflow-x-auto rounded-2xl border border-[#232733] bg-[#14171F]">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="border-b border-[#232733] text-left text-xs uppercase tracking-wide text-[#5A6070]">
+                  <th class="px-4 py-2.5 font-semibold">Combustible</th>
+                  <th class="px-4 py-2.5 text-right font-semibold">Más barata</th>
+                  <th class="px-4 py-2.5 text-right font-semibold">Media</th>
+                  <th class="px-4 py-2.5 text-right font-semibold">Estaciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {COMBUSTIBLES.map((c) => {
+                  const d = combustibles[c.id];
+                  return (
+                    <tr class="border-b border-[#232733] last:border-0">
+                      <td class="px-4 py-2.5 text-[#ECEAE3]">{c.label}</td>
+                      <td class="px-4 py-2.5 text-right font-semibold text-green-400">{d ? p3(d.min) : '-'}</td>
+                      <td class="px-4 py-2.5 text-right text-[#ECEAE3]">{d ? p3(d.media) : '-'}</td>
+                      <td class="px-4 py-2.5 text-right text-[#8A8F9C]">{d ? d.n : '-'}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          <p class="mt-2 text-xs text-[#5A6070]">Precios en euros por litro. El GLP y el diésel premium no están disponibles en todas las estaciones.</p>
+        </section>
+
+        <!-- Municipios -->
+        {municipiosBaratos.length > 1 && (
+          <section class="px-4 pt-8">
+            <h2 class="text-base font-bold text-[#ECEAE3]">Dónde repostar más barato en {prov.nombre}</h2>
+            <div class="mt-3 grid gap-3 sm:grid-cols-2">
+              <div class={card}>
+                <p class="text-xs font-semibold uppercase tracking-wide text-green-400">Municipios más baratos</p>
+                <ul class="mt-2 space-y-1.5">
+                  {municipiosBaratos.map((m) => (
+                    <li class="flex justify-between gap-2 text-sm">
+                      <span class="truncate text-[#ECEAE3]">{m.muni}</span>
+                      <span class="shrink-0 font-semibold text-green-400">{p3(m.media)}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              {municipiosCaros.length > 0 && (
+                <div class={card}>
+                  <p class="text-xs font-semibold uppercase tracking-wide text-amber-400">Municipios más caros</p>
+                  <ul class="mt-2 space-y-1.5">
+                    {municipiosCaros.map((m) => (
+                      <li class="flex justify-between gap-2 text-sm">
+                        <span class="truncate text-[#ECEAE3]">{m.muni}</span>
+                        <span class="shrink-0 font-semibold text-amber-400">{p3(m.media)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+            <p class="mt-2 text-xs text-[#5A6070]">
+              Media de gasolina 95 por municipio, contando solo los que tienen al menos 3 estaciones.
+            </p>
+          </section>
+        )}
+
+        <!-- FAQ -->
+        <section class="px-4 pt-8">
+          <h2 class="text-base font-bold text-[#ECEAE3]">Preguntas frecuentes sobre las gasolineras de {prov.nombre}</h2>
+          <div class="mt-3 divide-y divide-[#232733]">
+            {faqs.map((f) => (
+              <details class="group py-3">
+                <summary class="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-medium text-[#ECEAE3]">
+                  <span>{f.q}</span>
+                  <span class="text-amber-400 transition-transform group-open:rotate-45">+</span>
+                </summary>
+                <p class="mt-2 text-sm leading-relaxed text-[#8A8F9C]">{f.a}</p>
+              </details>
+            ))}
+          </div>
+        </section>
+
+        <!-- Otras provincias -->
+        <section class="px-4 pt-8">
+          <h2 class="text-base font-bold text-[#ECEAE3]">Gasolineras baratas en otras provincias</h2>
+          <div class="mt-3 flex flex-wrap gap-x-3 gap-y-1.5">
+            {otras.map((p) => (
+              <a href={`/gasolineras-baratas/${p.slug}/`} class="text-xs text-[#8A8F9C] hover:text-amber-400">{p.nombre}</a>
+            ))}
+          </div>
+        </section>
+
+        <footer class="px-4 pt-10 pb-8">
+          <p class="text-xs leading-relaxed text-[#5A6070]">
+            Los precios provienen del listado oficial del Ministerio (Geoportal Gasolineras) y
+            corresponden a la última actualización indicada arriba. Pueden variar respecto al
+            surtidor en el momento del repostaje. Ahorro al Volante es una herramienta informativa.
+          </p>
+          <div class="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-xs">
+            <a href="/" class="text-[#8A8F9C] hover:text-amber-400">Inicio</a>
+            <a href="/aviso-legal" class="text-[#8A8F9C] hover:text-amber-400">Aviso legal</a>
+            <a href="/privacidad" class="text-[#8A8F9C] hover:text-amber-400">Privacidad</a>
+            <a href="/cookies" class="text-[#8A8F9C] hover:text-amber-400">Cookies</a>
+          </div>
+          <p class="mt-3 text-xs text-[#5A6070]">© {new Date().getFullYear()} Ahorro al Volante</p>
+        </footer>
+      </main>
+    </div>
+  </div>
+</Layout>
