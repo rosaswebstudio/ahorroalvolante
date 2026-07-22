@@ -82,6 +82,8 @@ const num = (s) => {
 /** Reduce un registro de la API a lo imprescindible. */
 function reducir(e) {
   return {
+    // Identificador oficial de la estación: es lo que permite guardar favoritos.
+    id: String(e['IDEESS'] ?? ''),
     rotulo: e['Rótulo'] || 'Sin rótulo',
     dir: e['Dirección'] || '',
     loc: e['Localidad'] || '',
@@ -99,18 +101,44 @@ function reducir(e) {
   };
 }
 
-const CACHE_PREFIX = 'gs_prov_';
+// El sufijo 2 invalida las cachés guardadas antes de que los registros llevaran `id`,
+// que es lo que necesitan los favoritos para reconocer una gasolinera.
+const CACHE_PREFIX = 'gs_prov2_';
 const CACHE_TTL = 30 * 60 * 1000; // la API se actualiza cada 30 min
+
+// Caché en memoria de la sesión: localStorage solo guarda la última provincia, y al
+// pintar los favoritos puede hacer falta más de una a la vez.
+const memoria = new Map();
+
+// Peticiones en curso: el buscador y el bloque de favoritos pueden pedir la misma
+// provincia a la vez al arrancar, y sin esto se descargaría dos veces.
+const enVuelo = new Map();
 
 /** Descarga (o recupera de caché) las estaciones de una provincia. */
 export async function cargarProvincia(idProvincia, force = false) {
+  if (!force && enVuelo.has(idProvincia)) return enVuelo.get(idProvincia);
+  const promesa = descargarProvincia(idProvincia, force);
+  enVuelo.set(idProvincia, promesa);
+  try {
+    return await promesa;
+  } finally {
+    enVuelo.delete(idProvincia);
+  }
+}
+
+async function descargarProvincia(idProvincia, force) {
   const key = CACHE_PREFIX + idProvincia;
   if (!force) {
+    const enMemoria = memoria.get(idProvincia);
+    if (enMemoria && Date.now() - enMemoria.t < CACHE_TTL) return enMemoria;
     try {
       const raw = localStorage.getItem(key);
       if (raw) {
         const c = JSON.parse(raw);
-        if (Date.now() - c.t < CACHE_TTL && Array.isArray(c.e)) return c;
+        if (Date.now() - c.t < CACHE_TTL && Array.isArray(c.e)) {
+          memoria.set(idProvincia, c);
+          return c;
+        }
       }
     } catch { /* caché corrupta: se ignora */ }
   }
@@ -128,8 +156,23 @@ export async function cargarProvincia(idProvincia, force = false) {
       .forEach((k) => localStorage.removeItem(k));
     localStorage.setItem(key, JSON.stringify(data));
   } catch { /* sin espacio: no pasa nada */ }
+  memoria.set(idProvincia, data);
   return data;
 }
+
+// Preferencias del visitante (combustible, provincia y datos de su coche). Viven solo
+// en su navegador: sin cuenta, sin servidor y sin salir del dispositivo.
+const PREF_KEY = 'gs_pref';
+
+/** Lee las preferencias guardadas. Devuelve {} si no hay o están corruptas. */
+export const leerPref = () => {
+  try { return JSON.parse(localStorage.getItem(PREF_KEY) || '{}') || {}; } catch { return {}; }
+};
+
+/** Guarda (fusionando) las preferencias indicadas. */
+export const guardarPref = (p) => {
+  try { localStorage.setItem(PREF_KEY, JSON.stringify({ ...leerPref(), ...p })); } catch { /* sin espacio */ }
+};
 
 /** Distancia haversine en km. */
 export function distanciaKm(lat1, lng1, lat2, lng2) {

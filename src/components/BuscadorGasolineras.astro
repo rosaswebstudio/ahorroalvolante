@@ -4,6 +4,15 @@ const field = 'w-full rounded-lg border border-[#232733] bg-[#0B0D12] px-3 py-2 
 ---
 <section id="buscador" class="scroll-mt-24">
   <div class="rounded-2xl border border-[#232733] bg-[#14171F] p-4 sm:p-6">
+    <!-- Favoritos: se rellena desde localStorage, oculto si no hay ninguno -->
+    <div id="gs-favs-box" class="mb-4 hidden">
+      <div class="mb-2 flex items-baseline justify-between gap-2">
+        <p class="text-xs font-semibold uppercase tracking-wide text-amber-400">Tus gasolineras</p>
+        <span class="text-[11px] text-slate-600">Guardadas en este dispositivo</span>
+      </div>
+      <div id="gs-favs" class="space-y-1.5"></div>
+    </div>
+
     <!-- Controles -->
     <div class="grid gap-3 sm:grid-cols-2">
       <label class="block">
@@ -69,7 +78,7 @@ const field = 'w-full rounded-lg border border-[#232733] bg-[#0B0D12] px-3 py-2 
 </section>
 
 <script>
-  import { cargarProvincia, distanciaKm, provinciaMasCercana, COMBUSTIBLES } from '../lib/gasolineras.js';
+  import { cargarProvincia, distanciaKm, provinciaMasCercana, COMBUSTIBLES, leerPref, guardarPref } from '../lib/gasolineras.js';
 
   const $ = (id: string) => document.getElementById(id);
   const fuelSel = $('gs-fuel') as HTMLSelectElement;
@@ -96,6 +105,29 @@ const field = 'w-full rounded-lg border border-[#232733] bg-[#0B0D12] px-3 py-2 
   const norm = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
   const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   const fmt = (n: number) => n.toLocaleString('es-ES', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+
+  // Favoritos y preferencias: viven solo en este dispositivo, sin cuenta ni servidor.
+  type Fav = { id: string; rotulo: string; muni: string; prov: string };
+  const FAVS_KEY = 'gs_favs';
+  const MAX_FAVS = 12;
+
+  const leerFavs = (): Fav[] => {
+    try {
+      const v = JSON.parse(localStorage.getItem(FAVS_KEY) || '[]');
+      return Array.isArray(v) ? v : [];
+    } catch { return []; }
+  };
+  const guardarFavs = (l: Fav[]) => {
+    try { localStorage.setItem(FAVS_KEY, JSON.stringify(l)); } catch { /* sin espacio */ }
+  };
+
+  const estrella = (activa: boolean) =>
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-4 w-4" fill="${activa ? '#F59E0B' : 'none'}" stroke="${activa ? '#F59E0B' : 'currentColor'}" stroke-width="1.8"><path stroke-linejoin="round" d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>`;
+
+  const botonFav = (id: string, activa: boolean) => {
+    const txt = activa ? 'Quitar de tus gasolineras' : 'Guardar en tus gasolineras';
+    return `<button type="button" data-fav="${esc(id)}" aria-pressed="${activa}" aria-label="${txt}" title="${txt}" class="shrink-0 self-start rounded-md border border-[#232733] p-1.5 text-slate-600 transition hover:border-amber-500 hover:text-amber-400">${estrella(activa)}</button>`;
+  };
 
   const setOrden = (o: 'precio' | 'dist') => {
     orden = o;
@@ -134,6 +166,7 @@ const field = 'w-full rounded-lg border border-[#232733] bg-[#0B0D12] px-3 py-2 
     const fuelLabel = (COMBUSTIBLES.find((c) => c.id === fuel) || {}).label;
     status.textContent = `${l.length} gasolineras con ${fuelLabel} · ordenadas por ${orden === 'dist' ? 'cercanía' : 'precio'}`;
 
+    const favIds = new Set(leerFavs().map((f) => f.id));
     lista.innerHTML = l.slice(0, visibles).map((e: any) => {
       const p = e.p[fuel];
       const t = max > min ? (p - min) / (max - min) : 0.5;
@@ -154,6 +187,7 @@ const field = 'w-full rounded-lg border border-[#232733] bg-[#0B0D12] px-3 py-2 
           ${e.dist != null ? `<p class="font-mono text-xs text-slate-400">${e.dist < 10 ? e.dist.toFixed(1) : Math.round(e.dist)} km</p>` : ''}
           <a href="${maps}" target="_blank" rel="noopener nofollow" class="mt-0.5 inline-block rounded-md border border-[#232733] px-2 py-1 text-[11px] font-medium text-amber-400 transition hover:border-amber-500">Cómo llegar</a>
         </div>
+        ${botonFav(e.id, favIds.has(e.id))}
       </div>`;
     }).join('');
 
@@ -179,8 +213,83 @@ const field = 'w-full rounded-lg border border-[#232733] bg-[#0B0D12] px-3 py-2 
     }
   }
 
-  fuelSel.addEventListener('change', () => { visibles = 25; render(); });
-  provSel.addEventListener('change', () => { userPos = null; ordenDistBtn.disabled = true; setOrden('precio'); load(); });
+  /** Pinta el bloque de favoritos con el precio de hoy del combustible elegido. */
+  async function renderFavoritos() {
+    const favs = leerFavs();
+    const box = $('gs-favs-box')!;
+    const cont = $('gs-favs')!;
+    if (!favs.length) { box.classList.add('hidden'); cont.innerHTML = ''; return; }
+    box.classList.remove('hidden');
+
+    const fuel = fuelSel.value;
+    // Los favoritos pueden estar en provincias distintas a la que se está viendo.
+    const porProv = new Map<string, Map<string, any>>();
+    await Promise.all([...new Set(favs.map((f) => f.prov))].map(async (p) => {
+      try {
+        const d = await cargarProvincia(p);
+        porProv.set(p, new Map(d.e.map((e: any) => [e.id, e])));
+      } catch { /* si falla una provincia, esas filas se quedan sin precio */ }
+    }));
+
+    const fuelLabel = (COMBUSTIBLES.find((c) => c.id === fuel) || {}).label || '';
+    cont.innerHTML = favs.map((f) => {
+      const est = porProv.get(f.prov)?.get(f.id);
+      const p = est?.p?.[fuel];
+      const precio = p != null
+        ? `<span class="font-mono text-base font-bold text-amber-400">${fmt(p)}</span><span class="block text-[10px] text-slate-600">€/litro</span>`
+        : `<span class="text-[11px] leading-tight text-slate-600">sin ${esc(fuelLabel)}</span>`;
+      const maps = est?.lat ? `https://www.google.com/maps/dir/?api=1&destination=${est.lat},${est.lng}` : '';
+      return `
+      <div class="flex items-center gap-3 rounded-xl border border-amber-500/25 bg-[#0B0D12] px-3 py-2.5">
+        <div class="w-20 shrink-0 text-center">${precio}</div>
+        <div class="min-w-0 flex-1">
+          <p class="truncate text-sm font-semibold text-slate-200">${esc(f.rotulo)}</p>
+          <p class="truncate text-xs text-slate-500">${esc(f.muni)}</p>
+        </div>
+        ${maps ? `<a href="${maps}" target="_blank" rel="noopener nofollow" class="shrink-0 rounded-md border border-[#232733] px-2 py-1 text-[11px] font-medium text-amber-400 transition hover:border-amber-500">Cómo llegar</a>` : ''}
+        ${botonFav(f.id, true)}
+      </div>`;
+    }).join('');
+  }
+
+  function toggleFav(id: string) {
+    const favs = leerFavs();
+    const i = favs.findIndex((f) => f.id === id);
+    if (i >= 0) {
+      favs.splice(i, 1);
+    } else {
+      const e = data?.e.find((x: any) => x.id === id);
+      if (!e) return;
+      if (favs.length >= MAX_FAVS) {
+        status.textContent = `Solo puedes guardar ${MAX_FAVS} gasolineras. Quita alguna para añadir otra.`;
+        return;
+      }
+      favs.push({ id, rotulo: e.rotulo, muni: e.loc || e.muni, prov: provSel.value });
+    }
+    guardarFavs(favs);
+    render();
+    renderFavoritos();
+  }
+
+  // Delegación: la estrella aparece tanto en la lista como en el bloque de favoritos.
+  $('buscador')!.addEventListener('click', (ev) => {
+    const btn = (ev.target as HTMLElement).closest('[data-fav]') as HTMLElement | null;
+    if (btn?.dataset.fav) toggleFav(btn.dataset.fav);
+  });
+
+  fuelSel.addEventListener('change', () => {
+    visibles = 25;
+    guardarPref({ fuel: fuelSel.value });
+    render();
+    renderFavoritos();
+  });
+  provSel.addEventListener('change', () => {
+    userPos = null;
+    ordenDistBtn.disabled = true;
+    setOrden('precio');
+    guardarPref({ prov: provSel.value });
+    load();
+  });
   filtroInp.addEventListener('input', () => { visibles = 25; render(); });
   ordenPrecioBtn.addEventListener('click', () => { setOrden('precio'); render(); });
   ordenDistBtn.addEventListener('click', () => { if (userPos) { setOrden('dist'); render(); } });
@@ -204,12 +313,17 @@ const field = 'w-full rounded-lg border border-[#232733] bg-[#0B0D12] px-3 py-2 
     );
   });
 
-  // Las páginas de provincia enlazan aquí con ?prov=28 para abrir ya su provincia.
+  // Preferencias de la última visita (combustible y provincia).
+  const pref = leerPref();
+  const existe = (sel: HTMLSelectElement, v: string) => Array.from(sel.options).some((o) => o.value === v);
+  if (pref.fuel && existe(fuelSel, pref.fuel)) fuelSel.value = pref.fuel;
+  if (pref.prov && existe(provSel, pref.prov)) provSel.value = pref.prov;
+
+  // Las páginas de provincia enlazan aquí con ?prov=28: manda sobre lo guardado.
   const provParam = new URLSearchParams(location.search).get('prov');
-  if (provParam && Array.from(provSel.options).some((o) => o.value === provParam)) {
-    provSel.value = provParam;
-  }
+  if (provParam && existe(provSel, provParam)) provSel.value = provParam;
 
   setOrden('precio');
   load();
+  renderFavoritos();
 </script>

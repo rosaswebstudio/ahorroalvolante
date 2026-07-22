@@ -112,6 +112,8 @@ const label = 'mb-1 block text-xs font-semibold uppercase tracking-wide text-sla
 </section>
 
 <script>
+  import { leerPref, guardarPref } from '../lib/gasolineras.js';
+
   const $ = (id: string) => document.getElementById(id);
   const kmEl = $('cv-km') as HTMLInputElement | null;
 
@@ -176,8 +178,21 @@ const label = 'mb-1 block text-xs font-semibold uppercase tracking-wide text-sla
         desglose.innerHTML = '';
       }
 
+      // "Mi coche": lo único que no cambia de un viaje a otro.
+      guardarPref({ consumo: consumoBase, cocheFuel: fuel });
+
       (window as any).gtag?.('event', 'calculation_completed', { tool: 'coste_viaje' });
     };
+
+    // Recupera el coche de la última visita antes del primer cálculo.
+    const pref = leerPref();
+    if (Number.isFinite(pref.consumo) && pref.consumo > 0) {
+      ($('cv-consumo') as HTMLInputElement).value = String(pref.consumo);
+    }
+    const fuelSel = $('cv-fuel') as HTMLSelectElement;
+    if (pref.cocheFuel && Array.from(fuelSel.options).some((o) => o.value === pref.cocheFuel)) {
+      fuelSel.value = pref.cocheFuel;
+    }
 
     const ids = ['cv-km', 'cv-idavuelta', 'cv-consumo', 'cv-fuel', 'cv-precio', 'cv-ocupantes', 'cv-estilo', 'cv-ac', 'cv-vent', 'cv-carga', 'cv-techo'];
     ids.forEach((id) => { const el = $(id); el?.addEventListener('input', update); el?.addEventListener('change', update); });
