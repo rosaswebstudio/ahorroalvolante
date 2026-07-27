@@ -95,27 +95,39 @@ faqs.push({
   a: `De la API oficial del Ministerio para la Transición Ecológica (Geoportal de Gasolineras), que las estaciones están obligadas a comunicar y se actualiza cada 30 minutos aproximadamente. Esta página se regenera a diario; para el precio al minuto, usa el buscador de la portada.`,
 });
 
-const jsonLd = {
-  '@context': 'https://schema.org',
-  '@graph': [
-    {
-      '@type': 'BreadcrumbList',
-      itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Inicio', item: `${siteUrl}/` },
-        { '@type': 'ListItem', position: 2, name: `Gasolineras baratas en ${prov.nombre}`, item: `${siteUrl}/gasolineras-baratas/${provSlug}/` },
-        { '@type': 'ListItem', position: 3, name: muniNombre, item: siteUrl + rutaCanonica },
-      ],
-    },
-    {
-      '@type': 'FAQPage',
-      mainEntity: faqs.map((f) => ({
-        '@type': 'Question',
-        name: f.q,
-        acceptedAnswer: { '@type': 'Answer', text: f.a },
-      })),
-    },
-  ],
-};
+const grafo: Record<string, unknown>[] = [
+  {
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Inicio', item: `${siteUrl}/` },
+      { '@type': 'ListItem', position: 2, name: `Gasolineras baratas en ${prov.nombre}`, item: `${siteUrl}/gasolineras-baratas/${provSlug}/` },
+      { '@type': 'ListItem', position: 3, name: muniNombre, item: siteUrl + rutaCanonica },
+    ],
+  },
+  {
+    '@type': 'FAQPage',
+    mainEntity: faqs.map((f) => ({
+      '@type': 'Question',
+      name: f.q,
+      acceptedAnswer: { '@type': 'Answer', text: f.a },
+    })),
+  },
+];
+// Lista ordenada de gasolineras por precio, para que Google entienda el ranking.
+if (g95) {
+  grafo.push({
+    '@type': 'ItemList',
+    name: `Gasolineras más baratas de ${muniNombre} (gasolina 95)`,
+    itemListOrder: 'https://schema.org/ItemListOrderAscending',
+    numberOfItems: g95.baratas.length,
+    itemListElement: g95.baratas.map((e, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: e.rotulo,
+    })),
+  });
+}
+const jsonLd = { '@context': 'https://schema.org', '@graph': grafo };
 
 const card = 'rounded-2xl border border-[#232733] bg-[#14171F] p-4';
 const colorPrecio = (v: number | null, m: number) =>
