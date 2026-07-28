@@ -16,7 +16,10 @@ const {
 } = Astro.props;
 
 const siteFallback = 'https://ahorroalvolante.es';
-const canonicalURL = new URL(canonicalPath, Astro.site ?? siteFallback).href;
+// Barra final siempre, para que el canonical coincida con la URL que se sirve y evitar
+// el aviso "página alternativa con etiqueta canónica" por el desajuste de la barra.
+const rutaCanonica = canonicalPath.replace(/\/?$/, '/');
+const canonicalURL = new URL(rutaCanonica, Astro.site ?? siteFallback).href;
 const imageURL = new URL(image, Astro.site ?? siteFallback).href;
 
 const adsenseClient = 'ca-pub-7893833945255002';
