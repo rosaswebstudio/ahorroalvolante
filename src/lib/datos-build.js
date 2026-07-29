@@ -8,6 +8,12 @@ import { API_BASE, COMBUSTIBLES, PROVINCIAS, slugProvincia, slugify } from './ga
 // pueblos solo aparecen mencionados dentro de la página de su provincia.
 export const MIN_ESTACIONES_MUNICIPIO = 3;
 
+// A partir de cuántas estaciones una marca tiene página propia. En el listado del
+// Ministerio hay más de 3.000 "rótulos" distintos, pero la inmensa mayoría son
+// estaciones independientes que aparecen con su nombre propio una sola vez: promediar
+// dos gasolineras y llamarlo "el precio de la marca X" no informa de nada.
+export const MIN_ESTACIONES_MARCA = 20;
+
 // Descarta precios absurdos (registros mal comunicados) antes de hacer medias.
 const PRECIO_MIN = 0.4;
 const PRECIO_MAX = 4;
@@ -179,6 +185,204 @@ export async function resumenPorProvincia() {
       municipiosConPagina,
     };
   });
+}
+
+/* ------------------------------------------------------------------ *
+ * Combustibles                                                        *
+ * ------------------------------------------------------------------ */
+
+/**
+ * Todo lo que hace falta para las páginas "precio del diésel", "precio de la gasolina 95"...
+ *
+ * La intención de búsqueda aquí es NACIONAL ("¿dónde está más barato el diésel?", "¿cuánto
+ * cuesta el GLP?"), distinta de la de las páginas de provincia, que son locales ("dónde
+ * reposto hoy"). Por eso lo que se calcula es el ranking de las 52 provincias y el de las
+ * marcas para ESE combustible, no otra lista de estaciones cercanas.
+ */
+export async function resumenPorCombustible() {
+  const { fecha, estaciones } = await cargarNacional();
+
+  // Índice provincia -> estaciones, una sola pasada para los cinco combustibles.
+  const porProv = new Map();
+  for (const raw of estaciones) {
+    const id = String(raw['IDProvincia'] ?? '').padStart(2, '0');
+    if (!porProv.has(id)) porProv.set(id, []);
+    porProv.get(id).push(reducir(raw));
+  }
+
+  // Índice marca -> estaciones, con el mismo umbral que las páginas de marca.
+  const porMarca = new Map();
+  for (const raw of estaciones) {
+    const clave = String(raw['Rótulo'] ?? '').trim().toUpperCase().replace(/\s+/g, ' ');
+    if (!clave || !/[\p{L}\p{N}]/u.test(clave)) continue;
+    if (!porMarca.has(clave)) porMarca.set(clave, []);
+    porMarca.get(clave).push(reducir(raw));
+  }
+
+  const todas = [...porProv.values()].flat();
+
+  const salida = COMBUSTIBLES.map((c) => {
+    const precios = todas.map((e) => e.p[c.id]).filter((v) => v != null);
+    if (!precios.length) return null;
+
+    const provincias = PROVINCIAS.map((prov) => {
+      const lista = porProv.get(prov.id) ?? [];
+      const ps = lista.map((e) => e.p[c.id]).filter((v) => v != null);
+      if (!ps.length) return null;
+      return {
+        nombre: prov.nombre,
+        slug: slugProvincia(prov),
+        n: ps.length,
+        media: media(ps),
+        min: Math.min(...ps),
+      };
+    })
+      .filter(Boolean)
+      .sort((a, b) => a.media - b.media);
+
+    const marcas = [...porMarca.entries()]
+      .map(([clave, lista]) => {
+        const ps = lista.map((e) => e.p[c.id]).filter((v) => v != null);
+        // Para el ranking por combustible hace falta que la marca lo venda de verdad en
+        // una parte apreciable de su red, no en dos estaciones sueltas.
+        if (ps.length < MIN_ESTACIONES_MARCA) return null;
+        return {
+          nombre: clave
+            .split(' ')
+            .map((p) => (p.length <= 2 || /\d/.test(p) ? p : p[0] + p.slice(1).toLowerCase()))
+            .join(' '),
+          slug: slugify(clave),
+          n: ps.length,
+          media: media(ps),
+        };
+      })
+      .filter(Boolean)
+      .sort((a, b) => a.media - b.media);
+
+    return {
+      id: c.id,
+      label: c.label,
+      slug: c.slug,
+      titulo: c.titulo,
+      de: c.de,
+      barato: c.barato,
+      nacional: { n: precios.length, media: media(precios), min: Math.min(...precios), max: Math.max(...precios) },
+      provincias,
+      marcas,
+      // Las 15 estaciones más baratas de toda España para este combustible.
+      baratas: todas
+        .filter((e) => e.p[c.id] != null)
+        .sort((a, b) => a.p[c.id] - b.p[c.id])
+        .slice(0, 15),
+    };
+  }).filter(Boolean);
+
+  return { fecha, combustibles: salida, totalEstaciones: estaciones.length };
+}
+
+/* ------------------------------------------------------------------ *
+ * Marcas                                                              *
+ * ------------------------------------------------------------------ */
+
+// El rótulo llega escrito de cualquier manera ("REPSOL", "Repsol", "repsol  ").
+// Se agrupa por la forma normalizada y se muestra la más legible de las que llegan.
+const claveMarca = (s) => String(s ?? '').trim().toUpperCase().replace(/\s+/g, ' ');
+
+/** De "REPSOL" a "Repsol", pero respetando las siglas cortas (BP, Q8, GALP, HAM). */
+function bonito(nombre) {
+  return nombre
+    .split(' ')
+    .map((p) => (p.length <= 2 || /\d/.test(p) ? p : p[0] + p.slice(1).toLowerCase()))
+    .join(' ');
+}
+
+/**
+ * Precio medio de cada marca a nivel nacional, comparado con la media del país.
+ *
+ * Es la comparativa que de verdad busca la gente ("gasolineras low cost", "¿es más cara
+ * Repsol?") y que ningún competidor publica con el dato oficial en vivo: entre la marca
+ * más barata y la más cara hay más de 30 céntimos por litro.
+ *
+ * No hay una lista escrita a mano de "cuáles son low cost": la clasificación sale del
+ * propio dato, comparando la media de cada marca con la media nacional del día.
+ */
+export async function resumenPorMarca() {
+  const { fecha, estaciones } = await cargarNacional();
+
+  // Media nacional por combustible: el punto de referencia de toda la página.
+  const todas = estaciones.map(reducir);
+  const nacional = {};
+  for (const c of COMBUSTIBLES) {
+    const precios = todas.map((e) => e.p[c.id]).filter((v) => v != null);
+    nacional[c.id] = precios.length ? { n: precios.length, media: media(precios) } : null;
+  }
+
+  const grupos = new Map(); // clave -> { nombre, lista }
+  for (const raw of estaciones) {
+    const bruto = String(raw['Rótulo'] ?? '').trim();
+    const clave = claveMarca(bruto);
+    // "Sin rótulo" no es una marca: son estaciones que no comunican el nombre.
+    if (!clave || !/[\p{L}\p{N}]/u.test(clave)) continue;
+    if (!grupos.has(clave)) grupos.set(clave, { nombre: bonito(clave), lista: [], provincias: new Map() });
+    const g = grupos.get(clave);
+    const est = reducir(raw);
+    g.lista.push(est);
+    const idProv = String(raw['IDProvincia'] ?? '').padStart(2, '0');
+    g.provincias.set(idProv, (g.provincias.get(idProv) ?? 0) + 1);
+  }
+
+  const usados = new Set();
+  const marcas = [...grupos.entries()]
+    .filter(([, g]) => g.lista.length >= MIN_ESTACIONES_MARCA)
+    .map(([clave, g]) => {
+      const combustibles = {};
+      for (const c of COMBUSTIBLES) {
+        const precios = g.lista.map((e) => e.p[c.id]).filter((v) => v != null);
+        combustibles[c.id] = precios.length
+          ? {
+              n: precios.length,
+              media: media(precios),
+              min: Math.min(...precios),
+              max: Math.max(...precios),
+              // Diferencia con la media nacional del mismo combustible, en euros/litro.
+              vsNacional: nacional[c.id] ? media(precios) - nacional[c.id].media : null,
+            }
+          : null;
+      }
+
+      let slug = slugify(g.nombre) || 'marca';
+      let i = 2;
+      while (usados.has(slug)) slug = `${slugify(g.nombre)}-${i++}`;
+      usados.add(slug);
+
+      // Provincias donde más presencia tiene, con su nombre para poder enlazarlas.
+      const provs = [...g.provincias.entries()]
+        .map(([id, n]) => {
+          const p = PROVINCIAS.find((x) => x.id === id);
+          return p ? { nombre: p.nombre, slug: slugProvincia(p), n } : null;
+        })
+        .filter(Boolean)
+        .sort((a, b) => b.n - a.n);
+
+      return {
+        clave,
+        nombre: g.nombre,
+        slug,
+        total: g.lista.length,
+        combustibles,
+        provincias: provs,
+        // Las más baratas de esa marca en toda España: sirven de prueba del dato.
+        baratas: [...g.lista]
+          .filter((e) => e.p.g95 != null)
+          .sort((a, b) => a.p.g95 - b.p.g95)
+          .slice(0, 10),
+      };
+    })
+    // Orden por defecto: de la marca más barata a la más cara en gasolina 95, que es
+    // la pregunta real ("¿cuál es la más barata?"), no el tamaño de la red.
+    .sort((a, b) => (a.combustibles.g95?.media ?? Infinity) - (b.combustibles.g95?.media ?? Infinity));
+
+  return { fecha, nacional, marcas, totalEstaciones: estaciones.length };
 }
 
 /**

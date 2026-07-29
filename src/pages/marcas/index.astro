@@ -1,0 +1,259 @@
+---
+// Comparativa nacional de marcas de gasolinera: qué cadena es de verdad más barata.
+//
+// Es la página que responde a "gasolineras low cost", una de las búsquedas con más
+// volumen del nicho, con el dato oficial en vivo en vez de con una opinión. La
+// clasificación en barata/cara NO está escrita a mano: sale de comparar la media de
+// cada marca con la media nacional del mismo día.
+import Layout from '../../layouts/Layout.astro';
+import { COMBUSTIBLES } from '../../lib/gasolineras.js';
+import { resumenPorMarca, MIN_ESTACIONES_MARCA } from '../../lib/datos-build.js';
+
+const { fecha, nacional, marcas, totalEstaciones } = await resumenPorMarca();
+
+const p3 = (v: number) => v.toLocaleString('es-ES', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+const p2 = (v: number) => v.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const cent = (v: number) => `${v > 0 ? '+' : ''}${(v * 100).toLocaleString('es-ES', { maximumFractionDigits: 1 })}`;
+
+const DEPOSITO = 55;
+
+// Solo entran en el ranking las marcas que venden gasolina 95: es el combustible que
+// permite comparar todas entre sí. Las de solo GLP o solo gasóleo profesional se listan
+// aparte para no fingir una comparación que no existe.
+const conG95 = marcas.filter((m) => m.combustibles.g95);
+const sinG95 = marcas.filter((m) => !m.combustibles.g95);
+
+const masBarata = conG95[0];
+const masCara = conG95[conG95.length - 1];
+const brecha = masBarata && masCara ? masCara.combustibles.g95.media - masBarata.combustibles.g95.media : 0;
+
+// Por debajo de la media nacional / por encima. El corte es el dato, no una etiqueta.
+const baratas = conG95.filter((m) => m.combustibles.g95.vsNacional < 0);
+const caras = conG95.filter((m) => m.combustibles.g95.vsNacional >= 0);
+
+const dia = fecha ? fecha.split(' ')[0] : '';
+
+const title = 'Gasolineras low cost: qué marca es más barata (comparativa oficial)';
+const description = `Precio medio de cada marca de gasolinera en España con datos oficiales del Ministerio. Entre la más barata (${masBarata?.nombre}) y la más cara (${masCara?.nombre}) hay ${cent(brecha)} céntimos por litro: ${p2(brecha * DEPOSITO)} € por depósito.`;
+const rutaCanonica = '/marcas/';
+const siteUrl = (Astro.site ?? new URL('https://ahorroalvolante.es')).href.replace(/\/$/, '');
+
+const faqs = [
+  {
+    q: '¿Las gasolineras low cost tienen peor combustible?',
+    a: 'No. El combustible que se vende en España tiene que cumplir la misma norma técnica (UNE-EN 228 para gasolina y UNE-EN 590 para diésel) lo venda quien lo venda, y muchas estaciones low cost se abastecen de los mismos depósitos logísticos que las de marca. Lo que cambia es el servicio: suelen ser desatendidas, sin tienda ni personal, y ese ahorro de costes es el que se traslada al precio.',
+  },
+  {
+    q: '¿Y los aditivos de los combustibles "premium"?',
+    a: 'Los gasóleos y gasolinas premium (Diésel Premium, gasolina 98) sí llevan aditivos adicionales, y por eso están en una gama de precio distinta. La comparación de esta página es entre gasolina 95 normal de unas marcas y otras, es decir, el mismo producto.',
+  },
+  {
+    q: `¿Cuánto se ahorra al año repostando en la marca más barata?`,
+    a: masBarata && masCara
+      ? `Con la diferencia actual de ${cent(brecha)} céntimos por litro, un depósito de ${DEPOSITO} litros sale ${p2(brecha * DEPOSITO)} € más barato. Quien reposte cuatro veces al mes se deja unos ${p2(brecha * DEPOSITO * 48)} € al año de diferencia solo por elegir dónde repostar. Ojo: no siempre compensa desviarse mucho, porque el trayecto extra también consume.`
+      : '',
+  },
+  {
+    q: '¿De dónde salen estos precios?',
+    a: `Del listado oficial del Ministerio para la Transición Ecológica, que todas las estaciones están obligadas por ley a comunicar. Esta comparativa se calcula con las ${totalEstaciones.toLocaleString('es-ES')} gasolineras del listado del ${dia} y se regenera a diario.`,
+  },
+  {
+    q: '¿Por qué no aparecen todas las marcas?',
+    a: `Solo entran las cadenas con al menos ${MIN_ESTACIONES_MARCA} estaciones en España. En el listado del Ministerio hay más de 3.000 rótulos distintos, pero la mayoría son gasolineras independientes que aparecen con su propio nombre una sola vez: promediar dos estaciones y llamarlo "el precio de la marca" no informaría de nada.`,
+  },
+];
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Inicio', item: `${siteUrl}/` },
+        { '@type': 'ListItem', position: 2, name: 'Marcas de gasolinera', item: siteUrl + rutaCanonica },
+      ],
+    },
+    {
+      '@type': 'ItemList',
+      name: 'Marcas de gasolinera en España ordenadas por precio de la gasolina 95',
+      itemListOrder: 'https://schema.org/ItemListOrderAscending',
+      numberOfItems: conG95.length,
+      itemListElement: conG95.map((m, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        name: m.nombre,
+        url: `${siteUrl}/marcas/${m.slug}/`,
+      })),
+    },
+    {
+      '@type': 'FAQPage',
+      mainEntity: faqs.filter((f) => f.a).map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+    },
+  ],
+};
+
+const card = 'rounded-2xl border border-[#232733] bg-[#14171F] p-4';
+// Escala de la barra: de la marca más barata a la más cara.
+const rango = masCara && masBarata ? masCara.combustibles.g95.media - masBarata.combustibles.g95.media : 1;
+const anchoBarra = (v: number) => 12 + Math.round(((v - masBarata.combustibles.g95.media) / (rango || 1)) * 88);
+---
+<Layout title={title} description={description} canonicalPath={rutaCanonica}>
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify(jsonLd)} />
+
+  <div class="min-h-screen w-full" style="background-color:#0B0D12;">
+    <div class="mx-auto flex max-w-5xl justify-center gap-8">
+      <main class="w-full max-w-2xl">
+        <nav aria-label="Migas de pan" class="px-4 pt-6 text-xs text-[#5A6070]">
+          <a href="/" class="hover:text-amber-400">Inicio</a>
+          <span class="mx-1.5">/</span>
+          <span class="text-[#8A8F9C]">Marcas de gasolinera</span>
+        </nav>
+
+        <header class="px-4 pt-4">
+          <h1 class="text-2xl font-bold tracking-tight text-[#ECEAE3] sm:text-3xl">
+            ¿Qué marca de gasolinera es <span class="text-amber-400">más barata</span>?
+          </h1>
+          {masBarata && masCara && (
+            <p class="mt-3 text-sm leading-relaxed text-[#8A8F9C]">
+              Precio medio de cada cadena en toda España, con el listado oficial del Ministerio.
+              Entre <strong class="text-green-400">{masBarata.nombre}</strong> y
+              {' '}<strong class="text-amber-400">{masCara.nombre}</strong> hay
+              {' '}<strong class="text-[#ECEAE3]">{cent(brecha)} céntimos por litro</strong>:
+              {' '}{p2(brecha * DEPOSITO)} € de diferencia en cada depósito de {DEPOSITO} litros.
+            </p>
+          )}
+          <p class="mt-2 text-xs text-[#5A6070]">
+            Media de gasolina 95 · {totalEstaciones.toLocaleString('es-ES')} gasolineras · datos del {dia}
+          </p>
+        </header>
+
+        {masBarata && masCara && (
+          <section class="grid grid-cols-2 gap-3 px-4 pt-5">
+            <div class={card}>
+              <p class="text-xs font-semibold uppercase tracking-wide text-[#5A6070]">La más barata</p>
+              <p class="mt-1 text-lg font-bold text-green-400">{masBarata.nombre}</p>
+              <p class="font-mono text-sm text-[#ECEAE3]">{p3(masBarata.combustibles.g95.media)} €/L</p>
+            </div>
+            <div class={card}>
+              <p class="text-xs font-semibold uppercase tracking-wide text-[#5A6070]">La más cara</p>
+              <p class="mt-1 text-lg font-bold text-amber-400">{masCara.nombre}</p>
+              <p class="font-mono text-sm text-[#ECEAE3]">{p3(masCara.combustibles.g95.media)} €/L</p>
+            </div>
+            <div class={`${card} col-span-2`}>
+              <p class="text-xs font-semibold uppercase tracking-wide text-[#5A6070]">Media nacional</p>
+              <p class="mt-1 font-mono text-xl font-bold text-[#ECEAE3]">{p3(nacional.g95.media)} <span class="text-sm text-[#5A6070]">€/L</span></p>
+              <p class="text-xs text-[#5A6070]">es la línea que separa las dos listas de abajo</p>
+            </div>
+          </section>
+        )}
+
+        <!-- Ranking completo -->
+        <section class="px-4 pt-8">
+          <h2 class="text-base font-bold text-[#ECEAE3]">Por debajo de la media nacional</h2>
+          <p class="mt-1 text-xs text-[#5A6070]">{baratas.length} cadenas. La barra es el precio medio de su gasolina 95.</p>
+          <div class="mt-3 overflow-hidden rounded-2xl border border-[#232733] bg-[#14171F]">
+            {baratas.map((m) => (
+              <a href={`/marcas/${m.slug}/`} class="block border-b border-[#232733] px-4 py-3 transition-colors last:border-0 hover:bg-[#1A1E27]">
+                <div class="flex items-baseline justify-between gap-3">
+                  <p class="text-sm font-semibold text-[#ECEAE3]">{m.nombre}</p>
+                  <p class="shrink-0 font-mono text-sm font-bold text-green-400">{p3(m.combustibles.g95.media)} €/L</p>
+                </div>
+                <div class="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-[#0B0D12]">
+                  <div class="h-full rounded-full bg-green-500" style={`width:${anchoBarra(m.combustibles.g95.media)}%`}></div>
+                </div>
+                <p class="mt-1.5 text-xs text-[#5A6070]">
+                  {m.total} estaciones · <span class="text-green-400">{cent(m.combustibles.g95.vsNacional)} cent</span> frente a la media
+                </p>
+              </a>
+            ))}
+          </div>
+        </section>
+
+        <section class="px-4 pt-6">
+          <h2 class="text-base font-bold text-[#ECEAE3]">Por encima de la media nacional</h2>
+          <p class="mt-1 text-xs text-[#5A6070]">{caras.length} cadenas.</p>
+          <div class="mt-3 overflow-hidden rounded-2xl border border-[#232733] bg-[#14171F]">
+            {caras.map((m) => (
+              <a href={`/marcas/${m.slug}/`} class="block border-b border-[#232733] px-4 py-3 transition-colors last:border-0 hover:bg-[#1A1E27]">
+                <div class="flex items-baseline justify-between gap-3">
+                  <p class="text-sm font-semibold text-[#ECEAE3]">{m.nombre}</p>
+                  <p class="shrink-0 font-mono text-sm font-bold text-amber-400">{p3(m.combustibles.g95.media)} €/L</p>
+                </div>
+                <div class="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-[#0B0D12]">
+                  <div class="h-full rounded-full bg-amber-500" style={`width:${anchoBarra(m.combustibles.g95.media)}%`}></div>
+                </div>
+                <p class="mt-1.5 text-xs text-[#5A6070]">
+                  {m.total} estaciones · <span class="text-amber-400">{cent(m.combustibles.g95.vsNacional)} cent</span> frente a la media
+                </p>
+              </a>
+            ))}
+          </div>
+        </section>
+
+        {sinG95.length > 0 && (
+          <section class="px-4 pt-6">
+            <h2 class="text-base font-bold text-[#ECEAE3]">Sin gasolina 95</h2>
+            <p class="mt-1 text-xs text-[#5A6070]">
+              Estas cadenas no venden gasolina 95 en la mayoría de sus estaciones (son de GLP o de
+              gasóleo profesional), así que no entran en la comparativa de arriba.
+            </p>
+            <div class="mt-3 flex flex-wrap gap-2">
+              {sinG95.map((m) => (
+                <a href={`/marcas/${m.slug}/`} class="rounded-lg border border-[#232733] bg-[#14171F] px-3 py-1.5 text-xs font-medium text-[#8A8F9C] transition-colors hover:border-amber-400 hover:text-amber-400">
+                  {m.nombre} <span class="text-[#5A6070]">({m.total})</span>
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
+
+        <!-- Aviso honesto: la marca no lo es todo -->
+        <section class="px-4 pt-8">
+          <div class="rounded-2xl border p-4" style="border-color:#3A3320;background-color:#1A170E;">
+            <p class="text-sm font-semibold text-amber-400">La marca importa menos que la estación concreta</p>
+            <p class="mt-1.5 text-sm leading-relaxed text-[#8A8F9C]">
+              Estas son medias nacionales: dentro de una misma cadena hay estaciones baratas y caras
+              según la zona y la competencia que tengan al lado. Una gasolinera de marca en una
+              ciudad con mucha competencia puede salir más barata que una low cost aislada en una
+              carretera. Por eso lo que de verdad ahorra es mirar el precio de las que te pillan
+              cerca, no fiarse solo del rótulo.
+            </p>
+            <a href="/" class="mt-3 inline-block rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-[#0B0D12] transition-colors hover:bg-amber-400">
+              Ver las más baratas cerca de mí
+            </a>
+          </div>
+        </section>
+
+        <section class="px-4 pt-8">
+          <h2 class="text-base font-bold text-[#ECEAE3]">Preguntas frecuentes</h2>
+          <div class="mt-3 divide-y divide-[#232733]">
+            {faqs.filter((f) => f.a).map((f) => (
+              <details class="group py-3">
+                <summary class="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-medium text-[#ECEAE3]">
+                  <span>{f.q}</span>
+                  <span class="text-amber-400 transition-transform group-open:rotate-45">+</span>
+                </summary>
+                <p class="mt-2 text-sm leading-relaxed text-[#8A8F9C]">{f.a}</p>
+              </details>
+            ))}
+          </div>
+        </section>
+
+        <footer class="px-4 pt-10 pb-8">
+          <p class="text-xs leading-relaxed text-[#5A6070]">
+            Medias calculadas con el listado oficial de precios del Ministerio para la Transición
+            Ecológica y el Reto Demográfico, del {dia}. Los precios los fija libremente cada
+            estación y cambian a diario. Página informativa, sin relación con ninguna de las marcas
+            citadas.
+          </p>
+          <div class="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-xs">
+            <a href="/" class="text-[#8A8F9C] hover:text-amber-400">Inicio</a>
+            <a href="/quienes-somos" class="text-[#8A8F9C] hover:text-amber-400">Quiénes somos</a>
+            <a href="/aviso-legal" class="text-[#8A8F9C] hover:text-amber-400">Aviso legal</a>
+            <a href="/privacidad" class="text-[#8A8F9C] hover:text-amber-400">Privacidad</a>
+          </div>
+        </footer>
+      </main>
+    </div>
+  </div>
+</Layout>

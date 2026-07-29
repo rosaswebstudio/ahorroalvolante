@@ -389,6 +389,34 @@ const colorPrecio = (v: number | null, m: number) =>
           </div>
         </section>
 
+        <!-- Comparativas nacionales -->
+        <section class="px-4 pt-8">
+          <div class="grid gap-2">
+            <a href="/marcas/" class="flex items-center justify-between gap-3 rounded-2xl border border-[#232733] bg-[#14171F] px-4 py-3.5 transition-colors hover:border-amber-400">
+              <div>
+                <p class="text-sm font-semibold text-[#ECEAE3]">¿Qué marca es más barata en España?</p>
+                <p class="text-xs text-[#8A8F9C]">Comparativa de todas las cadenas con el dato oficial</p>
+              </div>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+                class="h-4 w-4 shrink-0 text-amber-400" aria-hidden="true">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </a>
+            <a href="/precios/" class="flex items-center justify-between gap-3 rounded-2xl border border-[#232733] bg-[#14171F] px-4 py-3.5 transition-colors hover:border-amber-400">
+              <div>
+                <p class="text-sm font-semibold text-[#ECEAE3]">¿Cómo va {prov.nombre} frente al resto?</p>
+                <p class="text-xs text-[#8A8F9C]">Ranking de las 52 provincias por precio medio</p>
+              </div>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+                class="h-4 w-4 shrink-0 text-amber-400" aria-hidden="true">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </a>
+          </div>
+        </section>
+
         <!-- Otras provincias -->
         <section class="px-4 pt-8">
           <h2 class="text-base font-bold text-[#ECEAE3]">Gasolineras baratas en otras provincias</h2>
