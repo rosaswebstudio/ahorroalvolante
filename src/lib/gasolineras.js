@@ -68,13 +68,14 @@ export const PROVINCIAS = [
 // Campos para las páginas /precios/[combustible]/. Hacen falta las tres formas porque en
 // castellano no valen con una: `titulo` para "¿a cuánto está el diésel?", `de` para
 // "precio del diésel" (no "de el"), y `barato` para concordar el género con el nombre.
-// `label` es el nombre corto de tablas y selectores.
+// `label` es el nombre corto de tablas y selectores; `corto` solo existe donde el nombre
+// completo no cabe en el selector del buscador a media anchura en un móvil.
 export const COMBUSTIBLES = [
   { id: 'g95', campo: 'Precio Gasolina 95 E5', label: 'Gasolina 95', slug: 'gasolina-95', titulo: 'la gasolina 95', de: 'de la gasolina 95', barato: 'barata' },
-  { id: 'ga', campo: 'Precio Gasoleo A', label: 'Diésel (Gasóleo A)', slug: 'diesel', titulo: 'el diésel', de: 'del diésel', barato: 'barato' },
+  { id: 'ga', campo: 'Precio Gasoleo A', label: 'Diésel (Gasóleo A)', corto: 'Diésel', slug: 'diesel', titulo: 'el diésel', de: 'del diésel', barato: 'barato' },
   { id: 'g98', campo: 'Precio Gasolina 98 E5', label: 'Gasolina 98', slug: 'gasolina-98', titulo: 'la gasolina 98', de: 'de la gasolina 98', barato: 'barata' },
   { id: 'gap', campo: 'Precio Gasoleo Premium', label: 'Diésel Premium', slug: 'diesel-premium', titulo: 'el diésel premium', de: 'del diésel premium', barato: 'barato' },
-  { id: 'glp', campo: 'Precio Gases licuados del petróleo', label: 'GLP (Autogas)', slug: 'glp-autogas', titulo: 'el GLP (autogas)', de: 'del GLP (autogas)', barato: 'barato' },
+  { id: 'glp', campo: 'Precio Gases licuados del petróleo', label: 'GLP (Autogas)', corto: 'GLP', slug: 'glp-autogas', titulo: 'el GLP (autogas)', de: 'del GLP (autogas)', barato: 'barato' },
 ];
 
 const num = (s) => {

@@ -92,7 +92,7 @@ const jsonLd = {
   ],
 };
 
-const card = 'rounded-2xl border border-[#232733] bg-[#14171F] p-4';
+const card = 'rounded-2xl border border-borde bg-superficie p-4';
 // Escala de la barra: de la marca más barata a la más cara.
 const rango = masCara && masBarata ? masCara.combustibles.g95.media - masBarata.combustibles.g95.media : 1;
 const anchoBarra = (v: number) => 12 + Math.round(((v - masBarata.combustibles.g95.media) / (rango || 1)) * 88);
@@ -100,29 +100,29 @@ const anchoBarra = (v: number) => 12 + Math.round(((v - masBarata.combustibles.g
 <Layout title={title} description={description} canonicalPath={rutaCanonica}>
   <script type="application/ld+json" slot="head" set:html={JSON.stringify(jsonLd)} />
 
-  <div class="min-h-screen w-full" style="background-color:#0B0D12;">
+  <div class="min-h-screen w-full bg-fondo">
     <div class="mx-auto flex max-w-5xl justify-center gap-8">
       <main class="w-full max-w-2xl">
-        <nav aria-label="Migas de pan" class="px-4 pt-6 text-xs text-[#5A6070]">
-          <a href="/" class="hover:text-amber-400">Inicio</a>
+        <nav aria-label="Migas de pan" class="px-4 pt-6 text-xs text-tenue">
+          <a href="/" class="hover:text-acento">Inicio</a>
           <span class="mx-1.5">/</span>
-          <span class="text-[#8A8F9C]">Marcas de gasolinera</span>
+          <span class="text-suave">Marcas de gasolinera</span>
         </nav>
 
         <header class="px-4 pt-4">
-          <h1 class="text-2xl font-bold tracking-tight text-[#ECEAE3] sm:text-3xl">
-            ¿Qué marca de gasolinera es <span class="text-amber-400">más barata</span>?
+          <h1 class="text-2xl font-bold tracking-tight text-tinta sm:text-3xl">
+            ¿Qué marca de gasolinera es <span class="text-acento">más barata</span>?
           </h1>
           {masBarata && masCara && (
-            <p class="mt-3 text-sm leading-relaxed text-[#8A8F9C]">
+            <p class="mt-3 text-sm leading-relaxed text-suave">
               Precio medio de cada cadena en toda España, con el listado oficial del Ministerio.
-              Entre <strong class="text-green-400">{masBarata.nombre}</strong> y
-              {' '}<strong class="text-amber-400">{masCara.nombre}</strong> hay
-              {' '}<strong class="text-[#ECEAE3]">{cent(brecha)} céntimos por litro</strong>:
+              Entre <strong class="text-barato">{masBarata.nombre}</strong> y
+              {' '}<strong class="text-acento">{masCara.nombre}</strong> hay
+              {' '}<strong class="text-tinta">{cent(brecha)} céntimos por litro</strong>:
               {' '}{p2(brecha * DEPOSITO)} € de diferencia en cada depósito de {DEPOSITO} litros.
             </p>
           )}
-          <p class="mt-2 text-xs text-[#5A6070]">
+          <p class="mt-2 text-xs text-tenue">
             Media de gasolina 95 · {totalEstaciones.toLocaleString('es-ES')} gasolineras · datos del {dia}
           </p>
         </header>
@@ -130,39 +130,39 @@ const anchoBarra = (v: number) => 12 + Math.round(((v - masBarata.combustibles.g
         {masBarata && masCara && (
           <section class="grid grid-cols-2 gap-3 px-4 pt-5">
             <div class={card}>
-              <p class="text-xs font-semibold uppercase tracking-wide text-[#5A6070]">La más barata</p>
-              <p class="mt-1 text-lg font-bold text-green-400">{masBarata.nombre}</p>
-              <p class="font-mono text-sm text-[#ECEAE3]">{p3(masBarata.combustibles.g95.media)} €/L</p>
+              <p class="text-xs font-semibold uppercase tracking-wide text-tenue">La más barata</p>
+              <p class="mt-1 text-lg font-bold text-barato">{masBarata.nombre}</p>
+              <p class="font-mono text-sm text-tinta">{p3(masBarata.combustibles.g95.media)} €/L</p>
             </div>
             <div class={card}>
-              <p class="text-xs font-semibold uppercase tracking-wide text-[#5A6070]">La más cara</p>
-              <p class="mt-1 text-lg font-bold text-amber-400">{masCara.nombre}</p>
-              <p class="font-mono text-sm text-[#ECEAE3]">{p3(masCara.combustibles.g95.media)} €/L</p>
+              <p class="text-xs font-semibold uppercase tracking-wide text-tenue">La más cara</p>
+              <p class="mt-1 text-lg font-bold text-acento">{masCara.nombre}</p>
+              <p class="font-mono text-sm text-tinta">{p3(masCara.combustibles.g95.media)} €/L</p>
             </div>
             <div class={`${card} col-span-2`}>
-              <p class="text-xs font-semibold uppercase tracking-wide text-[#5A6070]">Media nacional</p>
-              <p class="mt-1 font-mono text-xl font-bold text-[#ECEAE3]">{p3(nacional.g95.media)} <span class="text-sm text-[#5A6070]">€/L</span></p>
-              <p class="text-xs text-[#5A6070]">es la línea que separa las dos listas de abajo</p>
+              <p class="text-xs font-semibold uppercase tracking-wide text-tenue">Media nacional</p>
+              <p class="mt-1 font-mono text-xl font-bold text-tinta">{p3(nacional.g95.media)} <span class="text-sm text-tenue">€/L</span></p>
+              <p class="text-xs text-tenue">es la línea que separa las dos listas de abajo</p>
             </div>
           </section>
         )}
 
         <!-- Ranking completo -->
         <section class="px-4 pt-8">
-          <h2 class="text-base font-bold text-[#ECEAE3]">Por debajo de la media nacional</h2>
-          <p class="mt-1 text-xs text-[#5A6070]">{baratas.length} cadenas. La barra es el precio medio de su gasolina 95.</p>
-          <div class="mt-3 overflow-hidden rounded-2xl border border-[#232733] bg-[#14171F]">
+          <h2 class="text-base font-bold text-tinta">Por debajo de la media nacional</h2>
+          <p class="mt-1 text-xs text-tenue">{baratas.length} cadenas. La barra es el precio medio de su gasolina 95.</p>
+          <div class="mt-3 overflow-hidden rounded-2xl border border-borde bg-superficie">
             {baratas.map((m) => (
-              <a href={`/marcas/${m.slug}/`} class="block border-b border-[#232733] px-4 py-3 transition-colors last:border-0 hover:bg-[#1A1E27]">
+              <a href={`/marcas/${m.slug}/`} class="block border-b border-borde px-4 py-3 transition-colors last:border-0 hover:bg-elevado">
                 <div class="flex items-baseline justify-between gap-3">
-                  <p class="text-sm font-semibold text-[#ECEAE3]">{m.nombre}</p>
-                  <p class="shrink-0 font-mono text-sm font-bold text-green-400">{p3(m.combustibles.g95.media)} €/L</p>
+                  <p class="text-sm font-semibold text-tinta">{m.nombre}</p>
+                  <p class="shrink-0 font-mono text-sm font-bold text-barato">{p3(m.combustibles.g95.media)} €/L</p>
                 </div>
-                <div class="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-[#0B0D12]">
+                <div class="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-fondo">
                   <div class="h-full rounded-full bg-green-500" style={`width:${anchoBarra(m.combustibles.g95.media)}%`}></div>
                 </div>
-                <p class="mt-1.5 text-xs text-[#5A6070]">
-                  {m.total} estaciones · <span class="text-green-400">{cent(m.combustibles.g95.vsNacional)} cent</span> frente a la media
+                <p class="mt-1.5 text-xs text-tenue">
+                  {m.total} estaciones · <span class="text-barato">{cent(m.combustibles.g95.vsNacional)} cent</span> frente a la media
                 </p>
               </a>
             ))}
@@ -170,20 +170,20 @@ const anchoBarra = (v: number) => 12 + Math.round(((v - masBarata.combustibles.g
         </section>
 
         <section class="px-4 pt-6">
-          <h2 class="text-base font-bold text-[#ECEAE3]">Por encima de la media nacional</h2>
-          <p class="mt-1 text-xs text-[#5A6070]">{caras.length} cadenas.</p>
-          <div class="mt-3 overflow-hidden rounded-2xl border border-[#232733] bg-[#14171F]">
+          <h2 class="text-base font-bold text-tinta">Por encima de la media nacional</h2>
+          <p class="mt-1 text-xs text-tenue">{caras.length} cadenas.</p>
+          <div class="mt-3 overflow-hidden rounded-2xl border border-borde bg-superficie">
             {caras.map((m) => (
-              <a href={`/marcas/${m.slug}/`} class="block border-b border-[#232733] px-4 py-3 transition-colors last:border-0 hover:bg-[#1A1E27]">
+              <a href={`/marcas/${m.slug}/`} class="block border-b border-borde px-4 py-3 transition-colors last:border-0 hover:bg-elevado">
                 <div class="flex items-baseline justify-between gap-3">
-                  <p class="text-sm font-semibold text-[#ECEAE3]">{m.nombre}</p>
-                  <p class="shrink-0 font-mono text-sm font-bold text-amber-400">{p3(m.combustibles.g95.media)} €/L</p>
+                  <p class="text-sm font-semibold text-tinta">{m.nombre}</p>
+                  <p class="shrink-0 font-mono text-sm font-bold text-acento">{p3(m.combustibles.g95.media)} €/L</p>
                 </div>
-                <div class="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-[#0B0D12]">
+                <div class="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-fondo">
                   <div class="h-full rounded-full bg-amber-500" style={`width:${anchoBarra(m.combustibles.g95.media)}%`}></div>
                 </div>
-                <p class="mt-1.5 text-xs text-[#5A6070]">
-                  {m.total} estaciones · <span class="text-amber-400">{cent(m.combustibles.g95.vsNacional)} cent</span> frente a la media
+                <p class="mt-1.5 text-xs text-tenue">
+                  {m.total} estaciones · <span class="text-acento">{cent(m.combustibles.g95.vsNacional)} cent</span> frente a la media
                 </p>
               </a>
             ))}
@@ -192,15 +192,15 @@ const anchoBarra = (v: number) => 12 + Math.round(((v - masBarata.combustibles.g
 
         {sinG95.length > 0 && (
           <section class="px-4 pt-6">
-            <h2 class="text-base font-bold text-[#ECEAE3]">Sin gasolina 95</h2>
-            <p class="mt-1 text-xs text-[#5A6070]">
+            <h2 class="text-base font-bold text-tinta">Sin gasolina 95</h2>
+            <p class="mt-1 text-xs text-tenue">
               Estas cadenas no venden gasolina 95 en la mayoría de sus estaciones (son de GLP o de
               gasóleo profesional), así que no entran en la comparativa de arriba.
             </p>
             <div class="mt-3 flex flex-wrap gap-2">
               {sinG95.map((m) => (
-                <a href={`/marcas/${m.slug}/`} class="rounded-lg border border-[#232733] bg-[#14171F] px-3 py-1.5 text-xs font-medium text-[#8A8F9C] transition-colors hover:border-amber-400 hover:text-amber-400">
-                  {m.nombre} <span class="text-[#5A6070]">({m.total})</span>
+                <a href={`/marcas/${m.slug}/`} class="rounded-lg border border-borde bg-superficie px-3 py-1.5 text-xs font-medium text-suave transition-colors hover:border-acento hover:text-acento">
+                  {m.nombre} <span class="text-tenue">({m.total})</span>
                 </a>
               ))}
             </div>
@@ -209,9 +209,9 @@ const anchoBarra = (v: number) => 12 + Math.round(((v - masBarata.combustibles.g
 
         <!-- Aviso honesto: la marca no lo es todo -->
         <section class="px-4 pt-8">
-          <div class="rounded-2xl border p-4" style="border-color:#3A3320;background-color:#1A170E;">
-            <p class="text-sm font-semibold text-amber-400">La marca importa menos que la estación concreta</p>
-            <p class="mt-1.5 text-sm leading-relaxed text-[#8A8F9C]">
+          <div class="rounded-2xl border border-aviso-borde bg-aviso p-4">
+            <p class="text-sm font-semibold text-acento">La marca importa menos que la estación concreta</p>
+            <p class="mt-1.5 text-sm leading-relaxed text-suave">
               Estas son medias nacionales: dentro de una misma cadena hay estaciones baratas y caras
               según la zona y la competencia que tengan al lado. Una gasolinera de marca en una
               ciudad con mucha competencia puede salir más barata que una low cost aislada en una
@@ -225,32 +225,32 @@ const anchoBarra = (v: number) => 12 + Math.round(((v - masBarata.combustibles.g
         </section>
 
         <section class="px-4 pt-8">
-          <h2 class="text-base font-bold text-[#ECEAE3]">Preguntas frecuentes</h2>
-          <div class="mt-3 divide-y divide-[#232733]">
+          <h2 class="text-base font-bold text-tinta">Preguntas frecuentes</h2>
+          <div class="mt-3 divide-y divide-borde">
             {faqs.filter((f) => f.a).map((f) => (
               <details class="group py-3">
-                <summary class="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-medium text-[#ECEAE3]">
+                <summary class="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-medium text-tinta">
                   <span>{f.q}</span>
-                  <span class="text-amber-400 transition-transform group-open:rotate-45">+</span>
+                  <span class="text-acento transition-transform group-open:rotate-45">+</span>
                 </summary>
-                <p class="mt-2 text-sm leading-relaxed text-[#8A8F9C]">{f.a}</p>
+                <p class="mt-2 text-sm leading-relaxed text-suave">{f.a}</p>
               </details>
             ))}
           </div>
         </section>
 
         <footer class="px-4 pt-10 pb-8">
-          <p class="text-xs leading-relaxed text-[#5A6070]">
+          <p class="text-xs leading-relaxed text-tenue">
             Medias calculadas con el listado oficial de precios del Ministerio para la Transición
             Ecológica y el Reto Demográfico, del {dia}. Los precios los fija libremente cada
             estación y cambian a diario. Página informativa, sin relación con ninguna de las marcas
             citadas.
           </p>
           <div class="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-xs">
-            <a href="/" class="text-[#8A8F9C] hover:text-amber-400">Inicio</a>
-            <a href="/quienes-somos" class="text-[#8A8F9C] hover:text-amber-400">Quiénes somos</a>
-            <a href="/aviso-legal" class="text-[#8A8F9C] hover:text-amber-400">Aviso legal</a>
-            <a href="/privacidad" class="text-[#8A8F9C] hover:text-amber-400">Privacidad</a>
+            <a href="/" class="text-suave hover:text-acento">Inicio</a>
+            <a href="/quienes-somos" class="text-suave hover:text-acento">Quiénes somos</a>
+            <a href="/aviso-legal" class="text-suave hover:text-acento">Aviso legal</a>
+            <a href="/privacidad" class="text-suave hover:text-acento">Privacidad</a>
           </div>
         </footer>
       </main>

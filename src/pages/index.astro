@@ -23,14 +23,6 @@ const description =
 
 const faqs = [
   {
-    q: '¿Cuánto cuesta un viaje en coche?',
-    a: 'Depende de la distancia, del consumo de tu coche (l/100 km), del precio del combustible y de las condiciones del trayecto. La fórmula base es: kilómetros × (consumo ÷ 100) × precio por litro. Nuestra calculadora la aplica y le suma el efecto del aire acondicionado, la carga, la baca del techo o tu estilo de conducción, mostrándote el desglose de cuánto añade cada cosa.',
-  },
-  {
-    q: '¿Cuánto gasta de más el aire acondicionado y las ventanillas bajadas?',
-    a: 'El aire acondicionado incrementa el consumo en torno a un 5-10% de media (más en trayectos cortos de ciudad y con mucho calor). Llevar las ventanillas bajadas a alta velocidad añade otro 5% aproximado por la resistencia del aire. La regla práctica: en ciudad, ventanillas; en autopista, aire acondicionado. Una baca o cofre en el techo es de lo que más suma (un 10-18%).',
-  },
-  {
     q: '¿Cada cuánto se actualizan los precios?',
     a: 'Las estaciones de servicio están obligadas por ley a comunicar sus precios al Ministerio, y el listado oficial (Geoportal Gasolineras) se actualiza aproximadamente cada 30 minutos. Esta web consulta esos datos en directo cada vez que buscas.',
   },
@@ -92,27 +84,21 @@ const jsonLd = {
   ],
 };
 
-const adBox = 'flex flex-col items-center justify-center rounded-2xl border border-dashed border-[#232733] bg-[#14171F]/60 px-4 py-3 text-center';
+const adBox = 'flex flex-col items-center justify-center rounded-2xl border border-dashed border-borde bg-superficie/60 px-4 py-3 text-center';
 ---
 <Layout title={title} description={description} canonicalPath="/">
   <script type="application/ld+json" slot="head" set:html={JSON.stringify(jsonLd)} />
 
-  <div class="min-h-screen w-full" style="background-color:#0B0D12;">
+  <div class="min-h-screen w-full bg-fondo">
     <div class="mx-auto flex max-w-5xl justify-center gap-8">
       <!-- Columna principal -->
       <main class="w-full max-w-2xl">
         <!-- Cabecera -->
-        <header class="px-4 pt-7 pb-1">
-          <div class="mb-3 flex items-center gap-2">
-            <span class="grid h-8 w-8 place-items-center rounded-lg bg-[#14171F] ring-1 ring-inset ring-[#232733]">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="1.8" class="h-4 w-4"><path stroke-linecap="round" stroke-linejoin="round" d="M5 21V6a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v15M4 21h11M8 7h4v3H8zM15 10h1.5l2.5 3v5.5a1.5 1.5 0 1 1-3 0V15h-1"/></svg>
-            </span>
-            <span class="font-mono text-sm font-bold tracking-wide text-slate-100 sm:text-base">AHORRO AL VOLANTE</span>
-          </div>
-          <h1 class="text-xl font-bold tracking-tight text-[#ECEAE3] sm:text-2xl">
-            La gasolina más barata <span class="text-amber-400">cerca de ti</span>, hoy
+        <header class="px-4 pt-6 pb-1">
+          <h1 class="text-xl font-bold tracking-tight text-tinta sm:text-2xl">
+            La gasolina más barata <span class="text-acento">cerca de ti</span>, hoy
           </h1>
-          <p class="mt-2 text-sm leading-relaxed text-[#8A8F9C]">
+          <p class="mt-2 text-sm leading-relaxed text-suave">
             Compara el precio de la gasolina 95, 98, diésel y GLP en las gasolineras de tu zona
             con los datos oficiales del Ministerio, y calcula cuánto te costará tu próximo viaje.
           </p>
@@ -120,16 +106,16 @@ const adBox = 'flex flex-col items-center justify-center rounded-2xl border bord
 
         <!-- Conmutador de herramientas -->
         <div class="px-4 pt-4">
-          <div class="flex gap-1 rounded-full border border-[#232733] bg-[#14171F] p-1">
+          <div class="flex gap-1 rounded-full border border-borde bg-superficie p-1">
             <button id="tab-gas" type="button" data-panel="panel-gasolineras"
               class="flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold transition-colors bg-amber-500 text-[#0B0D12]">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4"><circle cx="11" cy="11" r="7"/><path stroke-linecap="round" d="m21 21-4.3-4.3"/></svg>
               Gasolineras baratas
             </button>
             <button id="tab-calc" type="button" data-panel="panel-calculadora"
-              class="flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold transition-colors text-slate-400">
+              class="flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold transition-colors text-suave">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4"><rect x="5" y="3" width="14" height="18" rx="2"/><path stroke-linecap="round" d="M9 7h6M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15v-4"/></svg>
-              Coste del viaje
+              Calculadora
             </button>
           </div>
         </div>
@@ -140,13 +126,20 @@ const adBox = 'flex flex-col items-center justify-center rounded-2xl border bord
 
         <div id="panel-calculadora" class="hidden px-4 pt-4">
           <CalculadoraViaje />
+          <a href="/calcular-gasto-gasolina/" class="mt-3 flex items-center justify-between gap-3 rounded-2xl border border-borde bg-superficie px-4 py-3 transition-colors hover:border-acento">
+            <div>
+              <p class="text-sm font-semibold text-tinta">Cuánto cuesta cada viaje, en euros</p>
+              <p class="text-xs text-suave">La fórmula, los trayectos habituales y qué dispara el consumo</p>
+            </div>
+            <span class="shrink-0 text-acento" aria-hidden="true">→</span>
+          </a>
         </div>
 
         <script is:inline>
           (function () {
             var tabs = document.querySelectorAll('[data-panel]');
             var ACTIVE = 'flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold transition-colors bg-amber-500 text-[#0B0D12]';
-            var INACTIVE = 'flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold transition-colors text-slate-400';
+            var INACTIVE = 'flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold transition-colors text-suave';
             function activar(panelId) {
               tabs.forEach(function (t) {
                 var on = t.dataset.panel === panelId;
@@ -165,17 +158,17 @@ const adBox = 'flex flex-col items-center justify-center rounded-2xl border bord
         <div class="px-4">
           <a href="#" rel="sponsored nofollow noopener"
             class="mt-4 flex items-center justify-between gap-3 rounded-2xl px-4 py-3.5"
-            style="background-color:#14171F;border:1px solid #232733;">
+            class="bg-superficie border border-borde">
             <div>
-              <p class="text-sm font-semibold text-[#ECEAE3]">¿Pagas de más por tu seguro de coche?</p>
-              <p class="text-xs text-[#8A8F9C]">Compara aseguradoras en 3 minutos</p>
+              <p class="text-sm font-semibold text-tinta">¿Pagas de más por tu seguro de coche?</p>
+              <p class="text-xs text-suave">Compara aseguradoras en 3 minutos</p>
             </div>
             <span class="shrink-0 rounded-full bg-amber-500 px-3 py-1.5 text-xs font-semibold text-[#0B0D12]">Comparar</span>
           </a>
 
           <div class={`mt-4 min-h-[100px] w-full ${adBox}`}>
-            <span class="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#5A6070]">Publicidad</span>
-            <span class="mt-1 text-xs text-[#5A6070]">Banner responsive (AdSense)</span>
+            <span class="text-[10px] font-semibold uppercase tracking-[0.2em] text-tenue">Publicidad</span>
+            <span class="mt-1 text-xs text-tenue">Banner responsive (AdSense)</span>
           </div>
         </div>
         */}
@@ -183,27 +176,27 @@ const adBox = 'flex flex-col items-center justify-center rounded-2xl border bord
         <!-- Comparativas nacionales: responden a "gasolineras low cost" y "dónde está más
              barata la gasolina", de las búsquedas con más volumen del nicho -->
         <section class="px-4 pt-8">
-          <h2 class="text-base font-bold text-[#ECEAE3]">Comparativas de toda España</h2>
+          <h2 class="text-base font-bold text-tinta">Comparativas de toda España</h2>
           <div class="mt-3 grid gap-2">
-            <a href="/marcas/" class="flex items-center justify-between gap-3 rounded-2xl border border-[#232733] bg-[#14171F] px-4 py-3.5 transition-colors hover:border-amber-400">
+            <a href="/marcas/" class="flex items-center justify-between gap-3 rounded-2xl border border-borde bg-superficie px-4 py-3.5 transition-colors hover:border-acento">
               <div>
-                <p class="text-sm font-semibold text-[#ECEAE3]">¿Qué marca es de verdad más barata?</p>
-                <p class="text-xs text-[#8A8F9C]">Precio medio de cada cadena, con el dato oficial</p>
+                <p class="text-sm font-semibold text-tinta">¿Qué marca es de verdad más barata?</p>
+                <p class="text-xs text-suave">Precio medio de cada cadena, con el dato oficial</p>
               </div>
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                 stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
-                class="h-4 w-4 shrink-0 text-amber-400" aria-hidden="true">
+                class="h-4 w-4 shrink-0 text-acento" aria-hidden="true">
                 <polyline points="9 18 15 12 9 6" />
               </svg>
             </a>
-            <a href="/precios/" class="flex items-center justify-between gap-3 rounded-2xl border border-[#232733] bg-[#14171F] px-4 py-3.5 transition-colors hover:border-amber-400">
+            <a href="/precios/" class="flex items-center justify-between gap-3 rounded-2xl border border-borde bg-superficie px-4 py-3.5 transition-colors hover:border-acento">
               <div>
-                <p class="text-sm font-semibold text-[#ECEAE3]">¿Dónde está más barata la gasolina?</p>
-                <p class="text-xs text-[#8A8F9C]">Ranking de las 52 provincias y precio por combustible</p>
+                <p class="text-sm font-semibold text-tinta">¿Dónde está más barata la gasolina?</p>
+                <p class="text-xs text-suave">Ranking de las 52 provincias y precio por combustible</p>
               </div>
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                 stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
-                class="h-4 w-4 shrink-0 text-amber-400" aria-hidden="true">
+                class="h-4 w-4 shrink-0 text-acento" aria-hidden="true">
                 <polyline points="9 18 15 12 9 6" />
               </svg>
             </a>
@@ -212,15 +205,15 @@ const adBox = 'flex flex-col items-center justify-center rounded-2xl border bord
 
         <!-- FAQ -->
         <section id="faq" class="px-4 pt-8">
-          <h2 class="text-base font-bold text-[#ECEAE3]">Preguntas frecuentes</h2>
-          <div class="mt-3 divide-y divide-[#232733]">
+          <h2 class="text-base font-bold text-tinta">Preguntas frecuentes</h2>
+          <div class="mt-3 divide-y divide-borde">
             {faqs.map((f) => (
               <details class="group py-3">
-                <summary class="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-medium text-[#ECEAE3]">
+                <summary class="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-medium text-tinta">
                   <span>{f.q}</span>
-                  <span class="text-amber-400 transition-transform group-open:rotate-45">+</span>
+                  <span class="text-acento transition-transform group-open:rotate-45">+</span>
                 </summary>
-                <p class="mt-2 text-sm leading-relaxed text-[#8A8F9C]">{f.a}</p>
+                <p class="mt-2 text-sm leading-relaxed text-suave">{f.a}</p>
               </details>
             ))}
           </div>
@@ -228,8 +221,8 @@ const adBox = 'flex flex-col items-center justify-center rounded-2xl border bord
 
         <!-- Texto SEO -->
         <section class="px-4 pt-8">
-          <h2 class="text-base font-bold text-[#ECEAE3]">Ahorra cada vez que repostas</h2>
-          <div class="mt-2 space-y-3 text-sm leading-relaxed text-[#8A8F9C]">
+          <h2 class="text-base font-bold text-tinta">Ahorra cada vez que repostas</h2>
+          <div class="mt-2 space-y-3 text-sm leading-relaxed text-suave">
             <p>
               El precio del combustible puede variar más de 20 céntimos por litro entre gasolineras
               de la misma ciudad. En un depósito de 50 litros, eso son más de 10 euros de diferencia
@@ -248,35 +241,35 @@ const adBox = 'flex flex-col items-center justify-center rounded-2xl border bord
 
         <!-- Provincias (enlazado interno hacia las páginas con precios de cada provincia) -->
         <section class="px-4 pt-8">
-          <h2 class="text-base font-bold text-[#ECEAE3]">Gasolineras baratas por provincia</h2>
-          <p class="mt-2 text-sm leading-relaxed text-[#8A8F9C]">
+          <h2 class="text-base font-bold text-tinta">Gasolineras baratas por provincia</h2>
+          <p class="mt-2 text-sm leading-relaxed text-suave">
             Consulta las estaciones más baratas, el precio medio y los municipios donde mejor sale
             repostar en cada provincia.
           </p>
           <div class="mt-3 flex flex-wrap gap-x-3 gap-y-1.5">
             {provinciasOrdenadas.map((p) => (
               <a href={`/gasolineras-baratas/${slugProvincia(p)}/`}
-                class="text-xs text-[#8A8F9C] hover:text-amber-400">{p.nombre}</a>
+                class="text-xs text-suave hover:text-acento">{p.nombre}</a>
             ))}
           </div>
         </section>
 
         <!-- Footer -->
         <footer class="px-4 pt-8 pb-8">
-          <p class="text-xs leading-relaxed text-[#5A6070]">
+          <p class="text-xs leading-relaxed text-tenue">
             Ahorro al Volante es una herramienta informativa. Los precios provienen del listado
             oficial del Ministerio (Geoportal Gasolineras) y pueden variar respecto al surtidor
             en el momento del repostaje. Tu ubicación solo se usa en tu navegador para ordenar
             por cercanía. No es asesoramiento de ningún tipo.
           </p>
           <div class="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-xs">
-            <a href="/quienes-somos" class="text-[#8A8F9C] hover:text-amber-400">Quiénes somos</a>
-            <a href="/contacto" class="text-[#8A8F9C] hover:text-amber-400">Contacto</a>
-            <a href="/aviso-legal" class="text-[#8A8F9C] hover:text-amber-400">Aviso legal</a>
-            <a href="/privacidad" class="text-[#8A8F9C] hover:text-amber-400">Privacidad</a>
-            <a href="/cookies" class="text-[#8A8F9C] hover:text-amber-400">Cookies</a>
+            <a href="/quienes-somos" class="text-suave hover:text-acento">Quiénes somos</a>
+            <a href="/contacto" class="text-suave hover:text-acento">Contacto</a>
+            <a href="/aviso-legal" class="text-suave hover:text-acento">Aviso legal</a>
+            <a href="/privacidad" class="text-suave hover:text-acento">Privacidad</a>
+            <a href="/cookies" class="text-suave hover:text-acento">Cookies</a>
           </div>
-          <p class="mt-3 text-xs text-[#5A6070]">© {new Date().getFullYear()} Ahorro al Volante</p>
+          <p class="mt-3 text-xs text-tenue">© {new Date().getFullYear()} Ahorro al Volante</p>
         </footer>
       </main>
 
@@ -284,8 +277,8 @@ const adBox = 'flex flex-col items-center justify-center rounded-2xl border bord
           Al reactivarlo, sustituir el marcador por la unidad real <ins class="adsbygoogle">.
       <aside class="hidden shrink-0 pt-7 pr-4 lg:block" style="width:300px;">
         <div class={`sticky top-6 min-h-[600px] w-[300px] ${adBox}`}>
-          <span class="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#5A6070]">Publicidad</span>
-          <span class="mt-1 text-xs text-[#5A6070]">Rascacielos 300x600 (fijo)</span>
+          <span class="text-[10px] font-semibold uppercase tracking-[0.2em] text-tenue">Publicidad</span>
+          <span class="mt-1 text-xs text-tenue">Rascacielos 300x600 (fijo)</span>
         </div>
       </aside>
       */}

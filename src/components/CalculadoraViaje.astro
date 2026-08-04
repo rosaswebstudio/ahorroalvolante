@@ -1,20 +1,20 @@
 ---
 // Calculadora de coste de un viaje en coche. 100% cliente.
 // Ventaja frente a la competencia: muestra el desglose de cuánto suma cada factor.
-const field = 'w-full rounded-lg border border-[#232733] bg-[#0B0D12] px-3 py-2 text-sm text-slate-200 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25';
-const label = 'mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500';
+const field = 'w-full rounded-lg border border-borde bg-fondo px-3 py-2 text-sm text-tinta outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25';
+const label = 'mb-1 block text-xs font-semibold uppercase tracking-wide text-suave';
 ---
 <section id="calculadora" class="scroll-mt-24">
-  <div class="rounded-2xl border border-[#232733] bg-[#14171F] p-4 sm:p-6">
-    <h2 class="text-lg font-bold text-[#ECEAE3]">Calculadora de coste del viaje</h2>
-    <p class="mt-1 text-sm text-[#8A8F9C]">Calcula lo que te costará un trayecto según el precio del combustible y las condiciones reales del viaje.</p>
+  <div class="rounded-2xl border border-borde bg-superficie p-4 sm:p-6">
+    <h2 class="text-lg font-bold text-tinta">Calculadora de coste del viaje</h2>
+    <p class="mt-1 text-sm text-suave">Calcula lo que te costará un trayecto según el precio del combustible y las condiciones reales del viaje.</p>
 
     <div class="mt-4 grid gap-3 sm:grid-cols-2">
       <div>
         <span class={label}>Distancia (km)</span>
         <div class="flex gap-2">
           <input id="cv-km" type="number" min="0" step="10" value="300" inputmode="decimal" class={field} />
-          <label class="flex shrink-0 items-center gap-1.5 rounded-lg border border-[#232733] bg-[#0B0D12] px-3 text-sm text-slate-300">
+          <label class="flex shrink-0 items-center gap-1.5 rounded-lg border border-borde bg-fondo px-3 text-sm text-tinta">
             <input id="cv-idavuelta" type="checkbox" class="accent-amber-500" /> Ida y vuelta
           </label>
         </div>
@@ -39,11 +39,11 @@ const label = 'mb-1 block text-xs font-semibold uppercase tracking-wide text-sla
         <div class="flex gap-2">
           <input id="cv-precio" type="number" min="0" step="0.001" value="1.60" inputmode="decimal" class={field} />
           <button id="cv-barata" type="button"
-            class="shrink-0 rounded-lg border border-[#232733] bg-[#0B0D12] px-3 text-xs font-semibold text-amber-400 transition hover:border-amber-500 disabled:opacity-50">
+            class="shrink-0 rounded-lg border border-borde bg-fondo px-3 text-xs font-semibold text-acento transition hover:border-amber-500 disabled:opacity-50">
             Más barata
           </button>
         </div>
-        <span id="cv-precio-nota" class="mt-1 block text-[11px] text-slate-600">Pulsa "Más barata" y ponemos el precio mínimo de tu provincia.</span>
+        <span id="cv-precio-nota" class="mt-1 block text-[11px] text-tenue">Pulsa "Más barata" y ponemos el precio mínimo de tu provincia.</span>
       </div>
 
       <label class="block">
@@ -54,7 +54,7 @@ const label = 'mb-1 block text-xs font-semibold uppercase tracking-wide text-sla
       <label class="block">
         <span class={label}>Capacidad del depósito (litros)</span>
         <input id="cv-deposito" type="number" min="10" max="140" step="1" value="55" inputmode="numeric" class={field} />
-        <span id="cv-llenar" class="mt-1 block text-[11px] text-slate-600">—</span>
+        <span id="cv-llenar" class="mt-1 block text-[11px] text-tenue">—</span>
       </label>
 
       <label class="block">
@@ -71,12 +71,12 @@ const label = 'mb-1 block text-xs font-semibold uppercase tracking-wide text-sla
     <div class="mt-4">
       <span class={label}>¿Qué condiciones tendrá el viaje?</span>
       <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-        <label class="flex items-center gap-2 rounded-lg border border-[#232733] bg-[#0B0D12] px-3 py-2 text-sm text-slate-300"><input id="cv-ac" type="checkbox" class="accent-amber-500" /> Aire acondicionado <span class="ml-auto text-xs text-slate-600">+8%</span></label>
-        <label class="flex items-center gap-2 rounded-lg border border-[#232733] bg-[#0B0D12] px-3 py-2 text-sm text-slate-300"><input id="cv-vent" type="checkbox" class="accent-amber-500" /> Ventanillas bajadas a alta velocidad <span class="ml-auto text-xs text-slate-600">+5%</span></label>
-        <label class="flex items-center gap-2 rounded-lg border border-[#232733] bg-[#0B0D12] px-3 py-2 text-sm text-slate-300"><input id="cv-carga" type="checkbox" class="accent-amber-500" /> Coche muy cargado <span class="ml-auto text-xs text-slate-600">+5%</span></label>
-        <label class="block rounded-lg border border-[#232733] bg-[#0B0D12] px-3 py-2 text-sm text-slate-300">
+        <label class="flex items-center gap-2 rounded-lg border border-borde bg-fondo px-3 py-2 text-sm text-tinta"><input id="cv-ac" type="checkbox" class="accent-amber-500" /> Aire acondicionado <span class="ml-auto text-xs text-tenue">+8%</span></label>
+        <label class="flex items-center gap-2 rounded-lg border border-borde bg-fondo px-3 py-2 text-sm text-tinta"><input id="cv-vent" type="checkbox" class="accent-amber-500" /> Ventanillas bajadas a alta velocidad <span class="ml-auto text-xs text-tenue">+5%</span></label>
+        <label class="flex items-center gap-2 rounded-lg border border-borde bg-fondo px-3 py-2 text-sm text-tinta"><input id="cv-carga" type="checkbox" class="accent-amber-500" /> Coche muy cargado <span class="ml-auto text-xs text-tenue">+5%</span></label>
+        <label class="block rounded-lg border border-borde bg-fondo px-3 py-2 text-sm text-tinta">
           <span class="mb-1 block">Portaequipajes en el techo</span>
-          <select id="cv-techo" class="w-full rounded-md border border-[#232733] bg-[#14171F] px-2 py-1 text-sm text-slate-200 outline-none focus:border-amber-500">
+          <select id="cv-techo" class="w-full rounded-md border border-borde bg-superficie px-2 py-1 text-sm text-tinta outline-none focus:border-amber-500">
             <option value="1">No llevo</option>
             <option value="1.12">Baca o cofre (+12%)</option>
             <option value="1.18">Portabicis o portaesquís (+18%)</option>
@@ -93,21 +93,21 @@ const label = 'mb-1 block text-xs font-semibold uppercase tracking-wide text-sla
         <p id="cv-porpersona" class="text-sm font-medium opacity-80">—</p>
       </div>
       <div class="grid grid-cols-2 gap-3">
-        <div class="rounded-xl border border-[#232733] bg-[#0B0D12] p-3 text-center">
-          <p class="text-xs uppercase tracking-wide text-slate-500">Litros</p>
-          <p id="cv-litros" class="mt-1 font-mono text-lg font-semibold text-slate-200">—</p>
+        <div class="rounded-xl border border-borde bg-fondo p-3 text-center">
+          <p class="text-xs uppercase tracking-wide text-suave">Litros</p>
+          <p id="cv-litros" class="mt-1 font-mono text-lg font-semibold text-tinta">—</p>
         </div>
-        <div class="rounded-xl border border-[#232733] bg-[#0B0D12] p-3 text-center">
-          <p class="text-xs uppercase tracking-wide text-slate-500">Consumo real</p>
-          <p id="cv-consumoreal" class="mt-1 font-mono text-lg font-semibold text-slate-200">—</p>
+        <div class="rounded-xl border border-borde bg-fondo p-3 text-center">
+          <p class="text-xs uppercase tracking-wide text-suave">Consumo real</p>
+          <p id="cv-consumoreal" class="mt-1 font-mono text-lg font-semibold text-tinta">—</p>
         </div>
-        <div class="rounded-xl border border-[#232733] bg-[#0B0D12] p-3 text-center">
-          <p class="text-xs uppercase tracking-wide text-slate-500">Coste/100 km</p>
-          <p id="cv-por100" class="mt-1 font-mono text-lg font-semibold text-slate-200">—</p>
+        <div class="rounded-xl border border-borde bg-fondo p-3 text-center">
+          <p class="text-xs uppercase tracking-wide text-suave">Coste/100 km</p>
+          <p id="cv-por100" class="mt-1 font-mono text-lg font-semibold text-tinta">—</p>
         </div>
-        <div class="rounded-xl border border-[#232733] bg-[#0B0D12] p-3 text-center">
-          <p class="text-xs uppercase tracking-wide text-slate-500">CO₂</p>
-          <p id="cv-co2" class="mt-1 font-mono text-lg font-semibold text-slate-200">—</p>
+        <div class="rounded-xl border border-borde bg-fondo p-3 text-center">
+          <p class="text-xs uppercase tracking-wide text-suave">CO₂</p>
+          <p id="cv-co2" class="mt-1 font-mono text-lg font-semibold text-tinta">—</p>
         </div>
       </div>
     </div>
@@ -123,13 +123,13 @@ const label = 'mb-1 block text-xs font-semibold uppercase tracking-wide text-sla
         Compartir por WhatsApp
       </a>
       <button id="cv-copiar" type="button"
-        class="rounded-lg border border-[#232733] bg-[#0B0D12] px-3 py-2 text-sm font-medium text-slate-300 transition hover:border-slate-500">
+        class="rounded-lg border border-borde bg-fondo px-3 py-2 text-sm font-medium text-tinta transition hover:border-suave">
         Copiar resultado
       </button>
-      <span id="cv-copiado" class="text-xs text-emerald-400 opacity-0 transition-opacity">Copiado</span>
+      <span id="cv-copiado" class="text-xs text-barato opacity-0 transition-opacity">Copiado</span>
     </div>
 
-    <p class="mt-3 text-[11px] leading-relaxed text-slate-600">
+    <p class="mt-3 text-[11px] leading-relaxed text-tenue">
       Cálculo orientativo. Los porcentajes de cada factor son estimaciones medias (el impacto real
       varía con la velocidad, el coche y la temperatura). El consumo base que introduces es el que
       más manda: ponlo lo más cercano posible al de tu coche.
@@ -192,14 +192,14 @@ const label = 'mb-1 block text-xs font-semibold uppercase tracking-wide text-sla
         const sobrecoste = total - totalBase;
         const pesoTotal = factores.reduce((s, f) => s + (f.extra - 1) * (f.extra >= 1 ? 1 : -1), 0);
         desglose.innerHTML =
-          '<p class="mb-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500">Cuánto suma o resta cada condición</p>' +
+          '<p class="mb-1.5 text-xs font-semibold uppercase tracking-wide text-suave">Cuánto suma o resta cada condición</p>' +
           '<div class="space-y-1">' +
           factores.map((f) => {
             const parte = pesoTotal !== 0 ? (Math.abs(f.extra - 1) / Math.abs(pesoTotal)) * sobrecoste : 0;
             const sube = f.extra > 1;
-            return `<div class="flex items-center justify-between rounded-lg border border-[#232733] bg-[#0B0D12] px-3 py-1.5 text-sm">
-              <span class="text-slate-300">${f.nombre}</span>
-              <span class="font-mono ${sube ? 'text-red-400' : 'text-emerald-400'}">${sube ? '+' : '−'}${eur(Math.abs(parte))}</span>
+            return `<div class="flex items-center justify-between rounded-lg border border-borde bg-fondo px-3 py-1.5 text-sm">
+              <span class="text-tinta">${f.nombre}</span>
+              <span class="font-mono ${sube ? 'text-caro' : 'text-barato'}">${sube ? '+' : '−'}${eur(Math.abs(parte))}</span>
             </div>`;
           }).join('') +
           '</div>';

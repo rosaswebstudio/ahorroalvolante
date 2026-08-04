@@ -1,0 +1,441 @@
+---
+// "¿Diésel o gasolina?": la pregunta se responde aquí con el precio oficial del día y con
+// la evolución real de la diferencia, no con un texto fijo escrito una vez.
+//
+// El ángulo de la página es que la creencia general (el diésel es más barato) lleva años
+// sin ser cierta en el surtidor, pero que aun así un diésel puede salir más barato por
+// kilómetro porque consume menos. Las dos cosas son verdad a la vez y casi nadie las
+// cuenta juntas: eso es lo que aporta la página.
+import Layout from '../layouts/Layout.astro';
+import { resumenPorCombustible } from '../lib/datos-build.js';
+import { puntosSparkline } from '../lib/tendencia.js';
+import historicoJson from '../data/historico.json';
+
+const historico = historicoJson as {
+  fechas: string[];
+  nacional: Record<string, (number | null)[]>;
+};
+
+const { fecha, combustibles, totalEstaciones } = await resumenPorCombustible();
+const g95 = combustibles.find((c) => c.id === 'g95')!;
+const diesel = combustibles.find((c) => c.id === 'ga')!;
+const dia = fecha ? fecha.split(' ')[0] : '';
+
+// Consumos de referencia: un diésel gasta alrededor de un litro menos cada 100 km que su
+// equivalente de gasolina. Comparar los dos con el mismo consumo falsearía el resultado.
+const CONSUMO_G = 6.5;
+const CONSUMO_D = 5.5;
+const KM_ANIO = 15000;
+const SOBREPRECIO = 2000; // lo que suele costar de más la versión diésel de un mismo coche
+
+const p3 = (v: number) => v.toLocaleString('es-ES', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+const p2 = (v: number) => v.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const cent = (v: number) => (Math.abs(v) * 100).toLocaleString('es-ES', { maximumFractionDigits: 1 });
+const ent = (v: number) => Math.round(v).toLocaleString('es-ES');
+
+const precioG = g95.nacional.media;
+const precioD = diesel.nacional.media;
+// Positivo = el diésel está más caro por litro.
+const brecha = precioD - precioG;
+const dieselMasCaro = brecha > 0;
+
+const por100G = (CONSUMO_G * precioG);
+const por100D = (CONSUMO_D * precioD);
+const ahorro100 = por100G - por100D; // positivo = gana el diésel
+const ganaDiesel = ahorro100 > 0;
+const anualG = (por100G * KM_ANIO) / 100;
+const anualD = (por100D * KM_ANIO) / 100;
+const ahorroAnual = Math.abs(anualG - anualD);
+const aniosAmortizar = ahorroAnual > 0 ? SOBREPRECIO / ahorroAnual : Infinity;
+
+// Kilometraje a partir del cual el sobreprecio del diésel se recupera en 5 años.
+const kmParaCincoAnios = ganaDiesel ? (SOBREPRECIO / 5 / (ahorro100 / 100)) : null;
+
+// Años que se tarda en recuperar el sobreprecio del diésel solo con el combustible, según
+// los kilómetros que se hagan al año. Se calcula aquí y no dentro del HTML porque el
+// compilador confunde el `<=` suelto con la apertura de una etiqueta.
+const AMORTIZACION = [10000, 15000, 25000, 40000].map((km) => {
+  const ahorroAno = (Math.abs(ahorro100) * km) / 100;
+  const anios = ahorroAno > 0 ? SOBREPRECIO / ahorroAno : Infinity;
+  return {
+    km,
+    bueno: ganaDiesel && anios <= 6,
+    nota: ganaDiesel
+      ? `Ahorra ${ent(ahorroAno)} € al año en combustible`
+      : `Gasta ${ent(ahorroAno)} € más al año en combustible`,
+    plazo: !ganaDiesel
+      ? 'nunca'
+      : anios > 20
+        ? '+20 años'
+        : `${anios.toLocaleString('es-ES', { maximumFractionDigits: 1 })} años`,
+  };
+});
+
+/* --- Evolución de la diferencia entre los dos combustibles --- */
+const serieG = historico.nacional?.g95 ?? [];
+const serieD = historico.nacional?.ga ?? [];
+// El histórico llega hasta ayer; el dato de hoy es el que acaba de bajarse para el build.
+// Se añade al final para que la línea termine en la misma cifra que da la cabecera, en vez
+// de contar dos verdades distintas en la misma página.
+const serieBrecha = [
+  ...historico.fechas.map((_, i) => {
+    const a = serieD[i];
+    const b = serieG[i];
+    return typeof a === 'number' && typeof b === 'number' ? a - b : null;
+  }),
+  brecha,
+];
+const brechasValidas = serieBrecha.filter((v): v is number => typeof v === 'number');
+const hayHistorico = brechasValidas.length >= 8;
+const brechaIni = brechasValidas[0];
+const brechaFin = brechasValidas[brechasValidas.length - 1];
+const diasDieselCaro = brechasValidas.filter((v) => v > 0).length;
+const desde = historico.fechas.length ? historico.fechas[0].split('-').reverse().join('/') : '';
+const ANCHO = 300;
+const ALTO = 60;
+const puntos = hayHistorico ? puntosSparkline(serieBrecha, ANCHO, ALTO) : '';
+const seEstrecha = hayHistorico && brechaFin < brechaIni;
+
+const title = dieselMasCaro
+  ? '¿Diésel o gasolina? Hoy el diésel es más caro por litro'
+  : '¿Diésel o gasolina? Cuál sale más barato hoy';
+const description = `Diésel a ${p3(precioD)} €/L y gasolina 95 a ${p3(precioG)} €/L de media en España, con datos oficiales del Ministerio. Comparamos el coste real por 100 km y a partir de cuántos kilómetros al año compensa un coche diésel.`;
+const rutaCanonica = '/diesel-o-gasolina/';
+const siteUrl = (Astro.site ?? new URL('https://ahorroalvolante.es')).href.replace(/\/$/, '');
+
+const faqs = [
+  {
+    q: dieselMasCaro ? '¿Por qué el diésel es más caro que la gasolina?' : '¿El diésel sigue siendo más barato que la gasolina?',
+    a: dieselMasCaro
+      ? `Hoy el gasóleo A está a ${p3(precioD)} €/L y la gasolina 95 a ${p3(precioG)} €/L: ${cent(brecha)} céntimos de diferencia a favor de la gasolina. Durante años fue al revés, porque el diésel soportaba un impuesto sobre hidrocarburos más bajo. Esa ventaja fiscal se ha ido recortando, y a eso se suma que el gasóleo compite con la demanda de gasóleo de calefacción y del transporte, mientras que la refinería europea produce más gasolina de la que consume. El resultado es que la creencia de que repostar diésel es más barato lleva tiempo sin cumplirse en el surtidor.`
+      : `Ahora mismo sí: el gasóleo A está a ${p3(precioD)} €/L y la gasolina 95 a ${p3(precioG)} €/L, ${cent(brecha)} céntimos de diferencia. Conviene comprobarlo de vez en cuando, porque la distancia entre los dos combustibles se ha estrechado mucho en los últimos años y ha llegado a invertirse.`,
+  },
+  {
+    q: '¿Entonces sale más barato un coche de gasolina?',
+    a: ganaDiesel
+      ? `Por litro sí, pero por kilómetro no. Un diésel consume alrededor de un litro menos cada 100 km, y eso le da la vuelta al resultado: ${p2(por100D)} € por cada 100 km frente a ${p2(por100G)} € del gasolina. La diferencia es de ${p2(Math.abs(ahorro100))} € cada 100 km, unos ${ent(ahorroAnual)} € al año haciendo ${ent(KM_ANIO)} km.`
+      : `Con los precios de hoy, sí. Un diésel consume alrededor de un litro menos cada 100 km, pero no le llega para compensar lo que cuesta el litro: ${p2(por100D)} € por cada 100 km frente a ${p2(por100G)} € del gasolina.`,
+  },
+  {
+    q: '¿A partir de cuántos kilómetros al año compensa un diésel?',
+    a: ganaDiesel && kmParaCincoAnios
+      ? `Depende de lo que pagues de más por la versión diésel. Tomando ${ent(SOBREPRECIO)} € de sobreprecio, que es lo habitual en un mismo modelo, harían falta unos ${ent(kmParaCincoAnios)} km al año para recuperarlo en cinco años. Por debajo de eso, el ahorro en combustible no llega a pagar la diferencia del precio de compra antes de que vendas el coche.`
+      : `Con los precios actuales, ninguno: si el diésel no ahorra por kilómetro, el sobreprecio de la versión diésel no se recupera nunca por la vía del combustible. Tendría que compensarlo por otro lado, como el valor de reventa.`,
+  },
+  {
+    q: '¿Puedo echar gasolina a un diésel o al revés?',
+    a: 'No. Echar gasolina en un motor diésel daña el sistema de inyección, que se lubrica con el propio gasóleo, y echar gasóleo en uno de gasolina impide la combustión y ensucia el motor. Si te equivocas, lo importante es no arrancar: mientras el combustible no llegue al motor, la reparación suele quedarse en vaciar y limpiar el depósito.',
+  },
+  {
+    q: '¿De dónde salen estos precios?',
+    a: `Del listado oficial que las ${totalEstaciones.toLocaleString('es-ES')} gasolineras de España están obligadas a comunicar al Ministerio, actualizado el ${dia}. Son precios de venta al público con impuestos incluidos, es decir, lo que pagas en el surtidor.`,
+  },
+];
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Inicio', item: `${siteUrl}/` },
+        { '@type': 'ListItem', position: 2, name: 'Diésel o gasolina', item: siteUrl + rutaCanonica },
+      ],
+    },
+    {
+      '@type': 'FAQPage',
+      mainEntity: faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+    },
+  ],
+};
+
+const card = 'rounded-2xl border border-borde bg-superficie p-4';
+---
+<Layout title={title} description={description} canonicalPath={rutaCanonica}>
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify(jsonLd)} />
+
+  <div class="min-h-screen w-full bg-fondo">
+    <div class="mx-auto flex max-w-5xl justify-center gap-8">
+      <main class="w-full max-w-2xl">
+        <nav aria-label="Migas de pan" class="px-4 pt-6 text-xs text-tenue">
+          <a href="/" class="hover:text-acento">Inicio</a>
+          <span class="mx-1.5">/</span>
+          <span class="text-suave">Diésel o gasolina</span>
+        </nav>
+
+        <header class="px-4 pt-4">
+          <h1 class="text-2xl font-bold tracking-tight text-tinta sm:text-3xl">
+            ¿Diésel o gasolina? <span class="text-acento">Cuál sale más barato</span> hoy
+          </h1>
+          <p class="mt-3 text-sm leading-relaxed text-suave">
+            {dieselMasCaro ? (
+              <>
+                Al contrario de lo que sigue creyendo mucha gente, hoy el diésel es
+                {' '}<strong class="text-tinta">más caro</strong> que la gasolina en el surtidor:
+                {' '}{p3(precioD)} €/L frente a {p3(precioG)} €/L, una diferencia de
+                {' '}<strong class="text-caro">{cent(brecha)} céntimos por litro</strong>. Ahora bien,
+                el litro no es lo que pagas: lo que pagas son los kilómetros, y ahí la respuesta
+                cambia.
+              </>
+            ) : (
+              <>
+                El diésel está hoy a {p3(precioD)} €/L y la gasolina 95 a {p3(precioG)} €/L, una
+                diferencia de <strong class="text-tinta">{cent(brecha)} céntimos por litro</strong>.
+                Pero el litro no es lo que pagas: lo que pagas son los kilómetros.
+              </>
+            )}
+          </p>
+          <p class="mt-2 text-xs text-tenue">
+            Datos oficiales del Ministerio · {totalEstaciones.toLocaleString('es-ES')} gasolineras · {dia}
+          </p>
+        </header>
+
+        <!-- Precio por litro -->
+        <section class="px-4 pt-6">
+          <h2 class="text-base font-bold text-tinta">Precio por litro hoy</h2>
+          <div class="mt-3 grid grid-cols-2 gap-3">
+            <div class={card}>
+              <p class="text-xs font-semibold uppercase tracking-wide text-tenue">Gasolina 95</p>
+              <p class={`mt-1 text-2xl font-bold ${dieselMasCaro ? 'text-barato' : 'text-tinta'}`}>
+                {p3(precioG)} <span class="text-sm font-semibold text-suave">€/L</span>
+              </p>
+              <p class="mt-1 text-xs text-tenue">desde {p3(g95.nacional.min)} €/L</p>
+            </div>
+            <div class={card}>
+              <p class="text-xs font-semibold uppercase tracking-wide text-tenue">Diésel (gasóleo A)</p>
+              <p class={`mt-1 text-2xl font-bold ${dieselMasCaro ? 'text-caro' : 'text-barato'}`}>
+                {p3(precioD)} <span class="text-sm font-semibold text-suave">€/L</span>
+              </p>
+              <p class="mt-1 text-xs text-tenue">desde {p3(diesel.nacional.min)} €/L</p>
+            </div>
+          </div>
+          <p class="mt-2 text-xs leading-relaxed text-tenue">
+            Medias de todas las estaciones de España. Llenar un depósito de 55 litros sale por
+            {' '}{p2(55 * precioG)} € en gasolina 95 y {p2(55 * precioD)} € en diésel.
+          </p>
+        </section>
+
+        <!-- Lo que de verdad importa -->
+        <section class="px-4 pt-8">
+          <h2 class="text-base font-bold text-tinta">Lo que importa: el coste por kilómetro</h2>
+          <p class="mt-2 text-sm leading-relaxed text-suave">
+            Un diésel consume alrededor de un litro menos cada 100 km que su equivalente de
+            gasolina. Comparando {CONSUMO_G.toLocaleString('es-ES')} l/100 km en gasolina con
+            {' '}{CONSUMO_D.toLocaleString('es-ES')} l/100 km en diésel, y con los precios de hoy:
+          </p>
+          <div class="mt-3 overflow-x-auto rounded-2xl border border-borde bg-superficie">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="border-b border-borde text-left text-xs uppercase tracking-wide text-tenue">
+                  <th class="px-4 py-2.5 font-semibold"></th>
+                  <th class="px-4 py-2.5 text-right font-semibold">Gasolina</th>
+                  <th class="px-4 py-2.5 text-right font-semibold">Diésel</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="border-b border-borde">
+                  <td class="px-4 py-2.5 text-tinta">Precio por litro</td>
+                  <td class="px-4 py-2.5 text-right font-mono text-suave">{p3(precioG)} €</td>
+                  <td class="px-4 py-2.5 text-right font-mono text-suave">{p3(precioD)} €</td>
+                </tr>
+                <tr class="border-b border-borde">
+                  <td class="px-4 py-2.5 text-tinta">Consumo de referencia</td>
+                  <td class="px-4 py-2.5 text-right font-mono text-suave">{CONSUMO_G.toLocaleString('es-ES')} l/100</td>
+                  <td class="px-4 py-2.5 text-right font-mono text-suave">{CONSUMO_D.toLocaleString('es-ES')} l/100</td>
+                </tr>
+                <tr class="border-b border-borde">
+                  <td class="px-4 py-2.5 font-semibold text-tinta">Coste por 100 km</td>
+                  <td class={`px-4 py-2.5 text-right font-mono font-bold ${ganaDiesel ? 'text-tinta' : 'text-barato'}`}>{p2(por100G)} €</td>
+                  <td class={`px-4 py-2.5 text-right font-mono font-bold ${ganaDiesel ? 'text-barato' : 'text-tinta'}`}>{p2(por100D)} €</td>
+                </tr>
+                <tr>
+                  <td class="px-4 py-2.5 text-tinta">Al año ({ent(KM_ANIO)} km)</td>
+                  <td class="px-4 py-2.5 text-right font-mono text-suave">{ent(anualG)} €</td>
+                  <td class="px-4 py-2.5 text-right font-mono text-suave">{ent(anualD)} €</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="mt-3 rounded-2xl border border-aviso-borde bg-aviso p-4">
+            <p class="text-sm font-semibold text-acento">
+              {ganaDiesel
+                ? `El diésel es más caro por litro y aun así más barato por kilómetro`
+                : `El diésel no compensa ni siquiera consumiendo menos`}
+            </p>
+            <p class="mt-1.5 text-sm leading-relaxed text-suave">
+              {ganaDiesel ? (
+                <>
+                  Las dos cosas son verdad a la vez, y por eso la pregunta no se resuelve mirando el
+                  precio del surtidor. Con estos números, el diésel ahorra
+                  {' '}<strong class="text-tinta">{p2(Math.abs(ahorro100))} € cada 100 km</strong>, es
+                  decir unos <strong class="text-tinta">{ent(ahorroAnual)} € al año</strong> haciendo
+                  {' '}{ent(KM_ANIO)} km. Es un ahorro real, pero pequeño comparado con lo que cuesta
+                  de más comprar el coche.
+                </>
+              ) : (
+                <>
+                  Consumir menos no le basta para compensar lo que cuesta el litro: el gasolina sale
+                  {' '}<strong class="text-tinta">{p2(Math.abs(ahorro100))} € más barato cada 100 km</strong>,
+                  unos {ent(ahorroAnual)} € al año haciendo {ent(KM_ANIO)} km.
+                </>
+              )}
+            </p>
+          </div>
+        </section>
+
+        <!-- Evolución de la brecha -->
+        {hayHistorico && (
+          <section class="px-4 pt-8">
+            <h2 class="text-base font-bold text-tinta">Cómo ha cambiado la diferencia</h2>
+            <div class="mt-3 rounded-2xl border border-borde bg-superficie p-4">
+              <div class="flex items-baseline justify-between gap-3">
+                <div>
+                  <p class="text-xs font-semibold uppercase tracking-wide text-tenue">
+                    Diferencia diésel menos gasolina
+                  </p>
+                  <p class="mt-1 font-mono text-xl font-bold text-tinta">
+                    {brechaFin > 0 ? '+' : ''}{cent(brechaFin)} <span class="text-xs font-semibold text-suave">céntimos/L</span>
+                  </p>
+                </div>
+                <p class={`shrink-0 text-xs font-semibold ${seEstrecha ? 'text-barato' : 'text-caro'}`}>
+                  {seEstrecha ? 'se estrecha' : 'se ensancha'}
+                </p>
+              </div>
+              <svg viewBox={`0 0 ${ANCHO} ${ALTO}`} preserveAspectRatio="none" class="mt-3 h-16 w-full" role="img"
+                aria-label={`Evolución de la diferencia de precio entre el diésel y la gasolina 95 en los últimos ${brechasValidas.length} días`}>
+                <polyline points={puntos} fill="none" style="stroke:var(--serie-neutro)"
+                  stroke-width="2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke" />
+              </svg>
+              <p class="mt-2 text-xs leading-relaxed text-tenue">
+                Desde el {desde}, con {brechasValidas.length} días de datos del Ministerio. La
+                diferencia ha pasado de {cent(brechaIni)} a {cent(brechaFin)} céntimos por litro.
+                {diasDieselCaro === brechasValidas.length
+                  ? ' El diésel ha estado más caro que la gasolina todos y cada uno de esos días.'
+                  : ` El diésel ha estado más caro que la gasolina en ${diasDieselCaro} de esos ${brechasValidas.length} días.`}
+              </p>
+            </div>
+          </section>
+        )}
+
+        <!-- ¿Compensa comprar un diésel? -->
+        <section class="px-4 pt-8">
+          <h2 class="text-base font-bold text-tinta">¿Compensa comprarse un diésel?</h2>
+          <p class="mt-2 text-sm leading-relaxed text-suave">
+            La versión diésel de un mismo coche suele costar alrededor de {ent(SOBREPRECIO)} € más
+            que la de gasolina. Con el ahorro por kilómetro de hoy, esto es lo que se tarda en
+            recuperar esa diferencia solo con el combustible:
+          </p>
+          <div class="mt-3 overflow-hidden rounded-2xl border border-borde bg-superficie">
+            {AMORTIZACION.map((e) => (
+              <div class="flex items-center justify-between gap-3 border-b border-borde px-4 py-3 last:border-0">
+                <div class="min-w-0">
+                  <p class="text-sm font-semibold text-tinta">{ent(e.km)} km al año</p>
+                  <p class="text-xs text-tenue">{e.nota}</p>
+                </div>
+                <p class={`shrink-0 text-right font-mono text-sm font-bold ${e.bueno ? 'text-barato' : 'text-caro'}`}>
+                  {e.plazo}
+                </p>
+              </div>
+            ))}
+          </div>
+          <p class="mt-2 text-xs leading-relaxed text-tenue">
+            Solo cuenta el combustible, con los precios medios de hoy y los consumos de referencia
+            de arriba. No incluye el seguro, el mantenimiento ni el impuesto de circulación, que
+            suelen ser algo más caros en un diésel.
+          </p>
+        </section>
+
+        <!-- Lo que no sale en el precio -->
+        <section class="px-4 pt-8">
+          <h2 class="text-base font-bold text-tinta">Lo que no sale en el precio del litro</h2>
+          <div class="mt-3 space-y-2">
+            {[
+              {
+                t: 'Cuántos kilómetros haces y de qué tipo',
+                d: 'Es el factor que más manda. El diésel rinde en trayectos largos y a velocidad constante; en ciudad, con recorridos cortos, ni siquiera llega a calentar bien y sus sistemas anticontaminación sufren.',
+              },
+              {
+                t: 'Las zonas de bajas emisiones',
+                d: 'Los diésel reciben peor etiqueta ambiental que un gasolina de la misma edad, y son los primeros en quedarse fuera cuando una ciudad endurece las restricciones. Si vives o entras a diario en una ciudad grande, esto pesa más que unos céntimos por litro.',
+              },
+              {
+                t: 'El mantenimiento',
+                d: 'Un diésel moderno lleva componentes anticontaminación caros de reparar. Es la parte que más se subestima al comparar los dos coches en el concesionario.',
+              },
+              {
+                t: 'La reventa',
+                d: 'Lo que un diésel pierda o gane de valor a cinco años vista depende de cómo evolucionen las restricciones de circulación, y eso puede mover más dinero que todo el ahorro de combustible junto.',
+              },
+            ].map((f) => (
+              <div class="rounded-xl border border-borde bg-superficie px-4 py-3">
+                <p class="text-sm font-semibold text-tinta">{f.t}</p>
+                <p class="mt-1 text-sm leading-relaxed text-suave">{f.d}</p>
+              </div>
+            ))}
+          </div>
+          <p class="mt-2 text-xs leading-relaxed text-tenue">
+            Las etiquetas ambientales las asigna la DGT según la fecha de matriculación y la norma
+            de emisiones del coche. Consulta la de tu matrícula antes de dar por hecho a qué zonas
+            puedes entrar.
+          </p>
+        </section>
+
+        <!-- Al buscador -->
+        <section class="px-4 pt-8">
+          <div class="grid gap-2">
+            <a href="/" class="flex items-center justify-between gap-3 rounded-2xl border border-borde bg-superficie px-4 py-3.5 transition-colors hover:border-acento">
+              <div>
+                <p class="text-sm font-semibold text-tinta">Precio de hoy cerca de ti</p>
+                <p class="text-xs text-suave">Gasolina y diésel en las gasolineras de tu zona</p>
+              </div>
+              <span class="shrink-0 rounded-full bg-amber-500 px-3 py-1.5 text-xs font-semibold text-[#0B0D12]">Abrir</span>
+            </a>
+            <a href="/calcular-gasto-gasolina/" class="flex items-center justify-between gap-3 rounded-2xl border border-borde bg-superficie px-4 py-3.5 transition-colors hover:border-acento">
+              <div>
+                <p class="text-sm font-semibold text-tinta">Calcula tu caso con tu consumo real</p>
+                <p class="text-xs text-suave">Pon los kilómetros y el consumo de tu coche</p>
+              </div>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+                class="h-4 w-4 shrink-0 text-acento" aria-hidden="true">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </a>
+          </div>
+        </section>
+
+        <section class="px-4 pt-8">
+          <h2 class="text-base font-bold text-tinta">Preguntas frecuentes</h2>
+          <div class="mt-3 divide-y divide-borde">
+            {faqs.map((f) => (
+              <details class="group py-3">
+                <summary class="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-medium text-tinta">
+                  <span>{f.q}</span>
+                  <span class="text-acento transition-transform group-open:rotate-45">+</span>
+                </summary>
+                <p class="mt-2 text-sm leading-relaxed text-suave">{f.a}</p>
+              </details>
+            ))}
+          </div>
+        </section>
+
+        <footer class="px-4 pt-10 pb-8">
+          <p class="text-xs leading-relaxed text-tenue">
+            Precios medios calculados con el listado oficial del Ministerio (Geoportal Gasolineras)
+            del {dia}. Los consumos, el sobreprecio del diésel y el kilometraje anual son valores de
+            referencia para poder comparar: tu caso concreto depende de tu coche y de tu uso. Esta
+            página es informativa y no es asesoramiento de compra.
+          </p>
+          <div class="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-xs">
+            <a href="/" class="text-suave hover:text-acento">Inicio</a>
+            <a href="/precios/" class="text-suave hover:text-acento">Precios</a>
+            <a href="/marcas/" class="text-suave hover:text-acento">Marcas</a>
+            <a href="/aviso-legal" class="text-suave hover:text-acento">Aviso legal</a>
+            <a href="/privacidad" class="text-suave hover:text-acento">Privacidad</a>
+          </div>
+        </footer>
+      </main>
+    </div>
+  </div>
+</Layout>

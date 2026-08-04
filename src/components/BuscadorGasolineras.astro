@@ -1,22 +1,22 @@
 ---
 import { PROVINCIAS, COMBUSTIBLES } from '../lib/gasolineras.js';
-const field = 'w-full rounded-lg border border-[#232733] bg-[#0B0D12] px-3 py-2 text-sm text-slate-200 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25';
+const field = 'w-full rounded-lg border border-borde bg-fondo px-3 py-2 text-sm text-tinta outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/25';
 ---
 <section id="buscador" class="scroll-mt-24">
-  <div class="rounded-2xl border border-[#232733] bg-[#14171F] p-4 sm:p-6">
+  <div class="rounded-2xl border border-borde bg-superficie p-4 sm:p-6">
     <!-- Favoritos: se rellena desde localStorage, oculto si no hay ninguno -->
     <div id="gs-favs-box" class="mb-4 hidden">
       <div class="mb-2 flex items-baseline justify-between gap-2">
-        <p class="text-xs font-semibold uppercase tracking-wide text-amber-400">Tus gasolineras</p>
-        <span class="text-[11px] text-slate-600">Guardadas en este dispositivo</span>
+        <p class="text-xs font-semibold uppercase tracking-wide text-acento">Tus gasolineras</p>
+        <span class="text-[11px] text-tenue">Guardadas en este dispositivo</span>
       </div>
       <div id="gs-favs" class="space-y-1.5"></div>
 
       <!-- Aviso de instalación: solo si hay favoritos que perder, la web no está
            instalada y el visitante no lo ha descartado antes. -->
       <div id="gs-instalar" class="mt-2 hidden rounded-xl border border-amber-500/30 bg-amber-500/5 px-3 py-2.5">
-        <p class="text-xs leading-relaxed text-slate-300">
-          <strong class="text-amber-400">Para no perderlas: </strong>
+        <p class="text-xs leading-relaxed text-tinta">
+          <strong class="text-acento">Para no perderlas: </strong>
           <span id="gs-instalar-texto"></span>
         </p>
         <div class="mt-2 flex items-center gap-2">
@@ -25,25 +25,32 @@ const field = 'w-full rounded-lg border border-[#232733] bg-[#0B0D12] px-3 py-2 
             Instalar la app
           </button>
           <button id="gs-instalar-no" type="button"
-            class="rounded-lg px-2 py-1.5 text-xs font-medium text-slate-500 transition hover:text-slate-300">
+            class="rounded-lg px-2 py-1.5 text-xs font-medium text-suave transition hover:text-tinta">
             No, gracias
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Controles -->
-    <div class="grid gap-3 sm:grid-cols-2">
+    <!-- Controles. En móvil, combustible y provincia van a dos columnas para que el
+         municipio quepa sin empujar la lista de precios fuera de la pantalla. -->
+    <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
       <label class="block">
-        <span class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Combustible</span>
+        <span class="mb-1 block text-xs font-semibold uppercase tracking-wide text-suave">Combustible</span>
         <select id="gs-fuel" class={field}>
-          {COMBUSTIBLES.map((c) => <option value={c.id}>{c.label}</option>)}
+          {COMBUSTIBLES.map((c) => <option value={c.id}>{c.corto ?? c.label}</option>)}
         </select>
       </label>
       <label class="block">
-        <span class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Provincia</span>
+        <span class="mb-1 block text-xs font-semibold uppercase tracking-wide text-suave">Provincia</span>
         <select id="gs-prov" class={field}>
           {PROVINCIAS.map((p) => <option value={p.id} selected={p.id === '28'}>{p.nombre}</option>)}
+        </select>
+      </label>
+      <label class="col-span-2 block sm:col-span-1">
+        <span class="mb-1 block text-xs font-semibold uppercase tracking-wide text-suave">Municipio</span>
+        <select id="gs-muni" class={field}>
+          <option value="">Todos los municipios</option>
         </select>
       </label>
     </div>
@@ -54,42 +61,45 @@ const field = 'w-full rounded-lg border border-[#232733] bg-[#0B0D12] px-3 py-2 
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21s-7-5.1-7-11a7 7 0 1 1 14 0c0 5.9-7 11-7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg>
         Cerca de mí
       </button>
-      <div class="flex gap-1 rounded-lg border border-[#232733] bg-[#0B0D12] p-1 text-sm">
+      <div class="flex gap-1 rounded-lg border border-borde bg-fondo p-1 text-sm">
         <button id="gs-orden-precio" type="button" class="rounded-md px-3 py-1 font-medium">Más baratas</button>
         <button id="gs-orden-dist" type="button" class="rounded-md px-3 py-1 font-medium" disabled>Más cercanas</button>
       </div>
-      <input id="gs-filtro" type="search" placeholder="Filtrar por municipio…" class={`${field} ml-auto max-w-56 flex-1`} />
+      <!-- En móvil salta a su propia línea y la ocupa entera. Antes se iba a la derecha
+           con `ml-auto` y dejaba un hueco vacío a su izquierda, como si faltara algo. -->
+      <input id="gs-filtro" type="search" placeholder="Marca, calle…" aria-label="Buscar por marca o calle" class={`${field} max-w-none sm:ml-auto sm:max-w-56 sm:flex-1`} />
     </div>
 
-    <p id="gs-status" class="mt-3 text-sm text-slate-500" aria-live="polite"></p>
+    <p id="gs-status" class="mt-3 text-sm text-suave" aria-live="polite"></p>
 
-    <!-- Stats -->
-    <div id="gs-stats" class="mt-3 hidden gap-2 sm:flex">
-      <div class="flex-1 rounded-xl border border-[#232733] bg-[#0B0D12] px-3 py-3">
-        <p class="text-xs uppercase tracking-wider text-slate-500">Más barata</p>
-        <p id="gs-min" class="mt-1 font-mono text-lg font-semibold text-emerald-400">—</p>
+    <!-- Stats. Siempre en tres columnas: apiladas ocupaban media pantalla de móvil y
+         empujaban la lista de gasolineras, que es lo que se viene a ver. -->
+    <div id="gs-stats" class="mt-3 hidden grid-cols-3 gap-2">
+      <div class="rounded-xl border border-borde bg-fondo px-2 py-2.5 sm:px-3 sm:py-3">
+        <p class="text-[10px] uppercase tracking-wider text-suave sm:text-xs">Más barata</p>
+        <p id="gs-min" class="mt-1 font-mono text-base font-semibold text-barato sm:text-lg">—</p>
       </div>
-      <div class="flex-1 rounded-xl border border-[#232733] bg-[#0B0D12] px-3 py-3">
-        <p class="text-xs uppercase tracking-wider text-slate-500">Media</p>
-        <p id="gs-avg" class="mt-1 font-mono text-lg font-semibold text-slate-200">—</p>
+      <div class="rounded-xl border border-borde bg-fondo px-2 py-2.5 sm:px-3 sm:py-3">
+        <p class="text-[10px] uppercase tracking-wider text-suave sm:text-xs">Media</p>
+        <p id="gs-avg" class="mt-1 font-mono text-base font-semibold text-tinta sm:text-lg">—</p>
       </div>
-      <div class="flex-1 rounded-xl border border-[#232733] bg-[#0B0D12] px-3 py-3">
-        <p class="text-xs uppercase tracking-wider text-slate-500">Más cara</p>
-        <p id="gs-max" class="mt-1 font-mono text-lg font-semibold text-red-400">—</p>
+      <div class="rounded-xl border border-borde bg-fondo px-2 py-2.5 sm:px-3 sm:py-3">
+        <p class="text-[10px] uppercase tracking-wider text-suave sm:text-xs">Más cara</p>
+        <p id="gs-max" class="mt-1 font-mono text-base font-semibold text-caro sm:text-lg">—</p>
       </div>
     </div>
 
     <!-- Lista -->
     <div id="gs-lista" class="mt-4 space-y-1.5"></div>
-    <button id="gs-mas" type="button" class="mt-3 hidden w-full rounded-lg border border-[#232733] px-4 py-2 text-sm font-medium text-slate-300 transition hover:border-slate-500">Mostrar más gasolineras</button>
+    <button id="gs-mas" type="button" class="mt-3 hidden w-full rounded-lg border border-borde px-4 py-2 text-sm font-medium text-tinta transition hover:border-suave">Mostrar más gasolineras</button>
 
     <!-- Pie -->
     <div class="mt-4 flex items-center justify-between gap-3">
-      <p id="gs-fuente" class="text-xs leading-snug text-slate-500">
+      <p id="gs-fuente" class="text-xs leading-snug text-suave">
         Precios oficiales del Ministerio (Geoportal Gasolineras).
       </p>
       <button id="gs-refresh" type="button" aria-label="Actualizar precios"
-        class="rounded-full border border-[#232733] bg-[#0B0D12] p-2 text-slate-400 transition hover:border-slate-500">
+        class="rounded-full border border-borde bg-fondo p-2 text-suave transition hover:border-suave">
         <svg id="gs-refresh-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
       </button>
     </div>
@@ -102,6 +112,7 @@ const field = 'w-full rounded-lg border border-[#232733] bg-[#0B0D12] px-3 py-2 
   const $ = (id: string) => document.getElementById(id);
   const fuelSel = $('gs-fuel') as HTMLSelectElement;
   const provSel = $('gs-prov') as HTMLSelectElement;
+  const muniSel = $('gs-muni') as HTMLSelectElement;
   const filtroInp = $('gs-filtro') as HTMLInputElement;
   const lista = $('gs-lista')!;
   const status = $('gs-status')!;
@@ -114,11 +125,31 @@ const field = 'w-full rounded-lg border border-[#232733] bg-[#0B0D12] px-3 py-2 
   let userPos: { lat: number; lng: number } | null = null;
   let orden: 'precio' | 'dist' = 'precio';
   let visibles = 25;
+  // Municipio guardado de la última visita: no se puede aplicar hasta que la provincia
+  // haya cargado y sepamos qué municipios existen.
+  let muniPendiente = '';
 
-  const CHEAP = [52, 211, 153], MIDC = [245, 158, 11], EXP = [248, 113, 113];
+  // Escala de color del precio: verde (barato) -> ámbar -> rojo (caro). Los extremos se
+  // leen del tema en vez de estar fijos aquí, porque los tonos claros que se ven bien
+  // sobre negro no tienen contraste suficiente sobre blanco.
+  let escala = [[52, 211, 153], [245, 158, 11], [248, 113, 113]];
+  const hexRgb = (h: string) => {
+    const s = h.trim().replace('#', '');
+    if (!/^[0-9a-fA-F]{6}$/.test(s)) return null;
+    return [0, 2, 4].map((i) => parseInt(s.slice(i, i + 2), 16));
+  };
+  const leerEscala = () => {
+    const cs = getComputedStyle(document.documentElement);
+    const c = [
+      hexRgb(cs.getPropertyValue('--color-barato')),
+      hexRgb(cs.getPropertyValue('--color-acento')),
+      hexRgb(cs.getPropertyValue('--color-caro')),
+    ];
+    if (c.every(Boolean)) escala = c as number[][];
+  };
   const lerp = (a: number[], b: number[], t: number) => a.map((v, i) => Math.round(v + (b[i] - v) * t));
   const colorFor = (t: number) => {
-    const c = t < 0.5 ? lerp(CHEAP, MIDC, t / 0.5) : lerp(MIDC, EXP, (t - 0.5) / 0.5);
+    const c = t < 0.5 ? lerp(escala[0], escala[1], t / 0.5) : lerp(escala[1], escala[2], (t - 0.5) / 0.5);
     return `rgb(${c.join(',')})`;
   };
   const norm = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
@@ -145,31 +176,73 @@ const field = 'w-full rounded-lg border border-[#232733] bg-[#0B0D12] px-3 py-2 
 
   const botonFav = (id: string, activa: boolean) => {
     const txt = activa ? 'Quitar de tus gasolineras' : 'Guardar en tus gasolineras';
-    return `<button type="button" data-fav="${esc(id)}" aria-pressed="${activa}" aria-label="${txt}" title="${txt}" class="shrink-0 rounded-md border border-[#232733] p-1.5 text-slate-500 transition hover:border-amber-500 hover:text-amber-400">${estrella(activa)}</button>`;
+    return `<button type="button" data-fav="${esc(id)}" aria-pressed="${activa}" aria-label="${txt}" title="${txt}" class="shrink-0 rounded-md border border-borde p-1.5 text-suave transition hover:border-amber-500 hover:text-acento">${estrella(activa)}</button>`;
+  };
+
+  // `hidden` y `grid` fijan las dos el display, así que hay que quitar una al poner la
+  // otra: si no, al mostrarlas se quedaban en bloque y se apilaban.
+  const mostrarStats = (v: boolean) => {
+    statsBox.classList.toggle('hidden', !v);
+    statsBox.classList.toggle('grid', v);
   };
 
   const setOrden = (o: 'precio' | 'dist') => {
     orden = o;
     const on = 'rounded-md px-3 py-1 font-medium bg-amber-500 text-[#0B0D12]';
-    const off = 'rounded-md px-3 py-1 font-medium text-slate-400';
+    const off = 'rounded-md px-3 py-1 font-medium text-suave';
     ordenPrecioBtn.className = o === 'precio' ? on : off;
     ordenDistBtn.className = o === 'dist' ? on : off;
   };
+
+  /**
+   * Rellena el desplegable de municipios con los de la provincia cargada que venden el
+   * combustible elegido, y el número de estaciones de cada uno. Se rellena aquí y no en
+   * el build porque los datos ya están descargados: sale gratis y siempre está al día.
+   */
+  function rellenarMunicipios() {
+    if (!data) return;
+    const fuel = fuelSel.value;
+    const elegido = muniPendiente || muniSel.value;
+    muniPendiente = '';
+
+    const cuenta = new Map<string, number>();
+    let total = 0;
+    for (const e of data.e) {
+      if (!e.muni || e.p[fuel] == null) continue;
+      cuenta.set(e.muni, (cuenta.get(e.muni) ?? 0) + 1);
+      total++;
+    }
+    // Si el municipio elegido no vende este combustible, se queda en la lista con un (0)
+    // en vez de desaparecer: así se entiende por qué no hay resultados.
+    if (elegido && !cuenta.has(elegido)) cuenta.set(elegido, 0);
+
+    const munis = [...cuenta.entries()].sort((a, b) => a[0].localeCompare(b[0], 'es'));
+    muniSel.innerHTML =
+      `<option value="">Todos los municipios (${total})</option>` +
+      munis.map(([m, n]) => `<option value="${esc(m)}">${esc(m)} (${n})</option>`).join('');
+    muniSel.value = elegido && cuenta.has(elegido) ? elegido : '';
+  }
 
   function render() {
     if (!data) return;
     const fuel = fuelSel.value as 'g95' | 'ga' | 'g98' | 'gap' | 'glp';
     const filtro = norm(filtroInp.value.trim());
+    const muni = muniSel.value;
 
     let l = data.e.filter((e: any) => e.p[fuel] != null);
+    if (muni) l = l.filter((e: any) => e.muni === muni);
     if (filtro) l = l.filter((e: any) => norm(`${e.muni} ${e.loc} ${e.rotulo} ${e.dir}`).includes(filtro));
     if (userPos) l.forEach((e: any) => { e.dist = distanciaKm(userPos!.lat, userPos!.lng, e.lat, e.lng); });
 
+    const fuelLabel = (COMBUSTIBLES.find((c) => c.id === fuel) || {}).label;
+
     if (l.length === 0) {
       lista.innerHTML = '';
-      statsBox.classList.add('hidden');
+      mostrarStats(false);
       masBtn.classList.add('hidden');
-      status.textContent = 'No hay gasolineras con ese combustible y filtro.';
+      status.textContent = muni
+        ? `No hay gasolineras con ${fuelLabel} en ${muni}${filtro ? ' que coincidan con la búsqueda' : ''}.`
+        : 'No hay gasolineras con ese combustible y filtro.';
       return;
     }
 
@@ -178,12 +251,11 @@ const field = 'w-full rounded-lg border border-[#232733] bg-[#0B0D12] px-3 py-2 
     ($('gs-min') as HTMLElement).textContent = fmt(min) + ' €';
     ($('gs-avg') as HTMLElement).textContent = fmt(sum / l.length) + ' €';
     ($('gs-max') as HTMLElement).textContent = fmt(max) + ' €';
-    statsBox.classList.remove('hidden');
+    mostrarStats(true);
 
     l.sort((a: any, b: any) => (orden === 'dist' && userPos) ? a.dist - b.dist : a.p[fuel] - b.p[fuel]);
 
-    const fuelLabel = (COMBUSTIBLES.find((c) => c.id === fuel) || {}).label;
-    status.textContent = `${l.length} gasolineras con ${fuelLabel} · ordenadas por ${orden === 'dist' ? 'cercanía' : 'precio'}`;
+    status.textContent = `${l.length} gasolineras con ${fuelLabel}${muni ? ' en ' + muni : ''} · ordenadas por ${orden === 'dist' ? 'cercanía' : 'precio'}`;
 
     const favIds = new Set(leerFavs().map((f) => f.id));
     lista.innerHTML = l.slice(0, visibles).map((e: any) => {
@@ -192,26 +264,25 @@ const field = 'w-full rounded-lg border border-[#232733] bg-[#0B0D12] px-3 py-2 
       const color = colorFor(t);
       const maps = `https://www.google.com/maps/dir/?api=1&destination=${e.lat},${e.lng}`;
       return `
-      <div class="flex items-center gap-3 rounded-xl border border-[#232733] bg-[#0B0D12] px-3 py-2.5">
+      <div class="flex items-center gap-3 rounded-xl border border-borde bg-fondo px-3 py-2.5">
         <div class="w-20 shrink-0 text-center">
           <span class="font-mono text-base font-bold" style="color:${color}">${fmt(p)}</span>
-          <span class="block text-[10px] text-slate-600">€/litro</span>
+          <span class="block text-[10px] text-tenue">€/litro</span>
         </div>
         <div class="min-w-0 flex-1">
-          <p class="truncate text-sm font-semibold text-slate-200">${esc(e.rotulo)}</p>
-          <p class="truncate text-xs text-slate-500">${esc(e.dir)} · ${esc(e.loc || e.muni)}</p>
-          ${e.horario ? `<p class="truncate text-[11px] text-slate-600">${esc(e.horario)}</p>` : ''}
+          <p class="truncate text-sm font-semibold text-tinta">${esc(e.rotulo)}</p>
+          <p class="truncate text-xs text-suave">${esc(e.dir)} · ${esc(e.loc || e.muni)}</p>
+          ${e.horario ? `<p class="truncate text-[11px] text-tenue">${esc(e.horario)}</p>` : ''}
         </div>
         <div class="shrink-0 text-right">
-          ${e.dist != null ? `<p class="font-mono text-xs text-slate-400">${e.dist < 10 ? e.dist.toFixed(1) : Math.round(e.dist)} km</p>` : ''}
-          <a href="${maps}" target="_blank" rel="noopener nofollow" class="mt-0.5 inline-block rounded-md border border-[#232733] px-2 py-1 text-[11px] font-medium text-amber-400 transition hover:border-amber-500">Cómo llegar</a>
+          ${e.dist != null ? `<p class="font-mono text-xs text-suave">${e.dist < 10 ? e.dist.toFixed(1) : Math.round(e.dist)} km</p>` : ''}
+          <a href="${maps}" target="_blank" rel="noopener nofollow" class="mt-0.5 inline-block rounded-md border border-borde px-2 py-1 text-[11px] font-medium text-acento transition hover:border-amber-500">Cómo llegar</a>
         </div>
         ${botonFav(e.id, favIds.has(e.id))}
       </div>`;
     }).join('');
 
     masBtn.classList.toggle('hidden', l.length <= visibles);
-    (window as any).gtag?.('event', 'fuel_prices_checked', { prov: provSel.value, fuel });
   }
 
   async function load(force = false) {
@@ -224,7 +295,11 @@ const field = 'w-full rounded-lg border border-[#232733] bg-[#0B0D12] px-3 py-2 
       ($('gs-fuente') as HTMLElement).textContent =
         `Precios oficiales del Ministerio (Geoportal Gasolineras)${data.fecha ? ' · Actualizado: ' + data.fecha : ''}`;
       visibles = 25;
+      rellenarMunicipios();
       render();
+      // Se mide aquí y en el cambio de combustible, no en cada render: si no, teclear en
+      // el buscador dispararía un evento por letra.
+      (window as any).gtag?.('event', 'fuel_prices_checked', { prov: provSel.value, fuel: fuelSel.value });
     } catch {
       status.textContent = 'No se han podido cargar los precios. Comprueba tu conexión e inténtalo de nuevo.';
     } finally {
@@ -256,17 +331,17 @@ const field = 'w-full rounded-lg border border-[#232733] bg-[#0B0D12] px-3 py-2 
       const est = porProv.get(f.prov)?.get(f.id);
       const p = est?.p?.[fuel];
       const precio = p != null
-        ? `<span class="font-mono text-base font-bold text-amber-400">${fmt(p)}</span><span class="block text-[10px] text-slate-600">€/litro</span>`
-        : `<span class="text-[11px] leading-tight text-slate-600">sin ${esc(fuelLabel)}</span>`;
+        ? `<span class="font-mono text-base font-bold text-acento">${fmt(p)}</span><span class="block text-[10px] text-tenue">€/litro</span>`
+        : `<span class="text-[11px] leading-tight text-tenue">sin ${esc(fuelLabel)}</span>`;
       const maps = est?.lat ? `https://www.google.com/maps/dir/?api=1&destination=${est.lat},${est.lng}` : '';
       return `
-      <div class="flex items-center gap-3 rounded-xl border border-amber-500/25 bg-[#0B0D12] px-3 py-2.5">
+      <div class="flex items-center gap-3 rounded-xl border border-amber-500/25 bg-fondo px-3 py-2.5">
         <div class="w-20 shrink-0 text-center">${precio}</div>
         <div class="min-w-0 flex-1">
-          <p class="truncate text-sm font-semibold text-slate-200">${esc(f.rotulo)}</p>
-          <p class="truncate text-xs text-slate-500">${esc(f.muni)}</p>
+          <p class="truncate text-sm font-semibold text-tinta">${esc(f.rotulo)}</p>
+          <p class="truncate text-xs text-suave">${esc(f.muni)}</p>
         </div>
-        ${maps ? `<a href="${maps}" target="_blank" rel="noopener nofollow" class="shrink-0 rounded-md border border-[#232733] px-2 py-1 text-[11px] font-medium text-amber-400 transition hover:border-amber-500">Cómo llegar</a>` : ''}
+        ${maps ? `<a href="${maps}" target="_blank" rel="noopener nofollow" class="shrink-0 rounded-md border border-borde px-2 py-1 text-[11px] font-medium text-acento transition hover:border-amber-500">Cómo llegar</a>` : ''}
         ${botonFav(f.id, true)}
       </div>`;
     }).join('');
@@ -336,6 +411,14 @@ const field = 'w-full rounded-lg border border-[#232733] bg-[#0B0D12] px-3 py-2 
   // El evento puede llegar después de pintar los favoritos.
   window.addEventListener('gs:instalable', () => renderAvisoInstalar(leerFavs().length > 0));
 
+  // Los precios llevan el color en un atributo de estilo, así que al cambiar de tema hay
+  // que releer la escala y repintar: el CSS solo no puede hacerlo.
+  window.addEventListener('gs:tema', () => {
+    leerEscala();
+    render();
+    renderFavoritos();
+  });
+
   function toggleFav(id: string) {
     const favs = leerFavs();
     const i = favs.findIndex((f) => f.id === id);
@@ -364,15 +447,24 @@ const field = 'w-full rounded-lg border border-[#232733] bg-[#0B0D12] px-3 py-2 
   fuelSel.addEventListener('change', () => {
     visibles = 25;
     guardarPref({ fuel: fuelSel.value });
+    rellenarMunicipios();
     render();
     renderFavoritos();
+    (window as any).gtag?.('event', 'fuel_prices_checked', { prov: provSel.value, fuel: fuelSel.value });
   });
   provSel.addEventListener('change', () => {
     userPos = null;
     ordenDistBtn.disabled = true;
     setOrden('precio');
-    guardarPref({ prov: provSel.value });
+    // El municipio pertenece a la provincia anterior: no tiene sentido conservarlo.
+    muniSel.value = '';
+    guardarPref({ prov: provSel.value, muni: '' });
     load();
+  });
+  muniSel.addEventListener('change', () => {
+    visibles = 25;
+    guardarPref({ muni: muniSel.value });
+    render();
   });
   filtroInp.addEventListener('input', () => { visibles = 25; render(); });
   ordenPrecioBtn.addEventListener('click', () => { setOrden('precio'); render(); });
@@ -389,6 +481,10 @@ const field = 'w-full rounded-lg border border-[#232733] bg-[#0B0D12] px-3 py-2 
         const prov = provinciaMasCercana(userPos.lat, userPos.lng);
         ordenDistBtn.disabled = false;
         setOrden('dist');
+        // Ordenar por cercanía dentro de un solo municipio no tiene sentido: se quita
+        // el filtro para que salgan también las de los pueblos de al lado.
+        muniSel.value = '';
+        guardarPref({ muni: '' });
         if (prov.id !== provSel.value) { provSel.value = prov.id; await load(); }
         else render();
       },
@@ -402,11 +498,15 @@ const field = 'w-full rounded-lg border border-[#232733] bg-[#0B0D12] px-3 py-2 
   const existe = (sel: HTMLSelectElement, v: string) => Array.from(sel.options).some((o) => o.value === v);
   if (pref.fuel && existe(fuelSel, pref.fuel)) fuelSel.value = pref.fuel;
   if (pref.prov && existe(provSel, pref.prov)) provSel.value = pref.prov;
+  if (pref.muni) muniPendiente = pref.muni;
 
   // Las páginas de provincia enlazan aquí con ?prov=28: manda sobre lo guardado.
   const provParam = new URLSearchParams(location.search).get('prov');
   if (provParam && existe(provSel, provParam)) provSel.value = provParam;
+  // Si llegamos a otra provincia, el municipio guardado ya no pertenece a ella.
+  if (provParam && provParam !== pref.prov) muniPendiente = '';
 
+  leerEscala();
   setOrden('precio');
   load();
   renderFavoritos();

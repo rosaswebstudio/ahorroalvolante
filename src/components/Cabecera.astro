@@ -1,0 +1,103 @@
+---
+// Cabecera común a todas las páginas: identidad, secciones del sitio e interruptor de
+// tema. No es fija (sticky) a propósito: en un móvil se comería la parte de pantalla
+// donde tienen que verse los precios, que es lo que viene a buscar el visitante.
+const enlaces = [
+  { href: '/', texto: 'Buscador' },
+  { href: '/diesel-o-gasolina/', texto: 'Diésel o gasolina' },
+  { href: '/calcular-gasto-gasolina/', texto: 'Coste del viaje' },
+  { href: '/precios/', texto: 'Precios' },
+  { href: '/marcas/', texto: 'Marcas' },
+];
+
+const ruta = Astro.url.pathname;
+const activo = (href: string) => (href === '/' ? ruta === '/' : ruta.startsWith(href));
+const enlaceBase = 'shrink-0 rounded-full px-3 py-2 text-xs font-semibold transition-colors sm:text-sm';
+---
+<header class="border-b border-borde bg-superficie">
+  <div class="mx-auto flex max-w-5xl items-center gap-2 px-4 py-2">
+    <a href="/" class="flex shrink-0 items-center gap-2" aria-label="Ahorro al Volante, ir al inicio">
+      <span class="grid h-7 w-7 place-items-center rounded-lg bg-fondo ring-1 ring-inset ring-borde">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="1.8" class="h-4 w-4" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 21V6a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v15M4 21h11M8 7h4v3H8zM15 10h1.5l2.5 3v5.5a1.5 1.5 0 1 1-3 0V15h-1"/></svg>
+      </span>
+      <span class="hidden font-mono text-sm font-bold tracking-wide text-tinta md:inline">AHORRO AL VOLANTE</span>
+    </a>
+
+    <nav id="nav-secciones" aria-label="Secciones" class="sin-barra desvanece flex min-w-0 flex-1 items-center gap-1 overflow-x-auto">
+      {enlaces.map((e) => (
+        <a href={e.href}
+          aria-current={activo(e.href) ? 'page' : undefined}
+          class={activo(e.href)
+            ? `${enlaceBase} bg-amber-500 text-[#0B0D12]`
+            : `${enlaceBase} text-suave hover:text-acento`}>{e.texto}</a>
+      ))}
+    </nav>
+
+    <button id="tema-btn" type="button" aria-label="Cambiar a modo claro"
+      class="shrink-0 rounded-full border border-borde bg-fondo p-2 text-suave transition hover:border-suave hover:text-tinta">
+      <svg id="tema-sol" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path stroke-linecap="round" d="M12 2v2m0 16v2M2 12h2m16 0h2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"/></svg>
+      <svg id="tema-luna" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="hidden h-4 w-4" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
+    </button>
+  </div>
+</header>
+
+<script is:inline>
+  (function () {
+    var nav = document.getElementById('nav-secciones');
+    if (!nav) return;
+
+    // Difumina el lado por el que queda contenido sin ver, y solo ese lado.
+    function marcarBordes() {
+      var oculto = nav.scrollWidth - nav.clientWidth;
+      if (oculto <= 1) {
+        nav.style.setProperty('--fade-izq', '0px');
+        nav.style.setProperty('--fade-der', '0px');
+        return;
+      }
+      nav.style.setProperty('--fade-izq', nav.scrollLeft > 2 ? '24px' : '0px');
+      nav.style.setProperty('--fade-der', nav.scrollLeft < oculto - 2 ? '24px' : '0px');
+    }
+
+    // Si la sección en la que estás queda fuera de la parte visible, se trae a la vista.
+    // Se mueve solo la barra (scrollLeft), nunca la página.
+    var actual = nav.querySelector('[aria-current="page"]');
+    if (actual) {
+      var sobra = actual.offsetLeft + actual.offsetWidth - nav.clientWidth;
+      if (sobra > 0) nav.scrollLeft = sobra + 12;
+    }
+
+    marcarBordes();
+    nav.addEventListener('scroll', marcarBordes, { passive: true });
+    window.addEventListener('resize', marcarBordes);
+  })();
+
+  (function () {
+    var btn = document.getElementById('tema-btn');
+    if (!btn) return;
+    var sol = document.getElementById('tema-sol');
+    var luna = document.getElementById('tema-luna');
+
+    // El icono anuncia a dónde se va, no dónde se está: en oscuro se ve un sol.
+    function pintar(tema) {
+      var claro = tema === 'claro';
+      sol.classList.toggle('hidden', claro);
+      luna.classList.toggle('hidden', !claro);
+      btn.setAttribute('aria-label', claro ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro');
+      var meta = document.querySelector('meta[name="theme-color"]');
+      if (meta) meta.setAttribute('content', claro ? '#F5F3EF' : '#0B0D12');
+    }
+
+    pintar(document.documentElement.dataset.tema || 'oscuro');
+
+    btn.addEventListener('click', function () {
+      var tema = document.documentElement.dataset.tema === 'claro' ? 'oscuro' : 'claro';
+      document.documentElement.dataset.tema = tema;
+      // A partir de aquí manda lo que ha elegido el visitante, no el sistema.
+      try { localStorage.setItem('gs_tema', tema); } catch (e) { /* sin espacio */ }
+      pintar(tema);
+      // Lo que lleva el color en un atributo (los precios del buscador) no se entera
+      // solo de que ha cambiado el tema.
+      window.dispatchEvent(new Event('gs:tema'));
+    });
+  })();
+</script>

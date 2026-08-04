@@ -106,69 +106,69 @@ const jsonLd = {
   ],
 };
 
-const card = 'rounded-2xl border border-[#232733] bg-[#14171F] p-4';
+const card = 'rounded-2xl border border-borde bg-superficie p-4';
 ---
 <Layout title={title} description={description} canonicalPath={rutaCanonica}>
   <script type="application/ld+json" slot="head" set:html={JSON.stringify(jsonLd)} />
 
-  <div class="min-h-screen w-full" style="background-color:#0B0D12;">
+  <div class="min-h-screen w-full bg-fondo">
     <div class="mx-auto flex max-w-5xl justify-center gap-8">
       <main class="w-full max-w-2xl">
-        <nav aria-label="Migas de pan" class="px-4 pt-6 text-xs text-[#5A6070]">
-          <a href="/" class="hover:text-amber-400">Inicio</a>
+        <nav aria-label="Migas de pan" class="px-4 pt-6 text-xs text-tenue">
+          <a href="/" class="hover:text-acento">Inicio</a>
           <span class="mx-1.5">/</span>
-          <a href="/precios/" class="hover:text-amber-400">Precios</a>
+          <a href="/precios/" class="hover:text-acento">Precios</a>
           <span class="mx-1.5">/</span>
-          <span class="text-[#8A8F9C]">{c.label}</span>
+          <span class="text-suave">{c.label}</span>
         </nav>
 
         <header class="px-4 pt-4">
-          <h1 class="text-2xl font-bold tracking-tight text-[#ECEAE3] sm:text-3xl">
-            Precio <span class="text-amber-400">{c.de}</span> hoy
+          <h1 class="text-2xl font-bold tracking-tight text-tinta sm:text-3xl">
+            Precio <span class="text-acento">{c.de}</span> hoy
           </h1>
-          <p class="mt-3 text-sm leading-relaxed text-[#8A8F9C]">
-            Media de <strong class="text-[#ECEAE3]">{p3(c.nacional.media)} €/L</strong> en las
+          <p class="mt-3 text-sm leading-relaxed text-suave">
+            Media de <strong class="text-tinta">{p3(c.nacional.media)} €/L</strong> en las
             {' '}{c.nacional.n.toLocaleString('es-ES')} gasolineras de España que lo venden.
-            Llenar {DEPOSITO} litros sale por unos <strong class="text-[#ECEAE3]">{p2(deposito)} €</strong>.
+            Llenar {DEPOSITO} litros sale por unos <strong class="text-tinta">{p2(deposito)} €</strong>.
           </p>
-          <p class="mt-2 text-xs text-[#5A6070]">Listado oficial del Ministerio · {dia}</p>
+          <p class="mt-2 text-xs text-tenue">Listado oficial del Ministerio · {dia}</p>
         </header>
 
         <section class="grid grid-cols-3 gap-3 px-4 pt-5">
           <div class={card}>
-            <p class="text-xs font-semibold uppercase tracking-wide text-[#5A6070]">Más barato</p>
-            <p class="mt-1 font-mono text-base font-bold text-green-400">{p3(c.nacional.min)}</p>
-            <p class="text-xs text-[#5A6070]">€/L</p>
+            <p class="text-xs font-semibold uppercase tracking-wide text-tenue">Más barato</p>
+            <p class="mt-1 font-mono text-base font-bold text-barato">{p3(c.nacional.min)}</p>
+            <p class="text-xs text-tenue">€/L</p>
           </div>
           <div class={card}>
-            <p class="text-xs font-semibold uppercase tracking-wide text-[#5A6070]">Media</p>
-            <p class="mt-1 font-mono text-base font-bold text-[#ECEAE3]">{p3(c.nacional.media)}</p>
-            <p class="text-xs text-[#5A6070]">€/L</p>
+            <p class="text-xs font-semibold uppercase tracking-wide text-tenue">Media</p>
+            <p class="mt-1 font-mono text-base font-bold text-tinta">{p3(c.nacional.media)}</p>
+            <p class="text-xs text-tenue">€/L</p>
           </div>
           <div class={card}>
-            <p class="text-xs font-semibold uppercase tracking-wide text-[#5A6070]">Más caro</p>
-            <p class="mt-1 font-mono text-base font-bold text-amber-400">{p3(c.nacional.max)}</p>
-            <p class="text-xs text-[#5A6070]">€/L</p>
+            <p class="text-xs font-semibold uppercase tracking-wide text-tenue">Más caro</p>
+            <p class="mt-1 font-mono text-base font-bold text-acento">{p3(c.nacional.max)}</p>
+            <p class="text-xs text-tenue">€/L</p>
           </div>
         </section>
 
         <!-- Ranking completo de provincias -->
         <section class="px-4 pt-8">
-          <h2 class="text-base font-bold text-[#ECEAE3]">Precio {c.de} por provincia</h2>
-          <p class="mt-1 text-xs text-[#5A6070]">
+          <h2 class="text-base font-bold text-tinta">Precio {c.de} por provincia</h2>
+          <p class="mt-1 text-xs text-tenue">
             Las {c.provincias.length} provincias con datos, de más barata a más cara. Pincha para ver sus gasolineras.
           </p>
-          <div class="mt-3 overflow-hidden rounded-2xl border border-[#232733] bg-[#14171F]">
+          <div class="mt-3 overflow-hidden rounded-2xl border border-borde bg-superficie">
             {c.provincias.map((p, i) => (
-              <a href={`/gasolineras-baratas/${p.slug}/`} class="block border-b border-[#232733] px-4 py-2.5 transition-colors last:border-0 hover:bg-[#1A1E27]">
+              <a href={`/gasolineras-baratas/${p.slug}/`} class="block border-b border-borde px-4 py-2.5 transition-colors last:border-0 hover:bg-elevado">
                 <div class="flex items-baseline justify-between gap-3">
-                  <p class="text-sm text-[#ECEAE3]"><span class="mr-2 text-xs text-[#5A6070]">{i + 1}.</span>{p.nombre}</p>
-                  <p class="shrink-0 font-mono text-sm font-bold text-[#ECEAE3]">{p3(p.media)} €/L</p>
+                  <p class="text-sm text-tinta"><span class="mr-2 text-xs text-tenue">{i + 1}.</span>{p.nombre}</p>
+                  <p class="shrink-0 font-mono text-sm font-bold text-tinta">{p3(p.media)} €/L</p>
                 </div>
-                <div class="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-[#0B0D12]">
+                <div class="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-fondo">
                   <div class={`h-full rounded-full ${p.media < c.nacional.media ? 'bg-green-500' : 'bg-amber-500'}`} style={`width:${anchoBarra(p.media)}%`}></div>
                 </div>
-                <p class="mt-1 text-xs text-[#5A6070]">{p.n} estaciones · la más barata a {p3(p.min)} €/L</p>
+                <p class="mt-1 text-xs text-tenue">{p.n} estaciones · la más barata a {p3(p.min)} €/L</p>
               </a>
             ))}
           </div>
@@ -177,83 +177,83 @@ const card = 'rounded-2xl border border-[#232733] bg-[#14171F] p-4';
         <!-- Marcas -->
         {c.marcas.length > 0 && (
           <section class="px-4 pt-8">
-            <h2 class="text-base font-bold text-[#ECEAE3]">Marcas con {c.titulo} más {c.barato}</h2>
-            <p class="mt-1 text-xs text-[#5A6070]">Cadenas con al menos 20 estaciones que lo venden.</p>
-            <div class="mt-3 overflow-hidden rounded-2xl border border-[#232733] bg-[#14171F]">
+            <h2 class="text-base font-bold text-tinta">Marcas con {c.titulo} más {c.barato}</h2>
+            <p class="mt-1 text-xs text-tenue">Cadenas con al menos 20 estaciones que lo venden.</p>
+            <div class="mt-3 overflow-hidden rounded-2xl border border-borde bg-superficie">
               {c.marcas.slice(0, 12).map((m, i) => (
-                <a href={`/marcas/${m.slug}/`} class="flex items-center justify-between gap-3 border-b border-[#232733] px-4 py-2.5 transition-colors last:border-0 hover:bg-[#1A1E27]">
+                <a href={`/marcas/${m.slug}/`} class="flex items-center justify-between gap-3 border-b border-borde px-4 py-2.5 transition-colors last:border-0 hover:bg-elevado">
                   <div class="min-w-0">
-                    <p class="text-sm text-[#ECEAE3]"><span class="mr-2 text-xs text-[#5A6070]">{i + 1}.</span>{m.nombre}</p>
-                    <p class="text-xs text-[#5A6070]">{m.n} estaciones</p>
+                    <p class="text-sm text-tinta"><span class="mr-2 text-xs text-tenue">{i + 1}.</span>{m.nombre}</p>
+                    <p class="text-xs text-tenue">{m.n} estaciones</p>
                   </div>
-                  <p class={`shrink-0 font-mono text-sm font-bold ${m.media < c.nacional.media ? 'text-green-400' : 'text-amber-400'}`}>{p3(m.media)} €/L</p>
+                  <p class={`shrink-0 font-mono text-sm font-bold ${m.media < c.nacional.media ? 'text-barato' : 'text-acento'}`}>{p3(m.media)} €/L</p>
                 </a>
               ))}
             </div>
-            <a href="/marcas/" class="mt-2 inline-block text-xs font-semibold text-amber-400 hover:underline">Ver la comparativa completa de marcas →</a>
+            <a href="/marcas/" class="mt-2 inline-block text-xs font-semibold text-acento hover:underline">Ver la comparativa completa de marcas →</a>
           </section>
         )}
 
         <!-- Estaciones más baratas de España -->
         <section class="px-4 pt-8">
-          <h2 class="text-base font-bold text-[#ECEAE3]">Las gasolineras con {c.titulo} más {c.barato} de España</h2>
-          <div class="mt-3 overflow-hidden rounded-2xl border border-[#232733] bg-[#14171F]">
+          <h2 class="text-base font-bold text-tinta">Las gasolineras con {c.titulo} más {c.barato} de España</h2>
+          <div class="mt-3 overflow-hidden rounded-2xl border border-borde bg-superficie">
             {c.baratas.map((e, i) => (
-              <div class="flex items-start justify-between gap-3 border-b border-[#232733] px-4 py-3 last:border-0">
+              <div class="flex items-start justify-between gap-3 border-b border-borde px-4 py-3 last:border-0">
                 <div class="min-w-0">
-                  <p class="text-sm font-medium text-[#ECEAE3]">
-                    <span class="mr-1.5 text-xs text-[#5A6070]">{i + 1}.</span>{e.rotulo}
+                  <p class="text-sm font-medium text-tinta">
+                    <span class="mr-1.5 text-xs text-tenue">{i + 1}.</span>{e.rotulo}
                   </p>
-                  <p class="truncate text-xs text-[#5A6070]">{e.muni} · {e.dir}</p>
+                  <p class="truncate text-xs text-tenue">{e.muni} · {e.dir}</p>
                 </div>
-                <p class="shrink-0 font-mono text-sm font-bold text-green-400">{p3(e.p[c.id]!)} €/L</p>
+                <p class="shrink-0 font-mono text-sm font-bold text-barato">{p3(e.p[c.id]!)} €/L</p>
               </div>
             ))}
           </div>
-          <p class="mt-2 text-xs text-[#5A6070]">
+          <p class="mt-2 text-xs text-tenue">
             Son las más baratas del país, pero probablemente no te pillen cerca.
-            <a href="/" class="ml-1 font-semibold text-amber-400 hover:underline">Busca las de tu zona →</a>
+            <a href="/" class="ml-1 font-semibold text-acento hover:underline">Busca las de tu zona →</a>
           </p>
         </section>
 
         <section class="px-4 pt-8">
-          <h2 class="text-base font-bold text-[#ECEAE3]">Preguntas frecuentes</h2>
-          <div class="mt-3 divide-y divide-[#232733]">
+          <h2 class="text-base font-bold text-tinta">Preguntas frecuentes</h2>
+          <div class="mt-3 divide-y divide-borde">
             {faqs.map((f) => (
               <details class="group py-3">
-                <summary class="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-medium text-[#ECEAE3]">
+                <summary class="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-medium text-tinta">
                   <span>{f.q}</span>
-                  <span class="text-amber-400 transition-transform group-open:rotate-45">+</span>
+                  <span class="text-acento transition-transform group-open:rotate-45">+</span>
                 </summary>
-                <p class="mt-2 text-sm leading-relaxed text-[#8A8F9C]">{f.a}</p>
+                <p class="mt-2 text-sm leading-relaxed text-suave">{f.a}</p>
               </details>
             ))}
           </div>
         </section>
 
         <section class="px-4 pt-8">
-          <h2 class="text-base font-bold text-[#ECEAE3]">Otros combustibles</h2>
+          <h2 class="text-base font-bold text-tinta">Otros combustibles</h2>
           <div class="mt-3 grid gap-2 sm:grid-cols-2">
             {otros.map((o) => (
-              <a href={`/precios/${o.slug}/`} class="flex items-center justify-between gap-2 rounded-xl border border-[#232733] bg-[#14171F] px-3 py-2.5 text-sm text-[#ECEAE3] transition-colors hover:border-amber-400">
+              <a href={`/precios/${o.slug}/`} class="flex items-center justify-between gap-2 rounded-xl border border-borde bg-superficie px-3 py-2.5 text-sm text-tinta transition-colors hover:border-acento">
                 <span>Precio {o.de}</span>
-                <span class="shrink-0 font-mono text-xs text-[#5A6070]">{p3(o.media)}</span>
+                <span class="shrink-0 font-mono text-xs text-tenue">{p3(o.media)}</span>
               </a>
             ))}
           </div>
         </section>
 
         <footer class="px-4 pt-10 pb-8">
-          <p class="text-xs leading-relaxed text-[#5A6070]">
+          <p class="text-xs leading-relaxed text-tenue">
             Medias calculadas con el listado oficial de precios del Ministerio para la Transición
             Ecológica y el Reto Demográfico, del {dia}. Precios de venta al público con impuestos
             incluidos; los fija libremente cada estación y cambian a diario.
           </p>
           <div class="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-xs">
-            <a href="/" class="text-[#8A8F9C] hover:text-amber-400">Inicio</a>
-            <a href="/precios/" class="text-[#8A8F9C] hover:text-amber-400">Precios</a>
-            <a href="/marcas/" class="text-[#8A8F9C] hover:text-amber-400">Marcas</a>
-            <a href="/aviso-legal" class="text-[#8A8F9C] hover:text-amber-400">Aviso legal</a>
+            <a href="/" class="text-suave hover:text-acento">Inicio</a>
+            <a href="/precios/" class="text-suave hover:text-acento">Precios</a>
+            <a href="/marcas/" class="text-suave hover:text-acento">Marcas</a>
+            <a href="/aviso-legal" class="text-suave hover:text-acento">Aviso legal</a>
           </div>
         </footer>
       </main>

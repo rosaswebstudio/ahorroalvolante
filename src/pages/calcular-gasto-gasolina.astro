@@ -1,0 +1,299 @@
+---
+// Calculadora de gasto de combustible con URL propia.
+//
+// La herramienta ya vivía dentro de la portada, pero allí no puede posicionar: la portada
+// responde a "gasolineras baratas cerca de mí" y esta página responde a otra intención
+// distinta ("cuánto me cuesta ir de Madrid a Barcelona en coche"). Las preguntas sobre el
+// viaje se han movido aquí desde la portada para que las dos páginas no compitan entre sí
+// por lo mismo.
+import Layout from '../layouts/Layout.astro';
+import CalculadoraViaje from '../components/CalculadoraViaje.astro';
+import { resumenPorCombustible } from '../lib/datos-build.js';
+
+const { fecha, combustibles } = await resumenPorCombustible();
+const g95 = combustibles.find((c) => c.id === 'g95')!;
+const diesel = combustibles.find((c) => c.id === 'ga')!;
+const dia = fecha ? fecha.split(' ')[0] : '';
+
+const p3 = (v: number) => v.toLocaleString('es-ES', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+const eur = (v: number) => v.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+// Coches de referencia de la tabla de trayectos. Son dos consumos distintos a propósito:
+// comparar un diésel y un gasolina con el mismo consumo falsea la comparación, porque un
+// diésel equivalente gasta alrededor de un litro menos cada 100 km.
+const CONSUMO = 6.5;
+const CONSUMO_DIESEL = 5.5;
+const coste = (km: number, precio: number, consumo = CONSUMO) => (km * consumo * precio) / 100;
+
+// Distancias aproximadas por autovía. Son de referencia para dar una cifra orientativa,
+// no un cálculo de ruta: el trayecto real depende del camino que se tome.
+const TRAYECTOS = [
+  { origen: 'Madrid', destino: 'Barcelona', km: 620 },
+  { origen: 'Madrid', destino: 'Sevilla', km: 530 },
+  { origen: 'Madrid', destino: 'Valencia', km: 355 },
+  { origen: 'Madrid', destino: 'Málaga', km: 530 },
+  { origen: 'Madrid', destino: 'Bilbao', km: 395 },
+  { origen: 'Madrid', destino: 'A Coruña', km: 595 },
+  { origen: 'Madrid', destino: 'Alicante', km: 420 },
+  { origen: 'Barcelona', destino: 'Valencia', km: 350 },
+  { origen: 'Sevilla', destino: 'Málaga', km: 205 },
+];
+
+const title = 'Calcular el gasto de gasolina de un viaje en coche';
+const description = `Calcula lo que te costará un viaje en coche: kilómetros, consumo y precio real del combustible, con el desglose de cuánto suma el aire acondicionado, la carga o la baca. Con la gasolina 95 a ${p3(g95.nacional.media)} €/L de media en España.`;
+const rutaCanonica = '/calcular-gasto-gasolina/';
+const siteUrl = (Astro.site ?? new URL('https://ahorroalvolante.es')).href.replace(/\/$/, '');
+
+const faqs = [
+  {
+    q: '¿Cómo se calcula el gasto de gasolina de un viaje?',
+    a: `La fórmula es: kilómetros × (consumo en l/100 km ÷ 100) × precio por litro. Por ejemplo, 300 km con un coche de ${CONSUMO} l/100 km y la gasolina a ${p3(g95.nacional.media)} €/L salen por ${eur(coste(300, g95.nacional.media))} €. Lo que casi nadie tiene en cuenta es que ese consumo oficial sube con el aire acondicionado, la carga o una baca en el techo, y por eso la calculadora de arriba te enseña cuánto suma cada cosa por separado.`,
+  },
+  {
+    q: '¿Cuánto gasta de más el aire acondicionado y las ventanillas bajadas?',
+    a: 'El aire acondicionado incrementa el consumo en torno a un 5-10% de media (más en trayectos cortos de ciudad y con mucho calor). Llevar las ventanillas bajadas a alta velocidad añade otro 5% aproximado por la resistencia del aire. La regla práctica: en ciudad, ventanillas; en autopista, aire acondicionado. Una baca o un cofre en el techo es de lo que más suma, entre un 10 y un 18%.',
+  },
+  {
+    q: '¿Qué consumo pongo si no me sé el de mi coche?',
+    a: 'El dato fiable es el del ordenador de a bordo en un trayecto largo, no el de la ficha técnica: el homologado suele quedarse corto respecto al consumo real. Si no lo tienes a mano, sirven de referencia unos 5 a 6 l/100 km para un utilitario diésel, 6 a 8 para un gasolina mediano y 8 a 11 para un SUV o un monovolumen.',
+  },
+  {
+    q: '¿Merece la pena desviarse para repostar más barato?',
+    a: `Solo si el desvío es corto. Cada kilómetro extra también consume: con un coche de ${CONSUMO} l/100 km, desviarse 15 km entre ida y vuelta cuesta unos ${eur(coste(30, g95.nacional.media))} €, más de lo que se ahorra en un depósito normal por unos pocos céntimos de diferencia. Compensa cuando la gasolinera barata te pilla de camino, no cuando hay que ir a buscarla.`,
+  },
+  {
+    q: '¿Cuánto cuesta llenar el depósito hoy?',
+    a: `Con la media nacional de gasolina 95 (${p3(g95.nacional.media)} €/L), llenar 55 litros sale por unos ${eur(55 * g95.nacional.media)} €. En diésel, a ${p3(diesel.nacional.media)} €/L de media, serían unos ${eur(55 * diesel.nacional.media)} €. En la calculadora puedes poner la capacidad real de tu depósito y el precio de la gasolinera a la que vayas.`,
+  },
+  {
+    q: '¿De dónde sale el precio del combustible?',
+    a: 'Del listado oficial que todas las estaciones de España están obligadas a comunicar al Ministerio, que se actualiza aproximadamente cada 30 minutos. El botón "Más barata" de la calculadora trae el precio más bajo de tu provincia en ese momento, para que no tengas que buscarlo y copiarlo a mano.',
+  },
+];
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Inicio', item: `${siteUrl}/` },
+        { '@type': 'ListItem', position: 2, name: 'Calcular el gasto de gasolina', item: siteUrl + rutaCanonica },
+      ],
+    },
+    {
+      '@type': 'WebApplication',
+      '@id': `${siteUrl}${rutaCanonica}#app`,
+      name: 'Calculadora de gasto de gasolina de un viaje',
+      url: siteUrl + rutaCanonica,
+      description,
+      applicationCategory: 'UtilitiesApplication',
+      operatingSystem: 'Web',
+      inLanguage: 'es-ES',
+      isAccessibleForFree: true,
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR' },
+      featureList: [
+        'Coste total del viaje y coste por persona',
+        'Desglose de cuánto suma el aire acondicionado, la carga o la baca',
+        'Precio real de la gasolinera más barata de tu provincia',
+        'Litros, coste por 100 km y emisiones de CO2',
+      ],
+    },
+    {
+      '@type': 'FAQPage',
+      mainEntity: faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+    },
+  ],
+};
+---
+<Layout title={title} description={description} canonicalPath={rutaCanonica}>
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify(jsonLd)} />
+
+  <div class="min-h-screen w-full bg-fondo">
+    <div class="mx-auto flex max-w-5xl justify-center gap-8">
+      <main class="w-full max-w-2xl">
+        <nav aria-label="Migas de pan" class="px-4 pt-6 text-xs text-tenue">
+          <a href="/" class="hover:text-acento">Inicio</a>
+          <span class="mx-1.5">/</span>
+          <span class="text-suave">Calcular el gasto de gasolina</span>
+        </nav>
+
+        <header class="px-4 pt-4">
+          <h1 class="text-2xl font-bold tracking-tight text-tinta sm:text-3xl">
+            Calcular el <span class="text-acento">gasto de gasolina</span> de un viaje
+          </h1>
+          <p class="mt-3 text-sm leading-relaxed text-suave">
+            Pon los kilómetros, el consumo de tu coche y el precio del combustible y verás lo que
+            te va a costar el trayecto, cuánto sale por persona y cuánto suma cada condición del
+            viaje. Puedes traer con un botón el precio real de la gasolinera más barata de tu
+            provincia, en lugar de calcular con un precio inventado.
+          </p>
+          <p class="mt-2 text-xs text-tenue">
+            Gasolina 95 a {p3(g95.nacional.media)} €/L y diésel a {p3(diesel.nacional.media)} €/L
+            de media en España · datos del {dia}
+          </p>
+        </header>
+
+        <div class="px-4 pt-5">
+          <CalculadoraViaje />
+        </div>
+
+        <!-- Trayectos habituales: cifras concretas con el precio medio real de hoy -->
+        <section class="px-4 pt-8">
+          <h2 class="text-base font-bold text-tinta">Cuánto cuesta hoy un viaje en coche</h2>
+          <p class="mt-2 text-sm leading-relaxed text-suave">
+            Coste del combustible en los trayectos más habituales de España con el precio medio
+            nacional de hoy, para un gasolina de {CONSUMO.toLocaleString('es-ES')} l/100 km y un
+            diésel de {CONSUMO_DIESEL.toLocaleString('es-ES')} l/100 km. Solo ida; para ida y
+            vuelta, el doble.
+          </p>
+          <div class="mt-3 overflow-x-auto rounded-2xl border border-borde bg-superficie">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="border-b border-borde text-left text-xs uppercase tracking-wide text-tenue">
+                  <th class="px-4 py-2.5 font-semibold">Trayecto</th>
+                  <th class="px-4 py-2.5 text-right font-semibold">Km</th>
+                  <th class="px-4 py-2.5 text-right font-semibold">Gasolina 95<span class="block font-normal normal-case text-tenue">{CONSUMO.toLocaleString('es-ES')} l/100</span></th>
+                  <th class="px-4 py-2.5 text-right font-semibold">Diésel<span class="block font-normal normal-case text-tenue">{CONSUMO_DIESEL.toLocaleString('es-ES')} l/100</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                {TRAYECTOS.map((t) => (
+                  <tr class="border-b border-borde last:border-0">
+                    <td class="px-4 py-2.5 text-tinta">{t.origen} - {t.destino}</td>
+                    <td class="px-4 py-2.5 text-right text-suave">{t.km}</td>
+                    <td class="px-4 py-2.5 text-right font-mono font-semibold text-tinta">{eur(coste(t.km, g95.nacional.media))} €</td>
+                    <td class="px-4 py-2.5 text-right font-mono text-suave">{eur(coste(t.km, diesel.nacional.media, CONSUMO_DIESEL))} €</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p class="mt-2 text-xs leading-relaxed text-tenue">
+            Distancias aproximadas por autovía y solo el combustible: no incluye peajes, desgaste
+            ni el consumo extra del aire acondicionado o la carga. Para tu caso concreto, usa la
+            calculadora de arriba.
+          </p>
+        </section>
+
+        <!-- La fórmula -->
+        <section class="px-4 pt-8">
+          <h2 class="text-base font-bold text-tinta">La fórmula, para hacerlo a mano</h2>
+          <div class="mt-3 rounded-2xl border border-borde bg-superficie p-4">
+            <p class="font-mono text-sm font-semibold text-acento">
+              litros = km × consumo ÷ 100
+            </p>
+            <p class="mt-1 font-mono text-sm font-semibold text-acento">
+              coste = litros × precio por litro
+            </p>
+            <p class="mt-3 text-sm leading-relaxed text-suave">
+              Un viaje de 400 km con un coche de {CONSUMO.toLocaleString('es-ES')} l/100 km gasta
+              {' '}{((400 * CONSUMO) / 100).toLocaleString('es-ES', { maximumFractionDigits: 1 })} litros.
+              A {p3(g95.nacional.media)} € el litro, son
+              {' '}<strong class="text-tinta">{eur(coste(400, g95.nacional.media))} €</strong>. Si van
+              cuatro personas en el coche, {eur(coste(400, g95.nacional.media) / 4)} € cada una.
+            </p>
+          </div>
+        </section>
+
+        <!-- Qué se come el resto -->
+        <section class="px-4 pt-8">
+          <h2 class="text-base font-bold text-tinta">Lo que la fórmula se deja fuera</h2>
+          <p class="mt-2 text-sm leading-relaxed text-suave">
+            El consumo que da el coche no es fijo: sube con las condiciones del viaje. Estos son los
+            porcentajes medios que aplica la calculadora, y por eso el desglose enseña cuántos euros
+            añade cada uno en tu trayecto concreto.
+          </p>
+          <div class="mt-3 overflow-hidden rounded-2xl border border-borde bg-superficie">
+            {[
+              { q: 'Aire acondicionado', v: '+8%', d: 'Más en ciudad y trayectos cortos que en autopista' },
+              { q: 'Ventanillas bajadas a alta velocidad', v: '+5%', d: 'Por la resistencia del aire' },
+              { q: 'Coche muy cargado', v: '+5%', d: 'Maletero lleno y cinco ocupantes' },
+              { q: 'Baca o cofre en el techo', v: '+12%', d: 'Lo que más pesa, aunque vaya vacío' },
+              { q: 'Portabicis o portaesquís', v: '+18%', d: 'Rompe la aerodinámica del coche' },
+              { q: 'Conducción deportiva', v: '+20%', d: 'Acelerones y frenazos' },
+              { q: 'Conducción suave', v: '-8%', d: 'Velocidad constante y marchas largas' },
+            ].map((f) => (
+              <div class="flex items-center justify-between gap-3 border-b border-borde px-4 py-2.5 last:border-0">
+                <div class="min-w-0">
+                  <p class="text-sm text-tinta">{f.q}</p>
+                  <p class="text-xs text-tenue">{f.d}</p>
+                </div>
+                <span class={`shrink-0 font-mono text-sm font-bold ${f.v.startsWith('-') ? 'text-barato' : 'text-caro'}`}>{f.v}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <!-- Al buscador -->
+        <section class="px-4 pt-8">
+          <a href="/"
+            class="flex items-center justify-between gap-3 rounded-2xl border border-borde bg-superficie px-4 py-3.5 transition-colors hover:border-acento">
+            <div>
+              <p class="text-sm font-semibold text-tinta">Antes de salir, mira dónde repostar</p>
+              <p class="text-xs text-suave">Las gasolineras más baratas cerca de ti, con precios de hoy</p>
+            </div>
+            <span class="shrink-0 rounded-full bg-amber-500 px-3 py-1.5 text-xs font-semibold text-[#0B0D12]">Abrir</span>
+          </a>
+        </section>
+
+        <section class="px-4 pt-8">
+          <h2 class="text-base font-bold text-tinta">Preguntas frecuentes</h2>
+          <div class="mt-3 divide-y divide-borde">
+            {faqs.map((f) => (
+              <details class="group py-3">
+                <summary class="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-medium text-tinta">
+                  <span>{f.q}</span>
+                  <span class="text-acento transition-transform group-open:rotate-45">+</span>
+                </summary>
+                <p class="mt-2 text-sm leading-relaxed text-suave">{f.a}</p>
+              </details>
+            ))}
+          </div>
+        </section>
+
+        <section class="px-4 pt-8">
+          <div class="grid gap-2">
+            <a href="/precios/" class="flex items-center justify-between gap-3 rounded-2xl border border-borde bg-superficie px-4 py-3.5 transition-colors hover:border-acento">
+              <div>
+                <p class="text-sm font-semibold text-tinta">¿Dónde está más barata la gasolina?</p>
+                <p class="text-xs text-suave">Precio medio de las 52 provincias</p>
+              </div>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+                class="h-4 w-4 shrink-0 text-acento" aria-hidden="true">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </a>
+            <a href="/marcas/" class="flex items-center justify-between gap-3 rounded-2xl border border-borde bg-superficie px-4 py-3.5 transition-colors hover:border-acento">
+              <div>
+                <p class="text-sm font-semibold text-tinta">¿Qué marca es de verdad más barata?</p>
+                <p class="text-xs text-suave">Precio medio de cada cadena, con el dato oficial</p>
+              </div>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+                class="h-4 w-4 shrink-0 text-acento" aria-hidden="true">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </a>
+          </div>
+        </section>
+
+        <footer class="px-4 pt-10 pb-8">
+          <p class="text-xs leading-relaxed text-tenue">
+            El cálculo es orientativo. Los porcentajes de cada condición son estimaciones medias y
+            el resultado depende sobre todo del consumo real de tu coche. Los precios medios son del
+            listado oficial del Ministerio (Geoportal Gasolineras) del {dia}.
+          </p>
+          <div class="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-xs">
+            <a href="/" class="text-suave hover:text-acento">Inicio</a>
+            <a href="/precios/" class="text-suave hover:text-acento">Precios</a>
+            <a href="/marcas/" class="text-suave hover:text-acento">Marcas</a>
+            <a href="/aviso-legal" class="text-suave hover:text-acento">Aviso legal</a>
+            <a href="/privacidad" class="text-suave hover:text-acento">Privacidad</a>
+          </div>
+        </footer>
+      </main>
+    </div>
+  </div>
+</Layout>

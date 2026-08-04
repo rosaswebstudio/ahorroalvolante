@@ -6,38 +6,117 @@
     sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
     "Liberation Mono", monospace;
+
+  /* Paleta semántica. Lo que hay aquí es el tema OSCURO, que es el de partida;
+     el claro solo redefine estas mismas variables más abajo. Las utilidades de
+     Tailwind v4 compilan a var(--color-*), así que cambiar la variable cambia
+     toda la web sin tocar una sola clase. No usar hex sueltos en las páginas. */
+  --color-fondo: #0b0d12;
+  --color-superficie: #14171f;
+  --color-elevado: #1a1e27;
+  --color-borde: #232733;
+  --color-tinta: #eceae3;
+  --color-suave: #8a8f9c;
+  /* El gris de la letra pequeña era #5A6070: sobre las tarjetas daba 2,85:1 de
+     contraste, por debajo del mínimo legible (4,5:1). Con este llega a 4,66:1. */
+  --color-tenue: #7b8294;
+  --color-acento: #fbbf24;
+  --color-barato: #4ade80;
+  --color-caro: #f87171;
+  --color-aviso: #1a170e;
+  --color-aviso-borde: #3a3320;
+}
+
+/* Series de la sparkline de tendencia: van en atributos de estilo generados en el
+   build, por eso son variables sueltas y no colores del tema. */
+:root {
+  color-scheme: dark;
+  --serie-sube: #f43f5e;
+  --serie-baja: #22c55e;
+  --serie-neutro: #f59e0b;
+  --scrollbar: #334155;
+}
+
+/* Tema claro. Es un único bloque a propósito: el script de Layout.astro fija
+   siempre data-tema antes de pintar (guardado del visitante o, si no ha elegido,
+   lo que pida el sistema), así que no hace falta duplicar la paleta dentro de un
+   @media prefers-color-scheme y arriesgarse a que las dos copias se desincronicen.
+
+   Los tonos no son el oscuro invertido: el fondo es un blanco cálido de papel para
+   no deslumbrar al mirar el móvil a pleno sol, y los ámbares y verdes bajan de tono
+   porque los claros sobre blanco no llegan al contraste mínimo legible. */
+:root[data-tema="claro"] {
+  color-scheme: light;
+  --color-fondo: #f5f3ef;
+  --color-superficie: #ffffff;
+  --color-elevado: #eeece7;
+  --color-borde: #e1ded6;
+  --color-tinta: #16181d;
+  --color-suave: #454a59;
+  --color-tenue: #656a78;
+  --color-acento: #b45309;
+  --color-barato: #15803d;
+  --color-caro: #b91c1c;
+  --color-aviso: #fef6e7;
+  --color-aviso-borde: #f0dfb8;
+  --serie-sube: #be123c;
+  --serie-baja: #15803d;
+  --serie-neutro: #b45309;
+  --scrollbar: #c9c5bc;
 }
 
 html {
   scroll-behavior: smooth;
 }
 
-:root {
-  color-scheme: dark;
-}
-
 body {
-  background-color: #0b0d12;
-}
-
-select {
-  color-scheme: dark;
+  background-color: var(--color-fondo);
 }
 
 /* Scrollbars discretas */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #334155 transparent;
+  scrollbar-color: var(--scrollbar) transparent;
 }
 *::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
 *::-webkit-scrollbar-thumb {
-  background-color: #334155;
+  background-color: var(--scrollbar);
   border-radius: 9999px;
   border: 2px solid transparent;
   background-clip: content-box;
+}
+
+/* Fila de secciones de la cabecera: se desplaza a dedo en móvil, sin barra a la vista. */
+.sin-barra {
+  scrollbar-width: none;
+}
+.sin-barra::-webkit-scrollbar {
+  display: none;
+}
+
+/* Sin barra de desplazamiento a la vista, una sección cortada a media palabra parece un
+   fallo de maquetación en vez de algo que se puede arrastrar. Con esto, el borde por el
+   que queda contenido se difumina, que es la señal que la gente sí reconoce. Los anchos
+   los pone el script de la cabecera según haya contenido oculto a cada lado, así que el
+   degradado desaparece solo al llegar al final. */
+.desvanece {
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 var(--fade-izq, 0px),
+    #000 calc(100% - var(--fade-der, 0px)),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 var(--fade-izq, 0px),
+    #000 calc(100% - var(--fade-der, 0px)),
+    transparent 100%
+  );
 }
 
 @keyframes spin {

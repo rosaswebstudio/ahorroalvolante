@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import Cabecera from '../components/Cabecera.astro';
 
 interface Props {
   title: string;
@@ -47,6 +48,26 @@ const verificationActive = siteVerification && !siteVerification.includes('PENDI
     <!-- PWA: instalable en la pantalla de inicio -->
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#0B0D12" />
+
+    <!-- Tema claro/oscuro. Se decide aquí, antes de pintar nada, para que no haya
+         destello blanco al cargar. Manda lo que el visitante haya elegido a mano; si
+         no ha elegido nunca, se respeta lo que pida su sistema (la mayoría de móviles
+         están en claro, y la web se usa a pleno sol). Sin JavaScript se queda oscuro,
+         que es como se generó el HTML. -->
+    <script is:inline>
+      (function () {
+        var tema;
+        try { tema = localStorage.getItem('gs_tema'); } catch (e) { /* modo privado */ }
+        if (tema !== 'claro' && tema !== 'oscuro') {
+          tema = window.matchMedia('(prefers-color-scheme: light)').matches ? 'claro' : 'oscuro';
+        }
+        document.documentElement.dataset.tema = tema;
+        if (tema === 'claro') {
+          var meta = document.querySelector('meta[name="theme-color"]');
+          if (meta) meta.setAttribute('content', '#F5F3EF');
+        }
+      })();
+    </script>
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Ahorro al Volante" />
@@ -116,7 +137,8 @@ const verificationActive = siteVerification && !siteVerification.includes('PENDI
 
     <slot name="head" />
   </head>
-  <body class="min-h-screen font-sans text-slate-200 antialiased">
+  <body class="min-h-screen font-sans text-tinta antialiased">
+    <Cabecera />
     <slot />
   </body>
 </html>
