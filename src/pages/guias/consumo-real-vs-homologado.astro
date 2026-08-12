@@ -1,0 +1,191 @@
+---
+import GuiaLayout from '../../layouts/GuiaLayout.astro';
+
+const eur = (n: number, dec = 0) =>
+  n.toLocaleString('es-ES', { minimumFractionDigits: dec, maximumFractionDigits: dec });
+// Lo que cuesta al año cada litro de diferencia entre el consumo de ficha y el real.
+const KM = 15000;
+const PRECIO = 1.55;
+const porLitro100 = (KM / 100) * PRECIO;
+---
+<GuiaLayout slug="consumo-real-vs-homologado">
+
+  <p>
+    La ficha dice 4,9 litros a los cien. El ordenador de a bordo dice 6,2. Y la cuenta de los
+    repostajes, si alguna vez la has hecho, dice 6,6. Ninguno de los tres miente exactamente; están
+    respondiendo a preguntas distintas. Merece la pena saber cuál responde a la tuya, porque en un
+    año de uso normal cada litro de diferencia a los cien kilómetros son
+    <strong>{eur(porLitro100)} euros</strong>.
+  </p>
+
+  <h2>Qué mide el dato del catálogo</h2>
+
+  <p>
+    Desde 2018 los coches se homologan en Europa con el ciclo <strong>WLTP</strong>, que sustituyó al
+    antiguo NEDC. Es un procedimiento de laboratorio: el coche se sube a un banco de rodillos y se
+    reproduce un perfil de velocidades definido, siempre el mismo, en condiciones controladas de
+    temperatura y con el vehículo preparado.
+  </p>
+
+  <p>
+    El WLTP es bastante más realista que el NEDC al que sustituyó: dura más, alcanza velocidades más
+    altas, tiene aceleraciones más vivas y tiene en cuenta el equipamiento opcional que añade peso y
+    resistencia. Pero sigue siendo un ensayo de laboratorio, y su objetivo no es predecir tu consumo:
+    es que <strong>todos los coches se midan exactamente igual</strong> para que se puedan comparar
+    entre sí y para calcular las emisiones oficiales.
+  </p>
+
+  <div class="clave">
+    <p>
+      Por eso el dato del catálogo sirve perfectamente para comparar dos coches y muy mal para
+      presupuestar tu gasto. Es una regla graduada, no un espejo.
+    </p>
+  </div>
+
+  <h2>Por qué tu consumo es mayor</h2>
+
+  <ul>
+    <li>
+      <strong>El aire y la lluvia.</strong> El ensayo no tiene viento en contra, ni asfalto mojado, ni
+      un cofre en el techo.
+    </li>
+    <li>
+      <strong>El frío.</strong> Un motor arrancado en frío consume bastante más durante los primeros
+      kilómetros, hasta alcanzar temperatura. Si tus trayectos habituales son de cinco minutos, tu
+      coche se pasa la vida en esa fase.
+    </li>
+    <li>
+      <strong>Los accesorios.</strong> Aire acondicionado, luces, calefacción de asientos, sistemas
+      de infoentretenimiento.
+    </li>
+    <li>
+      <strong>Tu forma de conducir.</strong> El perfil del ensayo es suave y previsible; el tráfico
+      real, no. Cuánto pesa esto está en la
+      <a href="/guias/conduccion-eficiente/">guía de conducción eficiente</a>.
+    </li>
+    <li>
+      <strong>El estado del coche.</strong> Neumáticos flojos, filtros sucios, un coche con muchos
+      kilómetros.
+    </li>
+  </ul>
+
+  <p>
+    Sumado todo, una desviación de entre el 10 y el 30 % sobre el dato homologado es lo normal. En
+    trayectos cortos y urbanos, más. En coches híbridos enchufables, la diferencia puede ser enorme en
+    los dos sentidos, según con qué frecuencia los enchufes de verdad.
+  </p>
+
+  <h2>Y por qué el ordenador de a bordo tampoco vale</h2>
+
+  <p>
+    El consumo medio que muestra la pantalla del coche es una estimación calculada a partir del
+    caudal de los inyectores, no una medición de litros. Suele quedarse corto, y no por casualidad
+    técnica sino porque acumula pequeños errores en la misma dirección. Desviaciones del 3 al 8 % por
+    debajo del consumo real son habituales.
+  </p>
+
+  <p>
+    Sirve muy bien para lo instantáneo, para ver el efecto inmediato de levantar el pie. Como base
+    para hacer cuentas, no.
+  </p>
+
+  <h2>El método de los dos repostajes</h2>
+
+  <p>
+    Es la única forma fiable de saber lo que gasta tu coche, y no requiere nada más que el surtidor y
+    el cuentakilómetros parcial:
+  </p>
+
+  <ol>
+    <li>
+      <strong>Llena el depósito hasta el primer corte automático</strong> de la manguera. No sigas
+      apurando a chorritos: lo importante es que el criterio de "lleno" sea siempre el mismo, y el
+      corte automático es el más repetible.
+    </li>
+    <li><strong>Pon a cero el cuentakilómetros parcial.</strong></li>
+    <li>
+      <strong>Conduce con normalidad</strong> hasta gastar al menos media o tres cuartas partes del
+      depósito. Cuantos más kilómetros, menos pesa cualquier error.
+    </li>
+    <li>
+      <strong>Vuelve a llenar</strong>, a ser posible en el mismo surtidor y con el coche igual de
+      nivelado, otra vez hasta el primer corte. Apunta los <strong>litros exactos</strong> del ticket
+      y los <strong>kilómetros</strong> del parcial.
+    </li>
+    <li>
+      <strong>Divide:</strong> litros dividido entre kilómetros, multiplicado por 100. Eso son tus
+      litros a los cien, de verdad.
+    </li>
+  </ol>
+
+  <p>
+    Repítelo dos o tres veces en épocas distintas del año y quédate con la media. Un solo depósito
+    hecho en un viaje de vacaciones por autovía no describe tu año.
+  </p>
+
+  <h2>Qué hacer con el número</h2>
+
+  <p>
+    Una vez lo tienes, deja de ser un dato curioso y se convierte en una herramienta:
+  </p>
+
+  <div class="tabla-scroll">
+    <table>
+      <thead>
+        <tr><th>Para qué</th><th>Cómo</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Presupuestar un viaje</td>
+          <td>
+            Con tu consumo real y el precio de hoy, en la
+            <a href="/calcular-gasto-gasolina/">calculadora de coste del viaje</a>
+          </td>
+        </tr>
+        <tr>
+          <td>Decidir entre diésel y gasolina en el próximo coche</td>
+          <td>Con tus kilómetros reales, en <a href="/diesel-o-gasolina/">diésel o gasolina</a></td>
+        </tr>
+        <tr>
+          <td>Detectar un problema mecánico</td>
+          <td>Una subida sostenida del 15 % sin cambiar de hábitos merece una revisión</td>
+        </tr>
+        <tr>
+          <td>Medir si un cambio de conducción funciona</td>
+          <td>Compara dos depósitos completos, no dos trayectos sueltos</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>El detalle que descoloca a mucha gente</h2>
+
+  <p>
+    Si tu consumo real es un 20 % superior al homologado, tu factura anual de combustible es un 20 %
+    mayor de lo que habías calculado al comprar el coche. Con{' '}
+    {eur(KM)} km al año y el litro a {eur(PRECIO, 2)} euros, pasar de 5 a 6 litros a los cien son
+    <strong>{eur(porLitro100)} euros más al año</strong>, y {eur(porLitro100 * 10)} a lo largo de diez
+    años.
+  </p>
+
+  <p>
+    Es más de lo que suele estar en juego en la negociación del precio de compra del coche, y se
+    decide en la misma tarde sin que nadie lo mencione. Por eso el consumo real, medido y no
+    supuesto, es un dato que conviene tener antes de la siguiente compra, no después.
+  </p>
+
+  <div class="fuentes">
+    <h2>Fuentes y supuestos</h2>
+    <ul>
+      <li>
+        Procedimiento de homologación WLTP (Worldwide Harmonised Light Vehicles Test Procedure),
+        obligatorio en la Unión Europea para turismos desde 2018 en sustitución del ciclo NEDC.
+      </li>
+      <li>
+        Cálculos de coste: {eur(KM)} km al año y {eur(PRECIO, 2)} €/L. Los rangos de desviación son
+        órdenes de magnitud habituales, no medidas de un modelo concreto.
+      </li>
+    </ul>
+  </div>
+
+</GuiaLayout>

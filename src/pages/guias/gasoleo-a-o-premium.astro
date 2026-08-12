@@ -1,0 +1,180 @@
+---
+import GuiaLayout from '../../layouts/GuiaLayout.astro';
+
+const eur = (n: number, dec = 2) =>
+  n.toLocaleString('es-ES', { minimumFractionDigits: dec, maximumFractionDigits: dec });
+// Sobrecoste tipico del premium sobre el normal, para traducirlo a euros al año.
+const DIFERENCIA = 0.10;
+const DEPOSITO = 50;
+const KM = 15000;
+const CONSUMO = 6.5;
+const litrosAnuales = (KM * CONSUMO) / 100;
+---
+<GuiaLayout slug="gasoleo-a-o-premium">
+
+  <p>
+    En casi todos los surtidores hay dos mangueras de gasóleo, y la segunda cuesta unos diez céntimos
+    más por litro. La publicidad habla de limpieza del motor, protección y rendimiento. Los foros se
+    dividen entre quien jura que su coche va mejor y quien lo llama timo. La respuesta razonable está
+    en medio y depende de algo muy concreto: qué coche tienes y cómo lo usas.
+  </p>
+
+  <h2>Lo primero: los dos cumplen la misma norma</h2>
+
+  <p>
+    Todo el gasóleo de automoción que se vende en España, del más barato al más caro, tiene que
+    cumplir la norma europea <strong>EN 590</strong>. Eso fija el número de cetano mínimo, el
+    contenido de azufre, la lubricidad, el comportamiento en frío y bastantes parámetros más. El
+    premium no es un combustible distinto que cumpla otra cosa: es <strong>el mismo gasóleo base con
+    un paquete de aditivos más cargado</strong>, y a veces con un cetano algo por encima del mínimo.
+  </p>
+
+  <p>
+    Conviene tenerlo claro porque descarta de entrada la idea de que el gasóleo normal sea un producto
+    deficiente que hay que compensar. No lo es. Es lo mismo que ocurre entre
+    <a href="/guias/low-cost-o-marca/">las estaciones low cost y las de marca</a>: el suelo común es
+    alto y obligatorio.
+  </p>
+
+  <h2>Qué llevan de más los premium</h2>
+
+  <ul>
+    <li>
+      <strong>Detergentes.</strong> Es el ingrediente con efecto demostrable. Los inyectores diésel
+      trabajan a presiones enormes con orificios diminutos, y con el tiempo acumulan depósitos que
+      empeoran la pulverización. Un detergente en dosis alta ayuda a mantenerlos limpios y a limpiar
+      los que ya lo están un poco.
+    </li>
+    <li>
+      <strong>Mejoradores de cetano.</strong> Un cetano más alto significa que el gasóleo se
+      autoinflama antes al inyectarse, lo que suaviza la combustión. Se nota sobre todo en frío y en
+      forma de motor algo menos ruidoso, no en potencia.
+    </li>
+    <li>
+      <strong>Anticorrosivos y antiespumantes.</strong> Protegen el circuito y hacen que el repostaje
+      sea algo más rápido y limpio. Efecto real, importancia menor.
+    </li>
+    <li>
+      <strong>Mejoradores de flujo en frío</strong> en las versiones de invierno, que retrasan la
+      formación de parafinas a temperaturas bajo cero.
+    </li>
+  </ul>
+
+  <div class="clave">
+    <p>
+      Lo que no vas a notar: más potencia, ni un consumo apreciablemente menor. Los fabricantes de
+      combustible hablan de mejoras de consumo de en torno al 1 o 2 % en uso prolongado. Aunque
+      fueran ciertas al máximo, no cubren un sobreprecio del 6 o 7 %.
+    </p>
+  </div>
+
+  <h2>La cuenta</h2>
+
+  <p>
+    Con una diferencia típica de {eur(DIFERENCIA)} euros por litro:
+  </p>
+
+  <div class="tabla-scroll">
+    <table>
+      <thead>
+        <tr><th>Concepto</th><th class="num">Sobrecoste</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Por depósito de {DEPOSITO} litros</td><td class="num">{eur(DEPOSITO * DIFERENCIA)} €</td></tr>
+        <tr>
+          <td>Al año, con {KM.toLocaleString('es-ES')} km y {eur(CONSUMO, 1)} L/100 km</td>
+          <td class="num">{eur(litrosAnuales * DIFERENCIA)} €</td>
+        </tr>
+        <tr><td>En diez años</td><td class="num">{eur(litrosAnuales * DIFERENCIA * 10, 0)} €</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    Poner {eur(litrosAnuales * DIFERENCIA, 0)} euros al año encima de la mesa a cambio de mantener
+    limpios los inyectores es una decisión defendible <strong>si tu coche está en el grupo donde eso
+    importa</strong>, y un gasto sin retorno si no lo está.
+  </p>
+
+  <h2>Cuándo sí tiene sentido</h2>
+
+  <ol>
+    <li>
+      <strong>Coche diésel moderno con inyección de altísima presión y filtro de partículas.</strong>
+      Es donde los depósitos en los inyectores dan más problemas y donde una reparación es más cara.
+    </li>
+    <li>
+      <strong>Muchos trayectos cortos y urbanos.</strong> El motor no llega a temperatura, la
+      combustión es peor y se ensucia más. Paradójicamente, el uso que menos combustible gasta es el
+      que más lo maltrata.
+    </li>
+    <li>
+      <strong>Coche con muchos kilómetros que ha empezado a ir irregular en frío.</strong> Ahí un par
+      de depósitos de premium seguidos funcionan como una limpieza suave, y es la prueba más barata
+      antes de ir al taller.
+    </li>
+    <li>
+      <strong>Vas a dejar el coche parado mucho tiempo.</strong> Los aditivos anticorrosivos y
+      antioxidantes ayudan a que el depósito y el circuito pasen mejor los meses de inactividad.
+    </li>
+  </ol>
+
+  <h2>Cuándo no</h2>
+
+  <ol>
+    <li>
+      <strong>Coche de gasolina moderno sin problemas.</strong> Los detergentes del combustible
+      normal ya cumplen de sobra para un uso corriente.
+    </li>
+    <li>
+      <strong>Coche antiguo y sencillo.</strong> Una inyección menos exigente tolera mucho mejor
+      cualquier combustible.
+    </li>
+    <li>
+      <strong>Uso mayoritario de carretera y autovía.</strong> El motor pasa la vida a temperatura y
+      régimen estable, que es la mejor limpieza que existe.
+    </li>
+    <li>
+      <strong>Si el sobreprecio te lleva a repostar en una estación cara.</strong> Este es el caso
+      peor y el más frecuente: pagar el premium en una estación de marca puede costarte veinte
+      céntimos por litro respecto al gasóleo normal de la barata de tu ruta. La diferencia entre
+      estaciones se ve en el <a href="/">buscador</a>, y suele ser mayor que la diferencia entre
+      productos.
+    </li>
+  </ol>
+
+  <h2>Una estrategia intermedia razonable</h2>
+
+  <p>
+    Para quien está en la duda y no quiere pagarlo siempre: <strong>repostar premium una de cada
+    cuatro o cinco veces</strong>, y el resto normal. Se aprovecha buena parte del efecto detergente,
+    que es acumulativo y no requiere continuidad, a una cuarta parte del sobrecoste. No es una
+    recomendación de fabricante, es una forma sensata de repartir un gasto cuyo beneficio es real
+    pero pequeño.
+  </p>
+
+  <p>
+    Y la alternativa que casi nadie considera: un aditivo detergente de bote una o dos veces al año
+    suele costar menos que la diferencia acumulada de un año entero de premium, y hace un trabajo
+    parecido de forma más concentrada.
+  </p>
+
+  <div class="fuentes">
+    <h2>Fuentes y supuestos</h2>
+    <ul>
+      <li>
+        Especificación obligatoria del gasóleo de automoción: norma europea EN 590, incorporada a la
+        normativa española de calidad de carburantes.
+      </li>
+      <li>
+        Diferencia de precio de {eur(DIFERENCIA)} €/L: valor habitual entre gasóleo A y gasóleo
+        premium. El real de tu zona está en la <a href="/precios/">página de precios por
+        combustible</a>.
+      </li>
+      <li>
+        Cálculos con {KM.toLocaleString('es-ES')} km al año y {eur(CONSUMO, 1)} L/100 km.
+      </li>
+    </ul>
+  </div>
+
+</GuiaLayout>

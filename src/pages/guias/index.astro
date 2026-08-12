@@ -1,0 +1,119 @@
+---
+// Índice de guías. Es la puerta de entrada a la parte escrita del sitio: el resto de
+// páginas son precios, y estas son las que explican qué significan.
+import Layout from '../../layouts/Layout.astro';
+import { GUIAS, GUIAS_EXTERNAS, rutaGuia, fechaLarga } from '../../lib/guias.js';
+
+const temas = [...new Set(GUIAS.map((g) => g.tema))];
+const porTema = temas.map((t) => ({ tema: t, guias: GUIAS.filter((g) => g.tema === t) }));
+
+const title = 'Guías del precio del combustible y del consumo | Ahorro al Volante';
+const description =
+  'Guías para gastar menos en combustible: de qué se compone el precio de un litro, si el low cost es la misma gasolina, cuánto baja el consumo cada cosa y qué descuentos compensan.';
+
+const siteUrl = (Astro.site ?? new URL('https://ahorroalvolante.es')).href.replace(/\/$/, '');
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  name: 'Guías de Ahorro al Volante',
+  description,
+  inLanguage: 'es-ES',
+  url: `${siteUrl}/guias/`,
+  hasPart: GUIAS.map((g) => ({
+    '@type': 'Article',
+    headline: g.titulo,
+    description: g.description,
+    url: `${siteUrl}${rutaGuia(g.slug)}`,
+    dateModified: g.actualizada,
+  })),
+};
+---
+<Layout title={title} description={description} canonicalPath="/guias">
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify(jsonLd)} />
+
+  <div class="min-h-screen w-full" style="background-color:var(--color-fondo);">
+    <div class="mx-auto max-w-2xl px-4 py-8">
+
+      <nav aria-label="Migas" class="flex flex-wrap items-center gap-1 text-xs text-tenue">
+        <a href="/" class="hover:text-acento">Inicio</a>
+        <span aria-hidden="true">/</span>
+        <span class="text-suave">Guías</span>
+      </nav>
+
+      <h1 class="mt-5 text-2xl font-extrabold tracking-tight text-tinta sm:text-3xl">
+        Guías para gastar menos en combustible
+      </h1>
+      <p class="mt-3 text-base leading-relaxed text-suave">
+        El resto de la web son precios: cuánto cuesta el litro hoy en cada gasolinera, en cada
+        municipio y en cada marca. Aquí está lo que hace falta para sacarles partido: de qué se
+        compone realmente lo que pagas, si merece la pena desviarse por seis céntimos, y qué cosas
+        de las que se repiten sobre ahorrar combustible aguantan una cuenta y cuáles no.
+      </p>
+      <p class="mt-3 text-sm leading-relaxed text-tenue">
+        Los precios que aparecen en la web salen del listado oficial del Ministerio y cambian a
+        diario. Las cifras de consumo son valores de referencia, con su rango indicado: tu coche y tu
+        forma de conducir mandan sobre cualquier tabla.
+      </p>
+
+      {porTema.map(({ tema, guias }) => (
+        <section class="mt-10">
+          <h2 class="text-xs font-semibold uppercase tracking-[0.16em] text-acento">{tema}</h2>
+          <ul class="mt-3 grid gap-3">
+            {guias.map((g) => (
+              <li>
+                <a href={rutaGuia(g.slug)}
+                  class="block rounded-2xl border p-4 transition-colors hover:border-suave"
+                  style="border-color:var(--color-borde);background-color:var(--color-superficie);">
+                  <h3 class="text-base font-bold leading-snug text-tinta">{g.titulo}</h3>
+                  <p class="mt-1.5 text-sm leading-relaxed text-suave">{g.resumen}</p>
+                  <p class="mt-2 text-xs text-tenue">
+                    {g.minutos} min · revisada el {fechaLarga(g.actualizada)}
+                  </p>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+
+      <section class="mt-10">
+        <h2 class="text-xs font-semibold uppercase tracking-[0.16em] text-acento">Antes de comprar</h2>
+        <ul class="mt-3 grid gap-3">
+          {GUIAS_EXTERNAS.map((g) => (
+            <li>
+              <a href={g.ruta}
+                class="block rounded-2xl border p-4 transition-colors hover:border-suave"
+                style="border-color:var(--color-borde);background-color:var(--color-superficie);">
+                <h3 class="text-base font-bold leading-snug text-tinta">{g.titulo}</h3>
+                <p class="mt-1.5 text-sm leading-relaxed text-suave">{g.resumen}</p>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section class="mt-12 rounded-2xl border p-4"
+        style="border-color:var(--color-borde);background-color:var(--color-superficie);">
+        <h2 class="text-sm font-bold text-tinta">Y los precios de hoy</h2>
+        <p class="mt-1.5 text-sm leading-relaxed text-suave">
+          Lo que se explica aquí se puede comprobar ahora mismo con los datos del día.
+        </p>
+        <div class="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+          <a href="/" class="text-acento hover:underline">Buscador de gasolineras</a>
+          <a href="/precios/" class="text-acento hover:underline">Precios por combustible</a>
+          <a href="/marcas/" class="text-acento hover:underline">Precios por marca</a>
+        </div>
+      </section>
+
+      <footer class="mt-10 border-t pt-6" style="border-color:var(--color-borde);">
+        <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs">
+          <a href="/quienes-somos" class="text-suave hover:text-acento">Quiénes somos</a>
+          <a href="/contacto" class="text-suave hover:text-acento">Contacto</a>
+          <a href="/aviso-legal" class="text-suave hover:text-acento">Aviso legal</a>
+          <a href="/privacidad" class="text-suave hover:text-acento">Privacidad</a>
+        </div>
+        <p class="mt-3 text-xs text-tenue">© {new Date().getFullYear()} Ahorro al Volante</p>
+      </footer>
+    </div>
+  </div>
+</Layout>

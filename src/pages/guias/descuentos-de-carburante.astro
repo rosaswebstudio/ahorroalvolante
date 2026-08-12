@@ -1,0 +1,179 @@
+---
+import GuiaLayout from '../../layouts/GuiaLayout.astro';
+
+const eur = (n: number, dec = 2) =>
+  n.toLocaleString('es-ES', { minimumFractionDigits: dec, maximumFractionDigits: dec });
+// Ejemplo del descuento porcentual frente al de centimos, con deposito de 50 litros.
+const DEPOSITO = 50;
+const cara = 1.65;
+const barata = 1.52;
+const conPct = cara * 0.95;
+---
+<GuiaLayout slug="descuentos-de-carburante">
+
+  <p>
+    Tarjetas de fidelización, promociones de supermercado, tarjetas de crédito que devuelven un
+    porcentaje, clubes de socios, cooperativas. Todas prometen carburante más barato y todas lo
+    consiguen, en el sentido literal de que pagas menos de lo que marca el poste. La pregunta
+    correcta no es esa, es otra: <strong>¿pagas menos de lo que pagarías en la gasolinera barata de
+    tu barrio sin ningún descuento?</strong> Muchas veces la respuesta es no.
+  </p>
+
+  <h2>El error que lo estropea todo: comparar contra el precio de esa estación</h2>
+
+  <p>
+    Un descuento se anuncia siempre respecto al precio de la estación que lo ofrece. Y esa estación
+    suele ser de marca, es decir, de las caras. Con números:
+  </p>
+
+  <div class="tabla-scroll">
+    <table>
+      <thead>
+        <tr><th>Opción</th><th class="num">Precio efectivo</th><th class="num">Depósito de {DEPOSITO} L</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Estación de marca, sin descuento</td>
+          <td class="num">{eur(cara, 3)} €/L</td>
+          <td class="num">{eur(cara * DEPOSITO)} €</td>
+        </tr>
+        <tr>
+          <td>Estación de marca con un 5 % de descuento</td>
+          <td class="num">{eur(conPct, 3)} €/L</td>
+          <td class="num">{eur(conPct * DEPOSITO)} €</td>
+        </tr>
+        <tr>
+          <td><strong>Estación barata, sin ningún descuento</strong></td>
+          <td class="num"><strong>{eur(barata, 3)} €/L</strong></td>
+          <td class="num"><strong>{eur(barata * DEPOSITO)} €</strong></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    El 5 % de descuento son {eur(cara - conPct, 3)} euros por litro, y la diferencia entre las dos
+    estaciones es de {eur(cara - barata, 2)}. Es decir, <strong>el descuento no llega a cubrir la
+    diferencia de partida</strong>, y quien cree estar ahorrando está pagando{' '}
+    {eur((conPct - barata) * DEPOSITO)} euros de más por depósito. Ese es el patrón más común de todos.
+  </p>
+
+  <div class="clave">
+    <p>
+      La regla: un descuento solo vale lo que vale si lo restas del precio real de esa estación y
+      comparas el resultado con lo que cuesta la barata de tu zona hoy. Todo lo demás es marketing
+      funcionando.
+    </p>
+  </div>
+
+  <h2>Céntimos por litro o porcentaje sobre el importe</h2>
+
+  <p>
+    No son lo mismo y conviene saber cuál te conviene:
+  </p>
+
+  <ul>
+    <li>
+      <strong>Descuento en céntimos por litro.</strong> Es fijo y se compara directamente con la
+      diferencia de precio entre estaciones. Es el más honesto y el más fácil de evaluar.
+    </li>
+    <li>
+      <strong>Descuento en porcentaje.</strong> Sube cuando sube el precio del combustible, lo cual
+      suena bien, pero también significa que <strong>cuanto más cara sea la estación, más grande
+      parece el descuento</strong>. Un 5 % en una estación cara vale menos que un 5 % que te
+      hubieran hecho en una barata.
+    </li>
+  </ul>
+
+  <h2>Los cuatro tipos que hay, y qué esperar de cada uno</h2>
+
+  <h3>Tarjetas de la propia marca</h3>
+
+  <p>
+    Descuento directo en el momento o acumulación de puntos. Lo que hay que mirar: si el descuento es
+    permanente o de bienvenida, si exige un consumo mínimo mensual, y si al canjear puntos por
+    combustible la equivalencia es peor que canjearlos por otra cosa. Son gratuitas, así que tenerla
+    no cuesta nada; el error es dejar que decida dónde repostas.
+  </p>
+
+  <h3>Promociones de supermercado</h3>
+
+  <p>
+    Del tipo "gasta X en la compra y llévate Y céntimos por litro". Suelen ser de las más
+    interesantes en euros absolutos, con dos condiciones que hay que leer: <strong>el límite de
+    litros</strong> al que se aplica el descuento, casi siempre entre 50 y 100, y <strong>la fecha de
+    caducidad del vale</strong>. Si te obliga a repostar antes de un día concreto en una estación
+    concreta, has perdido la libertad de elegir, que es justo lo que más ahorra.
+  </p>
+
+  <h3>Tarjetas de crédito con devolución</h3>
+
+  <p>
+    Devuelven un porcentaje del gasto en carburante. Lo que hay que mirar con lupa: la cuota anual,
+    el tope mensual de devolución y, sobre todo, <strong>si te empujan a aplazar pagos</strong>. Los
+    intereses del pago aplazado se comen cualquier devolución de carburante en un par de meses. Si
+    la usas a débito o a fin de mes y no tiene cuota, es dinero limpio.
+  </p>
+
+  <h3>Cooperativas y clubes</h3>
+
+  <p>
+    Descuentos a cambio de una cuota anual o de pertenecer a un colectivo. Aquí la cuenta es fácil de
+    hacer y conviene hacerla: divide la cuota anual entre los litros que consumes al año y compárala
+    con el descuento por litro. Si consumes 1.200 litros al año y la cuota son 24 euros, te está
+    costando 2 céntimos por litro; el descuento tiene que superar esa cifra solo para empatar.
+  </p>
+
+  <h2>Cómo decidir en treinta segundos</h2>
+
+  <ol>
+    <li>Mira en el <a href="/">buscador</a> el precio de la estación más barata que te pilla de camino.</li>
+    <li>Mira el precio de la estación donde tienes descuento y réstale el descuento.</li>
+    <li>Si el segundo número no baja del primero, el descuento no sirve para nada hoy.</li>
+    <li>
+      Repite de vez en cuando, no una sola vez: las estaciones cambian de precio a diario y la
+      respuesta de hace tres meses puede haberse dado la vuelta.
+    </li>
+  </ol>
+
+  <h2>Los descuentos que sí compensan casi siempre</h2>
+
+  <p>
+    Para no dejar la impresión de que todo es humo, estos suelen salir a cuenta:
+  </p>
+
+  <ul>
+    <li>
+      <strong>Los que se aplican en una estación que ya era barata.</strong> Descuento sobre precio
+      bajo, sin trampa posible.
+    </li>
+    <li>
+      <strong>Los que no te obligan a nada.</strong> Sin cuota, sin consumo mínimo, sin caducidad y
+      sin cambiar de ruta. Si es gratis y no condiciona, adelante.
+    </li>
+    <li>
+      <strong>Los de supermercado si ya ibas a hacer esa compra.</strong> El descuento sale de un
+      gasto que ya tenías, no de uno nuevo.
+    </li>
+  </ul>
+
+  <p>
+    Y el criterio que resume la guía entera: <strong>un descuento nunca debe cambiar dónde
+    repostas</strong>, solo debe hacer más barato el sitio al que ya ibas. En cuanto te desvía, casi
+    siempre estás pagando de más. La aritmética de los desvíos está en la
+    <a href="/guias/cuando-repostar/">guía de cuándo y dónde repostar</a>.
+  </p>
+
+  <div class="fuentes">
+    <h2>Fuentes y supuestos</h2>
+    <ul>
+      <li>Precios por estación: listado oficial del Ministerio (Geoportal de Gasolineras).</li>
+      <li>
+        Los precios del ejemplo ({eur(cara, 2)} y {eur(barata, 2)} €/L) son valores ilustrativos de
+        una diferencia habitual entre una estación de marca y una barata en la misma zona. Los de tu
+        ciudad los tienes en el buscador.
+      </li>
+    </ul>
+  </div>
+
+</GuiaLayout>

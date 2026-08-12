@@ -1,0 +1,134 @@
+---
+import GuiaLayout from '../../layouts/GuiaLayout.astro';
+---
+<GuiaLayout slug="de-donde-salen-los-precios">
+
+  <p>
+    Llegas a la gasolinera que marcaba 1,489 y el poste dice 1,529. Antes de pensar que la aplicación
+    miente, conviene saber cómo funciona el sistema del que salen estos precios, porque no es una
+    estimación ni un dato comprado a nadie: es información oficial, con una obligación legal detrás,
+    y con un desfase perfectamente explicable.
+  </p>
+
+  <h2>Las gasolineras están obligadas a comunicar sus precios</h2>
+
+  <p>
+    En España, cualquier estación de servicio tiene la obligación de remitir sus precios de venta al
+    público al Ministerio. No es voluntario ni es un acuerdo comercial: está establecido por norma
+    desde 2007, en la <strong>Orden ITC/2308/2007</strong>, y se canaliza a través de un sistema
+    telemático del propio Ministerio. Y la obligación no es solo comunicar una vez, sino
+    <strong>comunicar cada cambio antes de aplicarlo en el surtidor</strong>.
+  </p>
+
+  <p>
+    Con esa información el Ministerio mantiene el <strong>Geoportal de Gasolineras</strong>, que
+    publica el precio de cada combustible en cada una de las más de once mil estaciones del país, con
+    su dirección, su horario y sus coordenadas. Es un dato público y gratuito, y es exactamente el
+    que usa esta web: no hay intermediarios ni una base de datos propia que pueda estar desfasada por
+    su cuenta.
+  </p>
+
+  <div class="clave">
+    <p>
+      Que el dato sea oficial es la razón por la que puedes fiarte de la comparación entre
+      estaciones, que es para lo que sirve de verdad. Si una marca aparece sistemáticamente seis
+      céntimos por encima de otra en tu zona, eso es real.
+    </p>
+  </div>
+
+  <h2>Por qué a veces no coincide con el poste</h2>
+
+  <p>
+    Hay cuatro motivos, y ninguno implica que nadie esté haciendo trampas:
+  </p>
+
+  <ul>
+    <li>
+      <strong>El desfase de publicación.</strong> Entre que la estación comunica un precio nuevo y
+      ese precio aparece publicado y llega a tu pantalla pasa un rato. En un día de movimiento fuerte
+      del mercado, eso basta para ver un número viejo.
+    </li>
+    <li>
+      <strong>Descuentos que no se comunican.</strong> El precio oficial es el de venta al público
+      general. Las promociones de tarjeta de fidelización, los descuentos de supermercado o los de
+      una cooperativa se aplican después, en la caja, y no forman parte del dato. Por eso una
+      estación puede resultarte más barata de lo que aparece.
+    </li>
+    <li>
+      <strong>Precio de autoservicio frente a atendido.</strong> Algunas estaciones tienen dos
+      precios según quién ponga la manguera, y el listado recoge uno.
+    </li>
+    <li>
+      <strong>Errores puntuales al comunicar.</strong> Son raros pero existen, y a veces producen
+      precios absurdos, de 0,2 o de 3 euros el litro. En esta web esos valores se descartan antes de
+      calcular cualquier media, precisamente para que un dedazo ajeno no ensucie la comparación.
+    </li>
+  </ul>
+
+  <h2>Cada cuánto se actualiza esta web</h2>
+
+  <p>
+    El buscador consulta los precios <strong>en directo desde tu propio navegador</strong> cuando
+    eliges provincia, y los guarda un rato para no repetir la misma descarga cada vez que cambias de
+    combustible. Es decir, lo que ves es lo último publicado en el momento en que abres la página, no
+    una copia guardada de esta mañana.
+  </p>
+
+  <p>
+    Las páginas de municipio, de provincia y de marca son distintas: se generan una vez al día con la
+    foto de ese momento, y por eso cada una lleva escrita la fecha del listado con el que se hizo. Se
+    usan para comparar y para hacerse una idea de la zona, no para decidir a qué surtidor entras
+    ahora mismo. Para eso está el <a href="/">buscador</a>, que va en directo.
+  </p>
+
+  <h2>Qué hacer si el precio del surtidor es otro</h2>
+
+  <ol>
+    <li>
+      <strong>Mira el poste antes de repostar, siempre.</strong> Suena obvio, pero es la única
+      garantía. Ningún comparador, este incluido, puede prometer que el número sea el de este
+      segundo.
+    </li>
+    <li>
+      <strong>El precio que vale es el anunciado en la estación.</strong> Lo que se exhibe en el
+      cartel es lo que te pueden cobrar; si te cobran más de lo anunciado, ahí sí hay un problema y
+      se puede reclamar con la hoja de reclamaciones.
+    </li>
+    <li>
+      <strong>Usa la comparación, no el número absoluto.</strong> La utilidad real de esto no es
+      saber que una estación está a 1,489, es saber que está veinte céntimos por debajo de la media
+      de tu provincia. Esa diferencia relativa aguanta mucho mejor el desfase de unas horas.
+    </li>
+  </ol>
+
+  <h2>Qué combustibles aparecen y cuáles no</h2>
+
+  <p>
+    La obligación de comunicar cubre los carburantes de automoción habituales, que son los que verás
+    en esta web: gasolina 95, gasolina 98, gasóleo A, gasóleo premium y GLP. No todas las estaciones
+    venden todos, y por eso al filtrar por un combustible concreto el listado se acorta: las que no
+    lo tienen desaparecen, no es que falte el dato.
+  </p>
+
+  <p>
+    Si quieres entender por qué la diferencia entre el gasóleo normal y el premium es la que es, está
+    en la guía de <a href="/guias/gasoleo-a-o-premium/">gasóleo normal o premium</a>. Y si lo que te
+    llama la atención es la diferencia entre estaciones de una misma zona, la explicación completa
+    está en <a href="/guias/precio-de-la-gasolina/">por qué la gasolina cuesta lo que cuesta</a>.
+  </p>
+
+  <div class="fuentes">
+    <h2>Fuentes</h2>
+    <ul>
+      <li>
+        Obligación de comunicación de precios de venta al público: Orden ITC/2308/2007, de 25 de
+        julio.
+      </li>
+      <li>
+        Datos de estaciones y precios: Geoportal de Gasolineras del Ministerio para la Transición
+        Ecológica y el Reto Demográfico, a través de su servicio público de consulta.
+      </li>
+    </ul>
+  </div>
+
+</GuiaLayout>

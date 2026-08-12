@@ -4,7 +4,7 @@
 // precios, media propia y comparación con su provincia), no una plantilla vacía.
 import Layout from '../../../layouts/Layout.astro';
 import { COMBUSTIBLES } from '../../../lib/gasolineras.js';
-import { resumenPorMunicipio } from '../../../lib/datos-build.js';
+import { resumenPorMunicipio, MIN_ESTACIONES_INDEXABLE } from '../../../lib/datos-build.js';
 
 export async function getStaticPaths() {
   const municipios = await resumenPorMunicipio();
@@ -48,6 +48,10 @@ interface Props {
 
 const { datos } = Astro.props;
 const { prov, provSlug, muniNombre, fecha, total, combustibles, mediaProvinciaG95, hermanos } = datos;
+
+// Los pueblos con pocas estaciones se sirven y se enlazan igual, pero no van al indice:
+// lo unico propio de la pagina son tres o cuatro direcciones. Ver datos-build.js.
+const noindex = total < MIN_ESTACIONES_INDEXABLE;
 
 const g95 = combustibles.g95;
 const ga = combustibles.ga;
@@ -133,7 +137,7 @@ const card = 'rounded-2xl border border-borde bg-superficie p-4';
 const colorPrecio = (v: number | null, m: number) =>
   v !== null && v < m ? 'text-barato' : 'text-acento';
 ---
-<Layout title={title} description={description} canonicalPath={rutaCanonica}>
+<Layout title={title} description={description} canonicalPath={rutaCanonica} noindex={noindex}>
   <script type="application/ld+json" slot="head" set:html={JSON.stringify(jsonLd)} />
 
   <div class="min-h-screen w-full bg-fondo">

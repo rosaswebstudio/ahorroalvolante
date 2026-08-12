@@ -33,6 +33,23 @@ Stack: **Astro 7 + JavaScript vanilla**, **Tailwind CSS v4**. Tema oscuro con ac
 - Lateral fijo 300x600 (sticky, escritorio) + banner inferior (placeholders AdSense).
 - CTA afiliado: comparador de **seguros de coche** (sustituir `href="#"`).
 
+## Guías y umbral de indexación (agosto 2026)
+
+AdSense rechazó a mivatio.es (la web hermana) por "contenido de poco valor". Esta web tenía el
+mismo perfil y peor: de 1.190 páginas, 1.175 eran plantilla automática. Dos cambios:
+
+1. **Sección `/guias/`**: ocho guías escritas, de 1.000 a 1.400 palabras. Índice en
+   `src/lib/guias.js`, layout de artículo en `src/layouts/GuiaLayout.astro`. Las dos páginas de
+   contenido que ya existían (`/diesel-o-gasolina/` y `/calcular-gasto-gasolina/`) se listan en el
+   índice pero NO se mueven de ruta.
+2. **`MIN_ESTACIONES_INDEXABLE`** en `src/lib/datos-build.js`: los municipios con menos de 5
+   estaciones llevan `noindex` y salen del sitemap (508 páginas). Se siguen generando y enlazando
+   desde su provincia. **Es temporal**: igualarlo a `MIN_ESTACIONES_MUNICIPIO` cuando el sitio
+   esté aprobado.
+
+El filtro del sitemap (`src/lib/sitemap.js`) no repite el criterio: lee el `noindex` del HTML ya
+generado, así que la regla vive en un único sitio.
+
 ## Comandos
 
 ```bash

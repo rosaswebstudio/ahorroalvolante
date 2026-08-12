@@ -7,6 +7,8 @@ interface Props {
   description: string;
   canonicalPath?: string;
   image?: string;
+  /** Deja la pagina fuera del indice sin borrarla ni esconderla del sitio. */
+  noindex?: boolean;
 }
 
 const {
@@ -14,6 +16,7 @@ const {
   description,
   canonicalPath = '/',
   image = '/og-image.png',
+  noindex = false,
 } = Astro.props;
 
 const siteFallback = 'https://ahorroalvolante.es';
@@ -42,7 +45,7 @@ const verificationActive = siteVerification && !siteVerification.includes('PENDI
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonicalURL} />
-    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta name="robots" content={noindex ? 'noindex, follow' : 'index, follow, max-image-preview:large'} />
     {verificationActive && <meta name="google-site-verification" content={siteVerification} />}
 
     <!-- PWA: instalable en la pantalla de inicio -->

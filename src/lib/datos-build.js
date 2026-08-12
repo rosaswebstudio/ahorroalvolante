@@ -8,6 +8,15 @@ import { API_BASE, COMBUSTIBLES, PROVINCIAS, slugProvincia, slugify } from './ga
 // pueblos solo aparecen mencionados dentro de la página de su provincia.
 export const MIN_ESTACIONES_MUNICIPIO = 3;
 
+// A partir de cuantas gasolineras ese pueblo, ademas de tener pagina, se OFRECE al
+// buscador. Entre MIN_ESTACIONES_MUNICIPIO y este numero la pagina existe y se enlaza
+// desde su provincia igual que el resto, pero lleva noindex: con tres o cuatro
+// estaciones lo unico propio son cuatro direcciones y dos precios, y son mas de 500
+// paginas practicamente iguales entre si. Eso es lo que Google llama contenido
+// replicado a escala, y es el motivo por el que AdSense rechazo a mivatio.es.
+// TEMPORAL: ponerlo igual que MIN_ESTACIONES_MUNICIPIO cuando el sitio este aprobado.
+export const MIN_ESTACIONES_INDEXABLE = 5;
+
 // A partir de cuántas estaciones una marca tiene página propia. En el listado del
 // Ministerio hay más de 3.000 "rótulos" distintos, pero la inmensa mayoría son
 // estaciones independientes que aparecen con su nombre propio una sola vez: promediar

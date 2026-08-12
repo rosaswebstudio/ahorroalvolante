@@ -1,0 +1,206 @@
+---
+import GuiaLayout from '../../layouts/GuiaLayout.astro';
+
+// La cuenta del desvio: cuanto ahorro se come ir a buscar una gasolinera mas barata.
+// Consumo de referencia 6,5 L/100 km y deposito de 50 litros, dichos en el texto.
+const CONSUMO = 6.5;
+const DEPOSITO = 50;
+const PRECIO = 1.55;
+const desvio = (km: number, ahorroLitro: number) => {
+  const gastado = ((km * 2 * CONSUMO) / 100) * PRECIO;
+  return DEPOSITO * ahorroLitro - gastado;
+};
+const eur = (n: number) =>
+  n.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+---
+<GuiaLayout slug="cuando-repostar">
+
+  <p>
+    Circulan dos ideas sobre repostar barato y una de las dos es falsa. La primera dice que hay
+    momentos mejores que otros: madrugar, evitar los lunes, no repostar antes de un puente. La
+    segunda dice que lo que importa es dónde. Solo la segunda aguanta los números, y por bastante
+    diferencia.
+  </p>
+
+  <h2>Lo que sí funciona: elegir la estación</h2>
+
+  <p>
+    Entre la gasolinera más barata y la más cara de una misma ciudad suele haber entre diez y veinte
+    céntimos por litro. Esa diferencia no es una casualidad del día: se repite semana tras semana,
+    porque viene de la estructura de costes de cada estación y no del humor del mercado. Lo puedes
+    comprobar en el <a href="/">buscador</a> ordenando por precio en tu zona.
+  </p>
+
+  <p>
+    Los patrones que se repiten casi en cualquier ciudad española:
+  </p>
+
+  <ul>
+    <li>
+      <strong>Las de autopista y autovía son las más caras.</strong> Pagan una concesión y venden a
+      quien no puede comparar. Repostar en una salida y volver a entrar suele salir a cuenta si la
+      estación está pegada al enlace.
+    </li>
+    <li>
+      <strong>Las de polígono industrial y las desatendidas, las más baratas.</strong> Menos costes
+      fijos y clientela que va expresamente.
+    </li>
+    <li>
+      <strong>Las de supermercado suelen estar por debajo de la media</strong>, y a veces combinan
+      con descuentos de la propia cadena.
+    </li>
+    <li>
+      <strong>El pueblo con una sola estación en treinta kilómetros cobra más.</strong> No hay nada
+      que hacer ahí salvo llegar con depósito.
+    </li>
+  </ul>
+
+  <h2>Lo que no funciona: la hora del día</h2>
+
+  <p>
+    El consejo de repostar de madrugada o a primera hora se apoya en que el combustible frío es más
+    denso, así que en el mismo volumen cabría más masa. Físicamente es cierto que la densidad varía
+    con la temperatura. En la práctica no sirve de nada, por dos motivos:
+  </p>
+
+  <ol>
+    <li>
+      Los tanques están <strong>enterrados</strong>. Bajo tierra la temperatura es notablemente
+      estable a lo largo del día, así que el combustible que sale del surtidor a las siete de la
+      mañana y el que sale a las cinco de la tarde están prácticamente a la misma temperatura, por
+      mucho que la calle haya pasado de 15 a 35 grados.
+    </li>
+    <li>
+      Aun aceptando la variación más generosa, la diferencia de energía por litro sería de décimas de
+      porcentaje: céntimos al año. Menos de lo que cuesta el desvío para llegar antes de que abra.
+    </li>
+  </ol>
+
+  <div class="clave">
+    <p>
+      Dicho de otra forma: el día que madrugues para repostar barato habrás ahorrado, como mucho,
+      unos céntimos por el frío, y habrás dejado sobre la mesa los diez o quince céntimos por litro
+      que separan a la estación de al lado. El orden de magnitud no admite discusión.
+    </p>
+  </div>
+
+  <h2>Y el día de la semana</h2>
+
+  <p>
+    Aquí hay algo más de fondo, pero menos de lo que se dice. Los precios mayoristas se mueven a lo
+    largo de la semana y las estaciones ajustan con retraso y de forma desigual, así que sí es
+    posible encontrar patrones en una zona concreta. Lo que no existe es una regla nacional del tipo
+    "los miércoles es más barato": si existiera, dejaría de funcionar en cuanto la usara mucha gente.
+  </p>
+
+  <p>
+    Lo que sí conviene evitar es <strong>repostar en pleno éxodo de operación salida</strong>, no
+    porque suban los precios ese día, sino porque acabas parando donde puedes y no donde quieres.
+  </p>
+
+  <h2>Cuánto desvío merece la pena</h2>
+
+  <p>
+    Esta es la cuenta que casi nadie hace y que decide muchas decisiones malas. Ir a buscar una
+    gasolinera barata cuesta combustible, y hay que contar la ida y la vuelta. Con un coche de{' '}
+    {CONSUMO} L/100 km, un depósito de {DEPOSITO} litros y el combustible a {eur(PRECIO)} €/L, esto es
+    lo que ganas de verdad:
+  </p>
+
+  <div class="tabla-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>Desvío (solo ida)</th>
+          <th class="num">Ahorras 5 cent/L</th>
+          <th class="num">Ahorras 10 cent/L</th>
+          <th class="num">Ahorras 15 cent/L</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1 km</td>
+          <td class="num">{eur(desvio(1, 0.05))} €</td>
+          <td class="num">{eur(desvio(1, 0.10))} €</td>
+          <td class="num">{eur(desvio(1, 0.15))} €</td>
+        </tr>
+        <tr>
+          <td>5 km</td>
+          <td class="num">{eur(desvio(5, 0.05))} €</td>
+          <td class="num">{eur(desvio(5, 0.10))} €</td>
+          <td class="num">{eur(desvio(5, 0.15))} €</td>
+        </tr>
+        <tr>
+          <td>10 km</td>
+          <td class="num">{eur(desvio(10, 0.05))} €</td>
+          <td class="num">{eur(desvio(10, 0.10))} €</td>
+          <td class="num">{eur(desvio(10, 0.15))} €</td>
+        </tr>
+        <tr>
+          <td>20 km</td>
+          <td class="num">{eur(desvio(20, 0.05))} €</td>
+          <td class="num">{eur(desvio(20, 0.10))} €</td>
+          <td class="num">{eur(desvio(20, 0.15))} €</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <figcaption>
+    Ahorro neto al llenar el depósito, ya descontado el combustible del desvío de ida y vuelta.
+  </figcaption>
+
+  <p>
+    Lo que enseña la tabla: <strong>el desvío corto casi siempre compensa y el largo casi nunca</strong>,
+    salvo con diferencias de precio muy grandes. Y esto sin contar el tiempo, que también vale algo.
+  </p>
+
+  <div class="clave">
+    <p>
+      La regla práctica que sale de aquí: la gasolinera barata tiene que estar
+      <strong>en tu camino</strong>. Repostar en la barata que ya pasas todos los días de camino al
+      trabajo gana siempre, porque el desvío es cero. Salir a buscarla en un viaje expreso rara vez
+      merece la pena.
+    </p>
+  </div>
+
+  <h2>Llenar el depósito o repostar poco</h2>
+
+  <p>
+    Si has encontrado una estación claramente barata, llénalo: el ahorro es proporcional a los litros
+    y el desvío ya está pagado. Si estás de paso por una zona cara, pon lo justo para llegar a donde
+    sabes que hay algo mejor.
+  </p>
+
+  <p>
+    Lo de que llevar el depósito lleno aumenta el consumo por el peso es cierto y es irrelevante:
+    50 litros son unos 40 kilos, y el efecto de eso en el consumo es del orden del 1 o 2 %, muy por
+    debajo de lo que se gana repostando en el sitio correcto. Los números de cuánto influye el peso
+    están en la <a href="/guias/conduccion-eficiente/">guía de conducción eficiente</a>.
+  </p>
+
+  <h2>El resumen</h2>
+
+  <ol>
+    <li>Elige bien la estación: ahí están los diez o quince céntimos.</li>
+    <li>Que esté en tu ruta habitual, no a un viaje de distancia.</li>
+    <li>Cuando la encuentres, llena.</li>
+    <li>Olvídate de la hora del día y del día de la semana.</li>
+    <li>
+      Y comprueba si algún <a href="/guias/descuentos-de-carburante/">descuento de los que ya
+      tienes</a> cambia la respuesta, porque a veces la barata deja de serlo.
+    </li>
+  </ol>
+
+  <div class="fuentes">
+    <h2>Fuentes y supuestos</h2>
+    <ul>
+      <li>Precios y ubicación de las estaciones: listado oficial del Ministerio (Geoportal de Gasolineras).</li>
+      <li>
+        Cálculo del desvío: consumo de {CONSUMO} L/100 km, depósito de {DEPOSITO} litros y precio de{' '}
+        {eur(PRECIO)} €/L, contando ida y vuelta. Cambia los supuestos y cambian las cifras, pero no
+        el orden de magnitud.
+      </li>
+    </ul>
+  </div>
+
+</GuiaLayout>

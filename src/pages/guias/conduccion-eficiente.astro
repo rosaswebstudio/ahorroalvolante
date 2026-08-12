@@ -1,0 +1,219 @@
+---
+import GuiaLayout from '../../layouts/GuiaLayout.astro';
+
+// Coste anual de un porcentaje de consumo extra, para traducir los porcentajes a euros.
+// Conductor de referencia: 15.000 km al año, 6,5 L/100 km, 1,55 €/L. Se dice en el texto.
+const KM = 15000;
+const CONSUMO = 6.5;
+const PRECIO = 1.55;
+const GASTO_ANUAL = (KM * CONSUMO * PRECIO) / 100;
+const eur = (n: number, dec = 0) =>
+  n.toLocaleString('es-ES', { minimumFractionDigits: dec, maximumFractionDigits: dec });
+const porPct = (pct: number) => GASTO_ANUAL * (pct / 100);
+---
+<GuiaLayout slug="conduccion-eficiente">
+
+  <p>
+    Las listas de consejos para gastar menos combustible tienen el mismo problema que las de ahorrar
+    luz: están ordenadas por lo fácil que es escribirlas. Quitar el peso del maletero aparece siempre;
+    levantar el pie del acelerador, casi nunca, aunque sea lo que más ahorra con diferencia. Esta guía
+    está ordenada por lo que reduce de verdad el consumo, con la traducción a euros de cada cosa.
+  </p>
+
+  <div class="clave">
+    <p>
+      El conductor de referencia de esta guía hace <strong>{eur(KM)} km al año</strong> con un coche
+      de <strong>{eur(CONSUMO, 1)} L/100 km</strong>, y paga el litro a
+      <strong>{eur(PRECIO, 2)} €</strong>. Son unos <strong>{eur(GASTO_ANUAL)} euros anuales</strong>
+      de combustible. Cada porcentaje de ahorro que sale abajo está traducido sobre esa cifra.
+    </p>
+  </div>
+
+  <h2>1. La velocidad en carretera</h2>
+
+  <p>
+    <strong>En torno a un 20 % entre 120 y 100 km/h, unos {eur(porPct(20))} euros al año.</strong> Es,
+    con mucha diferencia, la palanca más grande que tienes, y la razón es física: la resistencia
+    aerodinámica crece con el cuadrado de la velocidad, de modo que la potencia necesaria para vencer
+    el aire crece con el cubo. A partir de unos 80 o 90 km/h, el aire es el enemigo principal.
+  </p>
+
+  <p>
+    En términos prácticos, bajar de 120 a 110 ya se nota, y de 120 a 100 se nota mucho. En un
+    trayecto de 300 kilómetros, la diferencia de tiempo entre ir a 120 y a 110 son unos trece
+    minutos. La diferencia de dinero, en un coche normal, es del orden de tres o cuatro euros. Cada
+    uno decide, pero conviene decidirlo sabiendo las dos cifras.
+  </p>
+
+  <h2>2. Cómo aceleras y cómo frenas</h2>
+
+  <p>
+    <strong>Entre un 10 y un 15 % en ciudad, unos {eur(porPct(12))} euros al año.</strong> Toda la
+    energía que gastas acelerando y luego disipas en el freno es combustible tirado. La conducción
+    eficiente no es ir despacio, es <strong>ir con continuidad</strong>:
+  </p>
+
+  <ul>
+    <li>
+      <strong>Levanta el pie en cuanto veas el semáforo en rojo</strong> en lugar de llegar y frenar.
+      Con el pie fuera del acelerador y una marcha metida, los motores modernos cortan la inyección:
+      en ese tramo el consumo es literalmente cero.
+    </li>
+    <li>
+      <strong>Sube de marcha pronto.</strong> En gasolina, en torno a las 2.000 vueltas; en diésel,
+      algo antes. Ir en la marcha más larga posible sin que el motor se ahogue es la regla.
+    </li>
+    <li>
+      <strong>Acelera con decisión, no con timidez.</strong> Suena contraintuitivo, pero acelerar con
+      cierta franqueza para llegar antes a la marcha larga gasta menos que arrastrar el coche
+      revolucionado en una marcha corta.
+    </li>
+    <li>
+      <strong>Anticipa.</strong> Mirar tres coches por delante en lugar de al parachoques de delante
+      es lo que evita la mitad de las frenadas.
+    </li>
+  </ul>
+
+  <h2>3. La baca, el cofre y las bicis</h2>
+
+  <p>
+    <strong>Hasta un 20 % con el cofre puesto en autopista.</strong> Un portaequipajes de techo
+    destroza la aerodinámica justo donde más importa, a velocidad alta. Y lo hace igual vaya lleno o
+    vacío.
+  </p>
+
+  <p>
+    El error caro no es usarlo en las vacaciones, es <strong>dejarlo puesto el resto del año</strong>
+    porque quitarlo da pereza. Si haces mil kilómetros de viaje con cofre y luego trece mil con él
+    montado sin necesidad, estás pagando el peaje aerodinámico durante trece mil kilómetros.
+  </p>
+
+  <h2>4. El aire acondicionado</h2>
+
+  <p>
+    <strong>Entre un 5 y un 20 % según las condiciones, unos {eur(porPct(10))} euros al año.</strong>
+    El compresor tira del motor, y cuanto más calor haga y más frío pidas, más gasta. Dos matices que
+    cambian la recomendación habitual:
+  </p>
+
+  <ul>
+    <li>
+      <strong>En ciudad, a baja velocidad, las ventanillas bajadas gastan menos</strong> que el aire
+      acondicionado.
+    </li>
+    <li>
+      <strong>En autovía es al revés.</strong> A 120 km/h, dos ventanillas abiertas generan una
+      resistencia aerodinámica que supera el consumo del compresor. Ahí, ventanillas cerradas y aire
+      puesto.
+    </li>
+  </ul>
+
+  <p>
+    Y un gesto que ahorra de verdad en verano: <strong>ventilar el coche un minuto antes de arrancar</strong>
+    con las puertas abiertas. Sacar el aire a 60 grados de un coche al sol antes de pedirle al
+    compresor que lo enfríe le quita medio trabajo.
+  </p>
+
+  <h2>5. La presión de los neumáticos</h2>
+
+  <p>
+    <strong>En torno a un 2 % con medio bar de menos, unos {eur(porPct(2))} euros al año.</strong> No
+    es la medida que más ahorra, pero es la que tiene mejor relación entre esfuerzo y resultado:
+    cuesta cinco minutos una vez al mes y es gratis.
+  </p>
+
+  <p>
+    Y el ahorro de combustible es lo de menos. Un neumático flojo se desgasta antes por los hombros,
+    calienta más, alarga la distancia de frenado y aumenta el riesgo de reventón. La presión correcta
+    es la que dice el fabricante del coche, no la que ponga en el flanco del neumático, y suele estar
+    en una pegatina en el marco de la puerta del conductor o en la tapa del depósito.
+  </p>
+
+  <h2>6. El peso que llevas encima</h2>
+
+  <p>
+    <strong>En torno a un 5 % por cada 100 kg en un coche pequeño, unos {eur(porPct(5))} euros al
+    año.</strong> Aquí es donde el consejo popular se pasa de frenada. Vaciar el maletero está bien,
+    pero la mayoría de la gente no lleva 100 kilos de más ahí dentro: lleva diez o quince, y eso es
+    prácticamente nada.
+  </p>
+
+  <p>
+    Donde el peso sí importa es en ciudad, con muchos arranques, y en coches ligeros. En autovía, a
+    velocidad constante, el peso influye bastante menos que la aerodinámica.
+  </p>
+
+  <h2>7. Cosas que casi no cambian nada</h2>
+
+  <ol>
+    <li>
+      <strong>Apagar el motor en un semáforo corto.</strong> Los sistemas de arranque y parada lo
+      hacen solos y bien. Hacerlo a mano en paradas de diez segundos no compensa el desgaste del
+      motor de arranque.
+    </li>
+    <li>
+      <strong>Repostar solo medio depósito por el peso.</strong> Ya está en la
+      <a href="/guias/cuando-repostar/">guía de cuándo repostar</a>: el efecto es mínimo y te obliga
+      a repostar el doble de veces, con lo que acabas cargando donde te pilla y no donde es barato.
+    </li>
+    <li>
+      <strong>Los aditivos milagrosos de bote que prometen un 15 % menos de consumo.</strong> Si eso
+      funcionara, vendría de serie.
+    </li>
+    <li>
+      <strong>Ir en punto muerto en las bajadas.</strong> Además de ser peligroso porque pierdes el
+      freno motor, gasta más: en punto muerto el motor necesita combustible para no calarse,
+      mientras que con la marcha metida y el pie fuera muchos motores cortan la inyección del todo.
+    </li>
+  </ol>
+
+  <h2>Todo junto</h2>
+
+  <div class="tabla-scroll">
+    <table>
+      <thead>
+        <tr><th>Medida</th><th class="num">Ahorro</th><th class="num">Al año</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Bajar de 120 a 100 km/h en carretera</td><td class="num">~20 %</td><td class="num">{eur(porPct(20))} €</td></tr>
+        <tr><td>Quitar el cofre de techo cuando no se usa</td><td class="num">hasta 20 %</td><td class="num">{eur(porPct(20))} €</td></tr>
+        <tr><td>Conducir con anticipación</td><td class="num">10-15 %</td><td class="num">{eur(porPct(12))} €</td></tr>
+        <tr><td>Uso sensato del aire acondicionado</td><td class="num">5-20 %</td><td class="num">{eur(porPct(10))} €</td></tr>
+        <tr><td>Neumáticos a su presión</td><td class="num">~2 %</td><td class="num">{eur(porPct(2))} €</td></tr>
+        <tr><td>100 kg menos de carga</td><td class="num">~5 %</td><td class="num">{eur(porPct(5))} €</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <figcaption>
+    No se suman: varias de ellas actúan sobre lo mismo y solo aplican en según qué trayecto.
+  </figcaption>
+
+  <p>
+    Y una última idea que ordena todo lo anterior: estos porcentajes se aplican sobre los litros que
+    gastas, mientras que elegir bien la gasolinera actúa sobre el precio de cada litro. Son dos
+    palancas independientes y se multiplican. Quien conduce con cabeza y además reposta en la barata
+    de su ruta paga bastante menos que su vecino con el mismo coche.
+  </p>
+
+  <p>
+    Para saber si tu coche gasta lo que dice el catálogo o bastante más, está la guía de
+    <a href="/guias/consumo-real-vs-homologado/">consumo real frente a homologado</a>, con el método
+    de los dos repostajes para medirlo de verdad.
+  </p>
+
+  <div class="fuentes">
+    <h2>Fuentes y supuestos</h2>
+    <ul>
+      <li>
+        Los porcentajes son valores de referencia habituales en las guías de conducción eficiente del
+        IDAE y de los fabricantes. Varían mucho según coche, trayecto y estilo: tómalos como órdenes
+        de magnitud, no como medidas de tu vehículo.
+      </li>
+      <li>
+        Traducción a euros: {eur(KM)} km al año, {eur(CONSUMO, 1)} L/100 km y {eur(PRECIO, 2)} €/L,
+        que son unos {eur(GASTO_ANUAL)} euros anuales.
+      </li>
+    </ul>
+  </div>
+
+</GuiaLayout>
