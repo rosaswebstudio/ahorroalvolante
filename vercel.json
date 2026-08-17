@@ -1,0 +1,10 @@
+{
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "www.ahorroalvolante.es" }],
+      "destination": "https://ahorroalvolante.es/:path*",
+      "permanent": true
+    }
+  ]
+}
