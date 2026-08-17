@@ -17,9 +17,9 @@ const seriesNacional = [
   { id: 'ga', label: 'Diésel', valores: historico.nacional?.ga ?? [] },
 ];
 
-const title = 'Gasolineras baratas cerca de ti + calculadora de coste del viaje';
+const title = 'Gasolineras baratas cerca de ti + calculadora | Ahorro al Volante';
 const description =
-  'Encuentra la gasolinera más barata cerca de ti (gasolina 95, 98, diésel y GLP, datos oficiales del Ministerio) y calcula cuánto te costará un viaje en coche según el combustible, la carga, el aire acondicionado y tu forma de conducir.';
+  'Ahorro al Volante es un comparador gratuito de precios de carburantes en España: encuentra la gasolinera más barata cerca de ti (gasolina 95, 98, diésel y GLP, datos oficiales del Ministerio) y calcula cuánto te costará un viaje en coche.';
 
 const faqs = [
   {
@@ -55,6 +55,25 @@ const jsonLd = {
   '@context': 'https://schema.org',
   '@graph': [
     {
+      '@type': 'WebSite',
+      '@id': `${siteUrl}/#website`,
+      name: 'Ahorro al Volante',
+      alternateName: 'AhorroAlVolante.es',
+      url: `${siteUrl}/`,
+      description,
+      inLanguage: 'es-ES',
+      publisher: { '@id': `${siteUrl}/#organizacion` },
+    },
+    {
+      '@type': 'Organization',
+      '@id': `${siteUrl}/#organizacion`,
+      name: 'Ahorro al Volante',
+      url: `${siteUrl}/`,
+      description,
+      logo: { '@type': 'ImageObject', url: `${siteUrl}/icon-512.png`, width: 512, height: 512 },
+      parentOrganization: { '@type': 'Organization', name: 'Rosas Web Studio' },
+    },
+    {
       '@type': 'WebApplication',
       '@id': `${siteUrl}/#app`,
       name: 'Buscador de gasolineras baratas',
@@ -64,6 +83,8 @@ const jsonLd = {
       operatingSystem: 'Web',
       inLanguage: 'es-ES',
       isAccessibleForFree: true,
+      isPartOf: { '@id': `${siteUrl}/#website` },
+      publisher: { '@id': `${siteUrl}/#organizacion` },
       offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR' },
       featureList: [
         'Precios de hoy de gasolina 95, 98, diésel, diésel premium y GLP',
@@ -99,8 +120,9 @@ const adBox = 'flex flex-col items-center justify-center rounded-2xl border bord
             La gasolina más barata <span class="text-acento">cerca de ti</span>, hoy
           </h1>
           <p class="mt-2 text-sm leading-relaxed text-suave">
-            Compara el precio de la gasolina 95, 98, diésel y GLP en las gasolineras de tu zona
-            con los datos oficiales del Ministerio, y calcula cuánto te costará tu próximo viaje.
+            <strong class="font-semibold text-tinta">Ahorro al Volante</strong> es un comparador gratuito de precios
+            de carburantes en España: gasolina 95, 98, diésel y GLP en las gasolineras de tu zona con los
+            datos oficiales del Ministerio, y una calculadora de lo que te costará tu próximo viaje.
           </p>
         </header>
 
