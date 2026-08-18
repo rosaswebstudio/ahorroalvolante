@@ -1,4 +1,10 @@
 {
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [{ "key": "x-config-check", "value": "vercel-json-leido" }]
+    }
+  ],
   "redirects": [
     {
       "source": "/:path*",
