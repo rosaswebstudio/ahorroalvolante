@@ -47,12 +47,23 @@ const field = 'w-full rounded-lg border border-borde bg-fondo px-3 py-2 text-sm 
           {PROVINCIAS.map((p) => <option value={p.id} selected={p.id === '28'}>{p.nombre}</option>)}
         </select>
       </label>
-      <label class="col-span-2 block sm:col-span-1">
-        <span class="mb-1 block text-xs font-semibold uppercase tracking-wide text-suave">Municipio</span>
+      <!-- Municipio. El <select> sigue siendo la fuente de verdad: guarda el valor y
+           dispara los eventos que escucha el resto del buscador. Encima se monta un campo
+           de texto que filtra, y que solo aparece si hay JavaScript. Barcelona tiene 87
+           municipios y Valencia 70: desplegar esa lista en el móvil es incómodo, mientras
+           que escribir "cárt" para llegar a Cártama es inmediato. -->
+      <div class="col-span-2 sm:col-span-1">
+        <label id="gs-muni-etiqueta" for="gs-muni" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-suave">Municipio</label>
         <select id="gs-muni" class={field}>
           <option value="">Todos los municipios</option>
         </select>
-      </label>
+        <div id="gs-muni-combo" class="relative" hidden>
+          <input id="gs-muni-input" type="text" class={field} autocomplete="off" placeholder="Todos los municipios"
+            role="combobox" aria-expanded="false" aria-controls="gs-muni-lista" aria-autocomplete="list" />
+          <ul id="gs-muni-lista" role="listbox" aria-labelledby="gs-muni-etiqueta" hidden
+            class="absolute inset-x-0 top-[calc(100%+4px)] z-30 max-h-60 overflow-y-auto rounded-lg border border-borde bg-superficie py-1 shadow-lg"></ul>
+        </div>
+      </div>
     </div>
 
     <div class="mt-3 flex flex-wrap items-center gap-2">
@@ -221,7 +232,123 @@ const field = 'w-full rounded-lg border border-borde bg-fondo px-3 py-2 text-sm 
       `<option value="">Todos los municipios (${total})</option>` +
       munis.map(([m, n]) => `<option value="${esc(m)}">${esc(m)} (${n})</option>`).join('');
     muniSel.value = elegido && cuenta.has(elegido) ? elegido : '';
+    sincronizarCombo();
   }
+
+  /**
+   * Buscador de municipios montado encima del <select>. El desplegable nativo se queda
+   * como fuente de verdad y como respaldo sin JavaScript: aquí solo se oculta. El filtro
+   * ignora acentos (reusa `norm`), así que escribir "cart" encuentra Cártama.
+   */
+  const muniCombo = $('gs-muni-combo')!;
+  const muniInput = $('gs-muni-input') as HTMLInputElement;
+  const muniLista = $('gs-muni-lista')!;
+  const muniEtiqueta = $('gs-muni-etiqueta') as HTMLLabelElement;
+  let muniOpciones: { valor: string; texto: string }[] = [];
+  let muniVisibles: { valor: string; texto: string }[] = [];
+  let muniActivo = -1;
+
+  const muniAbierto = () => !muniLista.hidden;
+
+  /** Copia las opciones del <select>. No pisa el texto mientras está abierto: ahí lo
+   *  escrito es la búsqueda del visitante, no el municipio ya elegido. */
+  function sincronizarCombo() {
+    muniOpciones = [...muniSel.options].map((o) => ({ valor: o.value, texto: o.textContent ?? '' }));
+    muniInput.placeholder = muniOpciones[0]?.texto ?? 'Todos los municipios';
+    if (muniAbierto()) return;
+    const i = muniSel.selectedIndex;
+    muniInput.value = i > 0 ? (muniSel.options[i].textContent ?? '') : '';
+  }
+
+  function marcarActivo(i: number) {
+    muniActivo = i;
+    const items = [...muniLista.querySelectorAll('li[data-valor]')] as HTMLElement[];
+    items.forEach((li, n) => li.classList.toggle('bg-fondo', n === i));
+    if (i >= 0 && items[i]) {
+      muniInput.setAttribute('aria-activedescendant', items[i].id);
+      items[i].scrollIntoView({ block: 'nearest' });
+    } else {
+      muniInput.removeAttribute('aria-activedescendant');
+    }
+  }
+
+  function pintarLista(consulta: string) {
+    const q = norm(consulta.trim());
+    muniVisibles = q ? muniOpciones.filter((o) => norm(o.texto).includes(q)) : muniOpciones;
+    if (!muniVisibles.length) {
+      muniLista.innerHTML =
+        '<li class="px-3 py-2 text-sm text-suave">Ningún municipio coincide con la búsqueda</li>';
+      marcarActivo(-1);
+      return;
+    }
+    muniLista.innerHTML = muniVisibles
+      .map((o, i) =>
+        `<li role="option" id="gs-muni-op-${i}" data-valor="${esc(o.valor)}"` +
+        ` aria-selected="${o.valor === muniSel.value}"` +
+        ` class="cursor-pointer px-3 py-2 text-sm text-tinta hover:bg-fondo">${esc(o.texto)}</li>`)
+      .join('');
+    marcarActivo(-1);
+  }
+
+  function abrirCombo() {
+    pintarLista('');
+    muniInput.select();
+    muniLista.hidden = false;
+    muniInput.setAttribute('aria-expanded', 'true');
+  }
+
+  function cerrarCombo() {
+    muniLista.hidden = true;
+    muniInput.setAttribute('aria-expanded', 'false');
+    marcarActivo(-1);
+    sincronizarCombo();
+  }
+
+  /** Escribe en el <select> y avisa: el resto del buscador ya escucha ese change. */
+  function elegirMuni(valor: string) {
+    muniSel.value = valor;
+    cerrarCombo();
+    muniSel.dispatchEvent(new Event('change'));
+  }
+
+  muniInput.addEventListener('focus', abrirCombo);
+  muniInput.addEventListener('input', () => {
+    pintarLista(muniInput.value);
+    muniLista.hidden = false;
+    muniInput.setAttribute('aria-expanded', 'true');
+  });
+  muniInput.addEventListener('keydown', (ev) => {
+    if (ev.key === 'ArrowDown' || ev.key === 'ArrowUp') {
+      ev.preventDefault();
+      if (!muniAbierto()) { abrirCombo(); return; }
+      const n = muniVisibles.length;
+      if (!n) return;
+      marcarActivo(ev.key === 'ArrowDown' ? (muniActivo + 1) % n : muniActivo <= 0 ? n - 1 : muniActivo - 1);
+    } else if (ev.key === 'Enter' && muniAbierto() && muniActivo >= 0) {
+      ev.preventDefault();
+      elegirMuni(muniVisibles[muniActivo].valor);
+    } else if (ev.key === 'Escape' && muniAbierto()) {
+      ev.preventDefault();
+      cerrarCombo();
+    }
+  });
+  // mousedown y no click: con click, el input pierde antes el foco y la lista ya se ha
+  // cerrado cuando llega el evento.
+  muniLista.addEventListener('mousedown', (ev) => {
+    const li = (ev.target as HTMLElement).closest('li[data-valor]') as HTMLElement | null;
+    if (!li) return;
+    ev.preventDefault();
+    elegirMuni(li.dataset.valor ?? '');
+  });
+  document.addEventListener('click', (ev) => {
+    if (muniAbierto() && !muniCombo.contains(ev.target as Node)) cerrarCombo();
+  });
+
+  // Se cambia aquí y no en el marcado: sin JavaScript se queda el <select>, que funciona.
+  muniSel.hidden = true;
+  muniCombo.hidden = false;
+  muniEtiqueta.htmlFor = 'gs-muni-input';
+  sincronizarCombo();
 
   function render() {
     if (!data) return;
@@ -458,6 +585,7 @@ const field = 'w-full rounded-lg border border-borde bg-fondo px-3 py-2 text-sm 
     setOrden('precio');
     // El municipio pertenece a la provincia anterior: no tiene sentido conservarlo.
     muniSel.value = '';
+    sincronizarCombo();
     guardarPref({ prov: provSel.value, muni: '' });
     load();
   });
@@ -484,6 +612,7 @@ const field = 'w-full rounded-lg border border-borde bg-fondo px-3 py-2 text-sm 
         // Ordenar por cercanía dentro de un solo municipio no tiene sentido: se quita
         // el filtro para que salgan también las de los pueblos de al lado.
         muniSel.value = '';
+        sincronizarCombo();
         guardarPref({ muni: '' });
         if (prov.id !== provSel.value) { provSel.value = prov.id; await load(); }
         else render();
