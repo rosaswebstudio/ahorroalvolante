@@ -10,6 +10,11 @@ on:
     # 05:30 UTC = 07:30 en la península (horario de verano). Los precios del día ya están
     # publicados y la web queda fresca antes de la hora punta de la mañana.
     - cron: '30 5 * * *'
+    # Segunda pasada de seguridad: si a primera hora la API del Ministerio no responde,
+    # el día entero se perdía (la ejecución #27 del 18-08-2026 murió así). El script es
+    # idempotente, recalcula el día de hoy y salta los que ya tiene, así que repetirlo
+    # no ensucia nada y de paso publica precios más frescos.
+    - cron: '30 11 * * *'
   workflow_dispatch: # permite lanzarlo a mano desde la pestaña Actions
 
 jobs:
