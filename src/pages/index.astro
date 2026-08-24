@@ -10,9 +10,14 @@ import historicoJson from '../data/historico.json';
 const provinciasOrdenadas = [...PROVINCIAS].sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
 
 // Guias destacadas en portada. La web no es solo un buscador de precios: lo que convierte
-// un precio en una decision (si compensa desviarse, si el low cost es la misma gasolina,
-// que descuentos valen) esta escrito, y tiene que verse sin tener que entrar en el menu.
-const guiasDestacadas = GUIAS.slice(0, 6);
+// un precio en una decision (si compensa desviarse, cuando cambiar los neumaticos, si el todo
+// riesgo sigue teniendo sentido) esta escrito, y tiene que verse sin entrar en el menu.
+//
+// Se coge la primera de cada tema en vez de las seis primeras del indice: asi la portada ensena
+// de un vistazo que la web cubre todo el coste del coche y no solo el litro.
+const guiasDestacadas = [...new Set(GUIAS.map((g) => g.tema))]
+  .map((tema) => GUIAS.find((g) => g.tema === tema))
+  .slice(0, 6);
 
 const historico = historicoJson as {
   fechas: string[];

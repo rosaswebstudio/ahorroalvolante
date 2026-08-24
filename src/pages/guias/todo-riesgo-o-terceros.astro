@@ -1,0 +1,125 @@
+---
+import GuiaLayout from '../../layouts/GuiaLayout.astro';
+
+// Ejemplo de la cuenta. Cifras dichas en el texto.
+const VALOR = 4000;
+const TODO_RIESGO = 780;
+const TERCEROS_AMPLIADO = 340;
+const diferencia = TODO_RIESGO - TERCEROS_AMPLIADO;
+const pct = (diferencia / VALOR) * 100;
+const eur = (n: number) => n.toLocaleString('es-ES', { maximumFractionDigits: 0 });
+const dec = (n: number) => n.toLocaleString('es-ES', { maximumFractionDigits: 1 });
+---
+<GuiaLayout slug="todo-riesgo-o-terceros">
+
+  <p>
+    Todo coche llega a un punto en el que el todo riesgo deja de tener sentido. El problema es que
+    ese punto no lo avisa nadie: la póliza se renueva sola y se sigue pagando la misma cobertura
+    sobre un coche que cada año vale menos. La decisión tiene una cuenta detrás, y es sencilla.
+  </p>
+
+  <h2>Las cuatro modalidades</h2>
+
+  <ul>
+    <li>
+      <strong>Terceros.</strong> Lo mínimo legal. Cubre los daños que causes a otros, personas y
+      cosas. Tu coche, nada.
+    </li>
+    <li>
+      <strong>Terceros ampliado.</strong> Lo anterior más lunas, robo e incendio, y a veces daños
+      por fenómenos atmosféricos. Es la modalidad que más gente debería tener y menos gente tiene.
+    </li>
+    <li>
+      <strong>Todo riesgo con franquicia.</strong> Cubre también los daños de tu propio coche, pero
+      tú pones los primeros euros de cada siniestro.
+    </li>
+    <li>
+      <strong>Todo riesgo sin franquicia.</strong> Lo mismo sin esa aportación. Es la modalidad más
+      cara y la que menos veces compensa.
+    </li>
+  </ul>
+
+  <h2>El concepto que lo decide: el valor venal</h2>
+
+  <p>
+    Si tu coche queda siniestro total, la aseguradora no te da lo que costaría uno nuevo ni lo que
+    tú crees que vale: te indemniza en función de su valor de mercado en ese momento, el valor
+    venal. Y ese valor cae año tras año mientras la prima del todo riesgo baja mucho más despacio.
+  </p>
+
+  <p>
+    Ahí está toda la cuestión. El todo riesgo es un seguro sobre una cantidad que se va encogiendo,
+    y llega un momento en que estás pagando una prima considerable para asegurar un importe que ya
+    no lo justifica.
+  </p>
+
+  <h2>La cuenta, con números</h2>
+
+  <p>
+    Coge las dos ofertas que te interesan y quédate con la diferencia anual, no con el precio total.
+    Un ejemplo con cifras del orden de las habituales:
+  </p>
+
+  <ul>
+    <li>Valor de mercado del coche: <strong>{eur(VALOR)} €</strong>.</li>
+    <li>Todo riesgo con franquicia: <strong>{eur(TODO_RIESGO)} €</strong> al año.</li>
+    <li>Terceros ampliado: <strong>{eur(TERCEROS_AMPLIADO)} €</strong> al año.</li>
+    <li>Diferencia: <strong>{eur(diferencia)} €</strong> al año, un {dec(pct)} % del valor del coche.</li>
+  </ul>
+
+  <p>
+    Traducido: estás pagando {eur(diferencia)} € anuales para cubrir un máximo de {eur(VALOR)} €, y
+    solo en el peor caso posible. En algo más de nueve años de primas habrías pagado el coche
+    entero. Y eso sin contar la franquicia, que te tocaría poner igualmente en cada parte.
+  </p>
+
+  <h2>La regla práctica</h2>
+
+  <p>
+    No hay una cifra oficial, pero la regla que usa mucha gente del sector y que aguanta bien la
+    lógica es esta: <strong>cuando la diferencia anual entre el todo riesgo y el terceros ampliado
+    supera aproximadamente el 10 o el 15 % del valor de mercado del coche, el todo riesgo ha dejado
+    de compensar</strong>. En el ejemplo de arriba, con un {dec(pct)} %, ya estamos en esa zona.
+  </p>
+
+  <p>
+    Es una regla, no una ley. Hay dos motivos legítimos para saltársela.
+  </p>
+
+  <h2>Cuándo mantenerlo aunque la cuenta diga que no</h2>
+
+  <ul>
+    <li>
+      <strong>Si perder el coche te descoloca la vida.</strong> Un seguro no es solo una inversión
+      esperada, es también tranquilidad. Si no tienes 4.000 € disponibles para reponer el coche de
+      golpe, pagar por no tener que tenerlos es una decisión razonable aunque la cuenta salga en
+      contra.
+    </li>
+    <li>
+      <strong>Si el coche está financiado.</strong> Muchos contratos de financiación exigen todo
+      riesgo mientras quede deuda, y no es negociable.
+    </li>
+  </ul>
+
+  <h2>Y cuándo bajarlo ya</h2>
+
+  <ul>
+    <li>Coche de más de ocho o diez años con valor de mercado bajo.</li>
+    <li>Segundo coche de la casa, de poco uso, que si falla no te deja tirado.</li>
+    <li>Coche aparcado siempre en garaje y con pocos kilómetros anuales.</li>
+  </ul>
+
+  <p>
+    Una advertencia sobre el paso intermedio: si bajas, baja a terceros ampliado, no a terceros
+    pelado. Las lunas y el robo son los siniestros más frecuentes que afectan a tu propio coche, y
+    la diferencia de prima entre las dos modalidades suele ser pequeña.
+  </p>
+
+  <p>
+    Esta decisión va de la mano de otra dos: cuánto pagas de más por no comparar, que está en
+    <a href="/guias/precio-del-seguro-de-coche/">cómo se calcula el precio de tu seguro</a>, y hasta
+    cuándo merece la pena seguir con este coche, en
+    <a href="/guias/reparar-o-vender-el-coche/">reparar o vender</a>.
+  </p>
+
+</GuiaLayout>

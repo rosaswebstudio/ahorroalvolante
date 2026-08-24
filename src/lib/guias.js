@@ -225,6 +225,116 @@ export const GUIAS = [
     minutos: 7,
     actualizada: '2026-08-24',
   },
+  {
+    slug: 'precio-del-seguro-de-coche',
+    tema: 'Lo que cuesta el coche',
+    titulo: 'Cómo se calcula el precio de tu seguro y qué lo baja de verdad',
+    description:
+      'Qué variables usa una aseguradora para poner precio a tu póliza, cuáles puedes cambiar y cuáles no, y por qué la misma persona paga cantidades muy distintas según la compañía.',
+    resumen:
+      'La mitad de lo que decide tu prima no tiene que ver contigo, sino con cómo te clasifica cada compañía.',
+    minutos: 9,
+    actualizada: '2026-08-25',
+  },
+  {
+    slug: 'todo-riesgo-o-terceros',
+    tema: 'Lo que cuesta el coche',
+    titulo: 'Todo riesgo o terceros: la cuenta del valor venal',
+    description:
+      'Cuándo deja de compensar el todo riesgo, cómo comparar la prima con lo que realmente vale tu coche y qué cubre en la práctica cada modalidad de seguro.',
+    resumen:
+      'Hay un punto en la vida de un coche en el que el todo riesgo deja de tener sentido. Se puede calcular.',
+    minutos: 8,
+    actualizada: '2026-08-25',
+  },
+  {
+    slug: 'reparar-o-vender-el-coche',
+    tema: 'Lo que cuesta el coche',
+    titulo: 'Reparar o vender: cuándo el coche deja de compensar',
+    description:
+      'Cómo decidir ante una avería cara si merece la pena arreglar el coche o cambiarlo, comparando el coste de la reparación con el valor del coche y con lo que costaría el siguiente.',
+    resumen:
+      'La pregunta no es si la reparación es cara, es cuántos meses de coche te compra.',
+    minutos: 8,
+    actualizada: '2026-08-25',
+  },
+  {
+    slug: 'cambiar-de-coche-o-mantenerlo',
+    tema: 'Lo que cuesta el coche',
+    titulo: 'Cambiar de coche para gastar menos: cuándo sale la cuenta',
+    description:
+      'Si compensa cambiar un coche que consume mucho por otro más eficiente, con la cuenta de cuántos años de ahorro de combustible hacen falta para pagar la diferencia.',
+    resumen:
+      'Ahorrar dos litros a los cien no paga un coche nuevo. Aquí está a partir de cuándo sí.',
+    minutos: 8,
+    actualizada: '2026-08-25',
+  },
+  {
+    slug: 'itv-que-miran-y-que-cuesta',
+    tema: 'Lo que cuesta el coche',
+    titulo: 'ITV: cada cuánto toca, qué miran y qué hacer si no pasa',
+    description:
+      'Los plazos de la ITV según la antigüedad del vehículo, los puntos que más suspenden, la diferencia entre defecto leve, grave y muy grave, y los plazos para volver.',
+    resumen:
+      'La mitad de los suspensos son por cosas que se arreglan en el aparcamiento por menos de veinte euros.',
+    minutos: 8,
+    actualizada: '2026-08-25',
+  },
+  {
+    slug: 'leer-un-neumatico',
+    tema: 'Neumáticos y mantenimiento',
+    titulo: 'Cómo leer el flanco de un neumático',
+    description:
+      'Qué significa cada número y cada letra de la medida de un neumático, cómo se lee el índice de carga y el de velocidad, y dónde está la fecha de fabricación.',
+    resumen:
+      'En el flanco está todo lo que necesitas para no comprar el neumático equivocado, incluida su edad.',
+    minutos: 7,
+    actualizada: '2026-08-25',
+  },
+  {
+    slug: 'cuando-cambiar-los-neumaticos',
+    tema: 'Neumáticos y mantenimiento',
+    titulo: 'Cuándo hay que cambiar los neumáticos de verdad',
+    description:
+      'El límite legal de dibujo y por qué no es el límite recomendable, cómo afecta el desgaste a la frenada en mojado, y por qué un neumático viejo hay que cambiarlo aunque tenga dibujo.',
+    resumen:
+      'El límite legal es 1,6 mm. La distancia de frenada en mojado dice otra cosa bastante antes.',
+    minutos: 8,
+    actualizada: '2026-08-25',
+  },
+  {
+    slug: 'presion-de-los-neumaticos',
+    tema: 'Neumáticos y mantenimiento',
+    titulo: 'La presión de los neumáticos, en euros al año',
+    description:
+      'Cuánto consume de más un coche con los neumáticos por debajo de la presión correcta, cuánto se acorta su vida útil, dónde encontrar la presión que pide tu coche y cada cuánto comprobarla.',
+    resumen:
+      'Es la revisión más barata que existe, tarda tres minutos y casi nadie la hace.',
+    minutos: 7,
+    actualizada: '2026-08-25',
+  },
+  {
+    slug: 'aceite-del-motor',
+    tema: 'Neumáticos y mantenimiento',
+    titulo: 'Qué significa 5W30 y cada cuánto toca el aceite',
+    description:
+      'Cómo se lee la viscosidad de un aceite de motor, qué son las especificaciones del fabricante, cada cuánto hay que cambiarlo de verdad y por qué el intervalo del manual no siempre sirve.',
+    resumen:
+      'El número que miras no es el importante, y el intervalo del manual asume un uso que casi nadie hace.',
+    minutos: 8,
+    actualizada: '2026-08-25',
+  },
+  {
+    slug: 'bateria-del-coche',
+    tema: 'Neumáticos y mantenimiento',
+    titulo: 'La batería: cuánto dura, cómo saber que se muere y cómo arrancar con pinzas',
+    description:
+      'Los síntomas de una batería que se va, por qué mueren en invierno y en coches de trayectos cortos, y el orden correcto para arrancar con pinzas sin estropear nada.',
+    resumen:
+      'Casi siempre avisa. Y el orden de las pinzas no es un detalle, es la diferencia entre arrancar y una avería.',
+    minutos: 8,
+    actualizada: '2026-08-25',
+  },
 ];
 
 /**

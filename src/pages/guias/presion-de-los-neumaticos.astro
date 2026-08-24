@@ -1,0 +1,122 @@
+---
+import GuiaLayout from '../../layouts/GuiaLayout.astro';
+
+// Coste anual de circular con la presion baja. Cifras dichas en el texto.
+const KM_ANO = 15000;
+const CONSUMO = 6.5;
+const PRECIO = 1.6;
+const PENALIZACION = 0.03; // 3 % de consumo extra con la presion claramente baja
+const gastoAno = (KM_ANO * CONSUMO * PRECIO) / 100;
+const extra = gastoAno * PENALIZACION;
+const eur = (n: number) => n.toLocaleString('es-ES', { maximumFractionDigits: 0 });
+const eur2 = (n: number) =>
+  n.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+---
+<GuiaLayout slug="presion-de-los-neumaticos">
+
+  <p>
+    Es la revisión más barata que existe en un coche: es gratis en muchas gasolineras, tarda tres
+    minutos y hay que hacerla una vez al mes. Casi nadie la hace. Y a diferencia de otros consejos
+    de ahorro, este no depende de tu forma de conducir ni de tu suerte: es física, y se paga todos
+    los días.
+  </p>
+
+  <h2>Qué pasa cuando la presión es baja</h2>
+
+  <p>
+    Un neumático poco inflado se deforma más en cada vuelta. Esa deformación consume energía en
+    forma de calor, lo que se llama resistencia a la rodadura, y esa energía sale de tu depósito.
+    Además, al deformarse, la huella de contacto se apoya más en los bordes que en el centro, así
+    que se gasta antes y de forma irregular.
+  </p>
+
+  <p>
+    Y hay una tercera consecuencia, la que de verdad importa: el neumático se calienta más. Un
+    neumático circulando muy por debajo de su presión durante mucho rato a velocidad de autovía es
+    una de las causas clásicas de reventón.
+  </p>
+
+  <h2>Cuánto cuesta, en euros</h2>
+
+  <p>
+    Circular de forma habitual con la presión claramente por debajo de la recomendada se traduce en
+    torno a un 3 % de consumo adicional. Con un coche que hace {eur(KM_ANO)} km al año, que consume
+    {CONSUMO.toFixed(1).replace('.', ',')} L/100 km, y el litro a {PRECIO.toFixed(2).replace('.', ',')} €:
+  </p>
+
+  <ul>
+    <li>Gasto anual de combustible: <strong>{eur(gastoAno)} €</strong>.</li>
+    <li>Sobrecoste por la presión baja: <strong>{eur2(extra)} €</strong> al año.</li>
+  </ul>
+
+  <p>
+    No es una fortuna, y conviene decirlo con honestidad: esto no te cambia la vida. Pero a eso hay
+    que sumarle lo que de verdad se lleva la peor parte, que son los neumáticos. Un juego que dura
+    un 20 % menos por rodar mal inflado cuesta bastante más que esos euros de combustible, y ahí ya
+    hablamos de cientos de euros a lo largo de la vida del coche. Por tres minutos al mes.
+  </p>
+
+  <h2>Cuál es la presión correcta de tu coche</h2>
+
+  <p>
+    No la que ponga el neumático. El número que aparece en el flanco es la presión <em>máxima</em>
+    que soporta, no la que tienes que llevar. La correcta la da el fabricante del coche, y está en
+    uno de estos sitios:
+  </p>
+
+  <ul>
+    <li>Una pegatina en el marco de la puerta del conductor, al abrirla.</li>
+    <li>Dentro de la tapa del depósito de combustible.</li>
+    <li>En el manual del coche.</li>
+  </ul>
+
+  <p>
+    Ahí verás normalmente dos columnas: una para uso normal y otra para carga completa. Si vas de
+    viaje con el coche lleno y la baca puesta, usa la segunda. Muchos coches piden además presiones
+    distintas en el eje delantero y en el trasero, así que conviene leer la tabla entera y no
+    quedarse con el primer número.
+  </p>
+
+  <h2>Cómo medirla bien</h2>
+
+  <ul>
+    <li>
+      <strong>En frío.</strong> Es la condición que más se incumple. La presión de referencia se
+      entiende con el neumático frío, es decir, con el coche parado un par de horas o después de
+      recorrer pocos kilómetros a velocidad baja. Un neumático caliente marca por encima, y si le
+      quitas aire para "corregirlo", lo dejas bajo de verdad.
+    </li>
+    <li>
+      <strong>Los cuatro, y la de repuesto.</strong> Una rueda de repuesto desinflada solo la
+      descubres el día que la necesitas.
+    </li>
+    <li>
+      <strong>Una vez al mes</strong>, y siempre antes de un viaje largo. Un neumático sano pierde
+      presión poco a poco por sí solo, sin ninguna avería.
+    </li>
+  </ul>
+
+  <h2>El frío y el TPMS</h2>
+
+  <p>
+    Con la bajada de temperaturas del otoño la presión cae sola, porque el aire se contrae. Es la
+    razón por la que los avisos de presión baja se disparan en masa el primer fin de semana de frío,
+    sin que nadie haya pinchado. Toca revisar y reponer, no ignorar el testigo.
+  </p>
+
+  <p>
+    Sobre ese testigo: los coches modernos llevan un sistema de control de presión, el TPMS, y es
+    útil, pero no sustituye la revisión manual. Muchos sistemas son indirectos y detectan
+    diferencias entre ruedas, así que si las cuatro se han quedado bajas por igual, pueden no
+    avisar.
+  </p>
+
+  <p>
+    La presión es también lo primero que hay que descartar cuando un neumático se gasta raro: los
+    patrones de desgaste y lo que significa cada uno están en
+    <a href="/guias/cuando-cambiar-los-neumaticos/">cuándo hay que cambiar los neumáticos de
+    verdad</a>. Y en la lista de cosas que bajan el consumo, esta es de las pocas que sale gratis:
+    <a href="/guias/conduccion-eficiente/">cuánto baja el consumo cada cosa que puedes cambiar</a>.
+  </p>
+
+</GuiaLayout>

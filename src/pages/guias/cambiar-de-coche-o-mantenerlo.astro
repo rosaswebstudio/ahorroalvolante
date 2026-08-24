@@ -1,0 +1,105 @@
+---
+import GuiaLayout from '../../layouts/GuiaLayout.astro';
+
+// La cuenta de la amortizacion. Cifras dichas en el texto.
+const KM_ANO = 15000;
+const PRECIO = 1.6;
+const CONSUMO_VIEJO = 8.5;
+const CONSUMO_NUEVO = 5.5;
+const gasto = (c: number) => (KM_ANO * c * PRECIO) / 100;
+const ahorroAno = gasto(CONSUMO_VIEJO) - gasto(CONSUMO_NUEVO);
+const anos = (inversion: number) => inversion / ahorroAno;
+const eur = (n: number) => n.toLocaleString('es-ES', { maximumFractionDigits: 0 });
+const dec = (n: number) => n.toLocaleString('es-ES', { maximumFractionDigits: 1 });
+---
+<GuiaLayout slug="cambiar-de-coche-o-mantenerlo">
+
+  <p>
+    "Este coche gasta mucho, me voy a comprar uno que consuma menos y me sale a cuenta." Es una de
+    las frases más caras que se dicen en un salón, y casi nunca aguanta la cuenta. No porque el
+    coche nuevo no gaste menos, sino porque el ahorro de combustible es muy pequeño comparado con lo
+    que cuesta cambiar de coche.
+  </p>
+
+  <h2>La cuenta que casi nadie hace</h2>
+
+  <p>
+    Coge un caso favorable al cambio: pasas de un coche que consume {dec(CONSUMO_VIEJO)} L/100 km a
+    uno que consume {dec(CONSUMO_NUEVO)} L/100 km, tres litros menos, que es una diferencia grande.
+    Haces {eur(KM_ANO)} km al año y el litro está a {PRECIO.toFixed(2).replace('.', ',')} €.
+  </p>
+
+  <ul>
+    <li>Coche actual: <strong>{eur(gasto(CONSUMO_VIEJO))} €</strong> al año de combustible.</li>
+    <li>Coche nuevo: <strong>{eur(gasto(CONSUMO_NUEVO))} €</strong> al año.</li>
+    <li>Ahorro: <strong>{eur(ahorroAno)} €</strong> al año.</li>
+  </ul>
+
+  <p>
+    Con ese ahorro, la diferencia de precio entre los dos coches tarda en pagarse:
+  </p>
+
+  <ul>
+    <li>Si el cambio te cuesta 5.000 € netos: <strong>{dec(anos(5000))} años</strong>.</li>
+    <li>Si te cuesta 10.000 € netos: <strong>{dec(anos(10000))} años</strong>.</li>
+    <li>Si te cuesta 15.000 € netos: <strong>{dec(anos(15000))} años</strong>.</li>
+  </ul>
+
+  <p>
+    Y esos son años en los que el coche nuevo, además, se está depreciando mucho más deprisa que el
+    viejo. Con las cifras de arriba, que ya son generosas con el cambio, el combustible por sí solo
+    casi nunca justifica la operación.
+  </p>
+
+  <h2>Por qué la intuición falla aquí</h2>
+
+  <p>
+    Porque el combustible se paga en trozos pequeños y muy visibles, cincuenta o setenta euros cada
+    vez, varias veces al mes y con el precio escrito en un cartel enorme. La depreciación se paga de
+    golpe y en silencio, el día que vendes. El resultado es que sobrestimamos una y no vemos la
+    otra, cuando la segunda suele ser bastante mayor. Está en contexto en
+    <a href="/guias/coste-real-de-un-coche/">cuánto cuesta de verdad tu coche al año</a>.
+  </p>
+
+  <h2>Cuándo el cambio sí sale a cuenta</h2>
+
+  <p>
+    La cuenta cambia por completo en tres situaciones, y todas tienen que ver con que el ahorro deje
+    de ser solo de combustible.
+  </p>
+
+  <ul>
+    <li>
+      <strong>Muchísimos kilómetros.</strong> Con 40.000 km al año, el ahorro anual del ejemplo se
+      multiplica por más de dos y medio, y los plazos empiezan a tener sentido. Por eso los cambios
+      por consumo los hacen los comerciales y los taxistas, no quien hace 10.000 km.
+    </li>
+    <li>
+      <strong>El coche viejo ya te iba a costar dinero.</strong> Si venías de decidir una reparación
+      cara, esa cantidad se suma al lado del cambio. Ahí la comparación es otra, y está en
+      <a href="/guias/reparar-o-vender-el-coche/">reparar o vender</a>.
+    </li>
+    <li>
+      <strong>Hay algo más que combustible en juego.</strong> Una etiqueta ambiental que te permita
+      entrar donde ahora no puedes, un seguro sensiblemente más barato o un impuesto de circulación
+      menor. Suma todo eso al ahorro anual antes de dividir.
+    </li>
+  </ul>
+
+  <h2>La alternativa que casi nadie considera</h2>
+
+  <p>
+    Antes de gastarse miles de euros para bajar el consumo, conviene comprobar cuánto se puede bajar
+    gratis. Entre un coche mal mantenido y el mismo coche con la presión correcta, sin peso muerto,
+    sin baca y conducido con cabeza hay una diferencia que se acerca al litro cada cien kilómetros,
+    y no cuesta nada. Está ordenado por impacto real en
+    <a href="/guias/conduccion-eficiente/">cuánto baja el consumo cada cosa que puedes cambiar</a>.
+  </p>
+
+  <p>
+    Y si de todas formas vas a cambiar, la decisión de qué combustible elegir tiene su propia cuenta
+    en <a href="/diesel-o-gasolina/">diésel o gasolina</a> y en
+    <a href="/guias/glp-compensa/">GLP: cuántos kilómetros hacen falta para amortizarlo</a>.
+  </p>
+
+</GuiaLayout>

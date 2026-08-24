@@ -58,9 +58,18 @@ Segunda pasada (24-08-2026), con la web reducida de 1.189 a 345 páginas:
    municipio traducida a euros por depósito, y los municipios cercanos de verdad (haversine sobre
    el centroide de cada uno, radio de 35 km) con su precio más bajo. Las dos cosas son distintas
    en cada página porque dependen de los datos de ese municipio, no de la plantilla.
-4. **Veinte guías** en `/guias/` (eran ocho), en cuatro temas. Índice en `src/lib/guias.js`,
-   layout en `src/layouts/GuiaLayout.astro`. Seis de ellas se enlazan desde la portada: antes la
-   home no enlazaba ni una sola guía individual y el revisor aterrizaba en un buscador.
+4. **Treinta guías** en `/guias/` (eran ocho), en seis temas. Además de las de combustible se
+   añadieron dos pilares que caben en la marca (es "Ahorro al Volante", no "ahorro en gasolina"):
+   **Lo que cuesta el coche** (seguro, valor venal, reparar o vender, cambiar de coche, ITV) y
+   **Neumáticos y mantenimiento** (flanco, desgaste, presión, aceite, batería). Son los dos
+   pilares evergreen: se escriben una vez y no caducan. Quedan pendientes, para después de la
+   aprobación, normas y multas (V16, ZBE, radares), que exigen contrastar normativa y hay que
+   mantener al día, y la comparativa eléctrico frente a gasolina, que es la única de eléctricos
+   que se apoya en datos propios (precios de carburante de aquí y de la luz en mivatio.es).
+   Índice en `src/lib/guias.js`,
+   layout en `src/layouts/GuiaLayout.astro`. La portada enlaza una guía de cada tema, para que
+   se vea de un vistazo que la web cubre todo el coste del coche y no solo el litro: antes no
+   enlazaba ni una sola guía individual y el revisor aterrizaba en un buscador.
 
 Las dos páginas de contenido antiguas (`/diesel-o-gasolina/` y `/calcular-gasto-gasolina/`) se
 listan en el índice de guías pero NO cambian de ruta.

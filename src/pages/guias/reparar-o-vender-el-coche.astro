@@ -1,0 +1,114 @@
+---
+import GuiaLayout from '../../layouts/GuiaLayout.astro';
+
+// Ejemplo trabajado. Cifras dichas en el texto.
+const REPARACION = 1800;
+const VALOR = 3500;
+const COSTE_MES_SIGUIENTE = 250; // cuota o amortizacion mensual de un coche de reemplazo
+const mesesQueCompra = REPARACION / COSTE_MES_SIGUIENTE;
+const eur = (n: number) => n.toLocaleString('es-ES', { maximumFractionDigits: 0 });
+const dec = (n: number) => n.toLocaleString('es-ES', { maximumFractionDigits: 0 });
+---
+<GuiaLayout slug="reparar-o-vender-el-coche">
+
+  <p>
+    El taller te da un presupuesto de cuatro cifras y la primera reacción siempre es la misma:
+    comparar esa cantidad con lo que crees que vale el coche. Es la comparación equivocada, y lleva
+    a mucha gente a vender un coche que todavía le convenía o a arreglar uno que ya no.
+  </p>
+
+  <h2>La pregunta correcta</h2>
+
+  <p>
+    Un coche no es una inversión, es un servicio: te lleva de un sitio a otro durante un tiempo a
+    cambio de dinero. Así que la pregunta no es "¿la reparación vale más o menos que el coche?",
+    sino <strong>"¿cuántos meses de coche me compra esta reparación, y a qué precio por mes sale
+    comparado con la alternativa?"</strong>.
+  </p>
+
+  <p>
+    La alternativa nunca es cero. Si vendes, tienes que comprar otro, y ese otro tiene un coste
+    mensual: la cuota si lo financias, o lo que se deprecia si lo pagas al contado, más su propio
+    seguro y su propio mantenimiento.
+  </p>
+
+  <h2>La cuenta, con números</h2>
+
+  <p>
+    Supón una reparación de {eur(REPARACION)} € en un coche cuyo valor de mercado es
+    de {eur(VALOR)} €. La reacción instintiva es que se come la mitad del coche y que no sale a
+    cuenta. Hagamos la otra.
+  </p>
+
+  <p>
+    Si el coche que comprarías en su lugar te va a costar del orden de {eur(COSTE_MES_SIGUIENTE)} €
+    al mes entre amortización y financiación, esa reparación te compra:
+  </p>
+
+  <p>
+    <strong>{eur(REPARACION)} € ÷ {eur(COSTE_MES_SIGUIENTE)} € al mes = {dec(mesesQueCompra)} meses
+    de coche.</strong>
+  </p>
+
+  <p>
+    Es decir: si tras arreglarlo esperas razonablemente que el coche aguante más
+    de {dec(mesesQueCompra)} meses sin otro gasto grande, la reparación es la opción barata. Si crees
+    que en menos de un año va a venir la siguiente avería seria, no lo es.
+  </p>
+
+  <h2>Los tres factores que inclinan la balanza</h2>
+
+  <ul>
+    <li>
+      <strong>Qué se ha roto.</strong> No es lo mismo un embrague, que es una pieza de desgaste con
+      vida conocida por delante, que una avería de motor o de caja automática en un coche con
+      muchos kilómetros, que suele venir acompañada. Pregunta al taller no solo el presupuesto,
+      sino qué estado tiene el resto.
+    </li>
+    <li>
+      <strong>Qué más hay pendiente.</strong> Si además tocan neumáticos, distribución y una ITV
+      dudosa, no estás decidiendo sobre {eur(REPARACION)} €, estás decidiendo sobre esa cantidad más
+      todo lo demás. Suma antes de decidir.
+    </li>
+    <li>
+      <strong>Cuánto lo necesitas.</strong> Un coche que usas a diario para trabajar y otro de fin
+      de semana no tienen el mismo umbral. Con el primero, la fiabilidad vale dinero por sí sola.
+    </li>
+  </ul>
+
+  <h2>Cuándo está claro que hay que reparar</h2>
+
+  <ul>
+    <li>La avería es de una pieza concreta y el resto del coche está sano.</li>
+    <li>Conoces el historial porque lo has mantenido tú.</li>
+    <li>La reparación te compra más de un año sin gastos grandes previsibles.</li>
+    <li>El coche pasa la ITV sin discusión.</li>
+  </ul>
+
+  <h2>Cuándo está claro que hay que venderlo</h2>
+
+  <ul>
+    <li>Es la tercera avería seria en año y medio.</li>
+    <li>La reparación se acerca a lo que costaría un coche equivalente en el mercado.</li>
+    <li>Hay corrosión estructural, que no se arregla, solo se retrasa.</li>
+    <li>Ya no te vale por otra razón: no cabe la familia, no puede entrar donde necesitas entrar.</li>
+  </ul>
+
+  <h2>El error de vender roto</h2>
+
+  <p>
+    Vender un coche averiado es la peor opción económica de todas, porque el comprador descuenta la
+    reparación con un margen amplio y además desconfía. Si el coche está averiado y decides
+    cambiarlo, casi siempre sale mejor entregarlo como parte del pago, donde el descuento se
+    negocia dentro de otra operación, o buscar un desguace autorizado si el valor ya es residual.
+  </p>
+
+  <p>
+    Y antes de decidir nada, revisa la póliza: mantener un todo riesgo en un coche que estás a punto
+    de dar por amortizado es un gasto que ya no tiene sentido. La cuenta está en
+    <a href="/guias/todo-riesgo-o-terceros/">todo riesgo o terceros</a>. Si lo que estás
+    planteándote es cambiar a un coche que gaste menos, la cuenta de si eso se paga solo está en
+    <a href="/guias/cambiar-de-coche-o-mantenerlo/">cambiar de coche para gastar menos</a>.
+  </p>
+
+</GuiaLayout>
