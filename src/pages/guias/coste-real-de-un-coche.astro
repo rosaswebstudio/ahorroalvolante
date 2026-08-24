@@ -1,0 +1,118 @@
+---
+import GuiaLayout from '../../layouts/GuiaLayout.astro';
+
+// Ejemplo trabajado: coche de gama media, 12.000 km al ano. Cifras dichas en el texto.
+const KM = 12000;
+const CONSUMO = 6.5;
+const PRECIO = 1.6;
+const combustible = (KM * CONSUMO * PRECIO) / 100;
+const eur = (n: number) => n.toLocaleString('es-ES', { maximumFractionDigits: 0 });
+const dec = (n: number) => n.toLocaleString('es-ES', { maximumFractionDigits: 1 });
+const eur2 = (n: number) =>
+  n.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+---
+<GuiaLayout slug="coste-real-de-un-coche">
+
+  <p>
+    Preguntas a alguien cuánto le cuesta su coche y te contesta con lo que echa de gasolina. Es la
+    partida más visible, porque se paga en efectivo, varias veces al mes y con el precio escrito en
+    un cartel de tres metros. Pero en un coche particular medio casi nunca es la más cara. Esta es
+    la lista completa, con un ejemplo trabajado.
+  </p>
+
+  <h2>El ejemplo</h2>
+
+  <p>
+    Un coche de gama media, de gasolina, que recorre {eur(KM)} kilómetros al año, que es
+    aproximadamente la media de un turismo particular en España, con un consumo real
+    de {dec(CONSUMO)} L/100 km y el litro a {eur2(PRECIO)} €.
+  </p>
+
+  <h2>1. Depreciación</h2>
+
+  <p>
+    Lo que el coche pierde de valor cada año. Es casi siempre la partida más grande y la única que
+    no se paga con una factura, así que es también la más ignorada. Un coche nuevo pierde una parte
+    importante de su valor en los primeros años, y a partir de ahí la curva se aplana. En un coche
+    de gama media comprado nuevo, la depreciación de los primeros años se cuenta en miles de euros
+    anuales; en un coche de diez años, en unos pocos cientos.
+  </p>
+
+  <p>
+    Es la razón por la que comprar un coche de dos o tres años en lugar de nuevo cambia el coste
+    anual mucho más que cualquier ahorro de combustible.
+  </p>
+
+  <h2>2. Combustible</h2>
+
+  <p>
+    Con las cifras del ejemplo salen unos {eur(combustible)} euros al año. Es una cantidad
+    considerable, y es también la partida sobre la que más control tienes en el día a día: entre
+    repostar sistemáticamente en la estación más cara de tu zona y hacerlo en la más barata hay del
+    orden de un 8 o un 10 % de esa cifra, sin cambiar de coche ni de hábitos de conducción.
+  </p>
+
+  <h2>3. Seguro</h2>
+
+  <p>
+    Varía enormemente con la edad del conductor, la antigüedad del carné, el historial, la provincia
+    y el tipo de cobertura. Para un conductor con años de experiencia y un coche de gama media
+    suele moverse entre unos cientos de euros a terceros y bastante más a todo riesgo. Es una de las
+    dos partidas donde una tarde de comparación al año se traduce en dinero real, porque la
+    diferencia entre compañías para el mismo perfil puede ser de cientos de euros.
+  </p>
+
+  <h2>4. Mantenimiento y neumáticos</h2>
+
+  <p>
+    Revisiones, aceite y filtros, frenos, batería, escobillas y, sobre todo, neumáticos. Un juego de
+    neumáticos dura del orden de 40.000 kilómetros según uso, y repartido por años es una partida
+    fija que casi nadie apunta. En un coche con algunos años hay que contar también con las averías,
+    que no son predecibles pero sí esperables.
+  </p>
+
+  <h2>5. Impuesto de circulación e ITV</h2>
+
+  <p>
+    El impuesto municipal de vehículos lo fija cada ayuntamiento dentro de unos límites, así que dos
+    coches idénticos pagan cantidades distintas según el municipio en el que estén matriculados. La
+    ITV es cada dos años hasta los diez de antigüedad y anual a partir de ahí, con un coste que
+    también cambia por comunidad.
+  </p>
+
+  <h2>6. Aparcamiento y peajes</h2>
+
+  <p>
+    Invisible en unos sitios y enorme en otros. Una plaza de garaje en una ciudad grande puede
+    costar más al año que el combustible del ejemplo entero. Si aparcas en la calle, cero. Es la
+    partida con más varianza de toda la lista.
+  </p>
+
+  <h2>Qué se aprende de ordenarlo así</h2>
+
+  <ul>
+    <li>
+      <strong>Las decisiones grandes son de compra, no de uso.</strong> Qué coche compras, con
+      cuántos años y cuánto tiempo lo mantienes decide más que todo lo demás junto.
+    </li>
+    <li>
+      <strong>El seguro se revisa una vez al año</strong>, en quince minutos, y compensa hacerlo.
+    </li>
+    <li>
+      <strong>El combustible se optimiza cada semana</strong>, y ahí la única palanca que funciona
+      siempre es dónde repostas.
+    </li>
+    <li>
+      <strong>Los kilómetros que no haces son gratis en todas las partidas a la vez.</strong> Menos
+      combustible, menos mantenimiento, menos depreciación por uso.
+    </li>
+  </ul>
+
+  <p>
+    Si estás decidiendo entre dos coches, la comparación completa de combustible está en
+    <a href="/diesel-o-gasolina/">diésel o gasolina: cuál te sale a cuenta</a>, y si lo que quieres
+    es calcular el gasto de un trayecto concreto, en la
+    <a href="/calcular-gasto-gasolina/">calculadora de coste del viaje</a>.
+  </p>
+
+</GuiaLayout>

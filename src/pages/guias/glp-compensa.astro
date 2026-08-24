@@ -1,0 +1,134 @@
+---
+import GuiaLayout from '../../layouts/GuiaLayout.astro';
+
+// Cuenta de amortizacion del GLP. Todas las cifras se dicen en el texto.
+const PRECIO_GASOLINA = 1.6;
+const PRECIO_GLP = 0.95;
+const CONSUMO_GASOLINA = 7;
+const EXTRA_GLP = 1.15; // el GLP consume en torno a un 15 % mas de litros
+const costeGasolina100 = CONSUMO_GASOLINA * PRECIO_GASOLINA;
+const costeGlp100 = CONSUMO_GASOLINA * EXTRA_GLP * PRECIO_GLP;
+const ahorro100 = costeGasolina100 - costeGlp100;
+const eur = (n: number) =>
+  n.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+// Redondeado al millar: es una estimacion, darla al kilometro seria fingir precision.
+const km = (n: number) => (Math.round(n / 1000) * 1000).toLocaleString('es-ES');
+const amortiza = (inversion: number) => (inversion / ahorro100) * 100;
+---
+<GuiaLayout slug="glp-compensa">
+
+  <p>
+    El autogás es el combustible con el litro más barato del surtidor, y con diferencia. Eso hace
+    que la conversión parezca una decisión obvia, y no lo es: el litro cuesta la mitad pero se
+    gastan más litros, y hay una inversión inicial que hay que recuperar. La cuenta buena no es por
+    litro, es por kilómetro y por año.
+  </p>
+
+  <h2>Qué es el GLP</h2>
+
+  <p>
+    Gas licuado del petróleo, una mezcla de propano y butano que se almacena líquida a presión
+    moderada. En un coche de autogás el motor sigue siendo de gasolina: se le añade un depósito, un
+    vaporizador y una segunda línea de inyección, y el coche funciona con las dos cosas. Arranca en
+    gasolina y pasa a gas al calentarse, con lo que mantiene los dos depósitos y una autonomía total
+    muy alta.
+  </p>
+
+  <p>
+    Eso es importante para entender el riesgo: un coche de GLP nunca se queda tirado por falta de
+    estaciones de autogás, porque siempre puede seguir con gasolina.
+  </p>
+
+  <h2>La cuenta, con números</h2>
+
+  <p>
+    Un coche que consume {CONSUMO_GASOLINA} L/100 km de gasolina consume en GLP en torno a un 15 %
+    más de litros, porque el gas tiene menos energía por litro. Con la gasolina a {eur(PRECIO_GASOLINA)} €
+    y el GLP a {eur(PRECIO_GLP)} €, que son cifras del orden de las actuales:
+  </p>
+
+  <ul>
+    <li><strong>En gasolina:</strong> {eur(costeGasolina100)} € cada 100 km.</li>
+    <li><strong>En GLP:</strong> {eur(costeGlp100)} € cada 100 km.</li>
+    <li><strong>Ahorro:</strong> {eur(ahorro100)} € cada 100 km.</li>
+  </ul>
+
+  <p>
+    Con ese ahorro, una conversión sale rentable a partir de:
+  </p>
+
+  <ul>
+    <li><strong>Instalación de 1.500 €:</strong> unos {km(amortiza(1500))} km.</li>
+    <li><strong>Instalación de 2.000 €:</strong> unos {km(amortiza(2000))} km.</li>
+    <li><strong>Instalación de 2.500 €:</strong> unos {km(amortiza(2500))} km.</li>
+  </ul>
+
+  <p>
+    Traducido a años: quien hace 10.000 km al año tarda entre cuatro y siete años en amortizar,
+    según lo que le cueste la instalación; quien hace 30.000 km, entre año y medio y dos años y
+    medio. Ahí está toda la decisión.
+  </p>
+
+  <h2>Cuándo compensa</h2>
+
+  <ul>
+    <li>
+      <strong>Muchos kilómetros al año.</strong> Es la condición principal. Por debajo de unos
+      15.000 km anuales la amortización se va tan lejos que probablemente vendas el coche antes.
+    </li>
+    <li>
+      <strong>Coche que vas a conservar.</strong> La instalación no se recupera entera en la venta:
+      el mercado de segunda mano paga poco por ella.
+    </li>
+    <li>
+      <strong>Coche de gasolina en buen estado.</strong> Convertir un coche con muchos años y
+      problemas de motor es invertir en el sitio equivocado.
+    </li>
+    <li>
+      <strong>Zona con estaciones de autogás cerca.</strong> No están en todas las gasolineras, y si
+      la más próxima te obliga a un desvío habitual, parte del ahorro se evapora.
+    </li>
+  </ul>
+
+  <h2>Lo que hay que saber antes</h2>
+
+  <ul>
+    <li>
+      <strong>La instalación tiene que estar homologada</strong> y reflejarse en la ficha técnica.
+      Un taller autorizado se encarga del trámite; sin él, el coche no pasa la ITV.
+    </li>
+    <li>
+      <strong>El depósito tiene vida útil</strong> y hay que revisarlo periódicamente, con un coste
+      que conviene preguntar antes de convertir.
+    </li>
+    <li>
+      <strong>Algunos aparcamientos subterráneos tienen restricciones</strong> heredadas de
+      normativas antiguas. Comprueba el tuyo si aparcas siempre en el mismo sitio.
+    </li>
+    <li>
+      <strong>Pierdes parte del maletero</strong>, salvo que el depósito vaya en el hueco de la
+      rueda de repuesto, que es la solución habitual y la menos molesta.
+    </li>
+    <li>
+      <strong>Etiqueta ECO.</strong> Un coche de GLP homologado obtiene la etiqueta ECO de la DGT,
+      lo que en algunas ciudades tiene consecuencias prácticas de acceso y de aparcamiento. Para
+      quien vive en una gran ciudad, esto puede pesar tanto como el ahorro de combustible.
+    </li>
+  </ul>
+
+  <h2>Comprar uno ya convertido</h2>
+
+  <p>
+    Hay fabricantes que venden modelos de GLP de fábrica. Sale más barato que comprar de gasolina y
+    convertir, viene con garantía completa y el depósito está integrado desde el diseño. Si estás
+    en el momento de cambiar de coche y encajas en el perfil de muchos kilómetros, esa es
+    normalmente la mejor opción de las tres.
+  </p>
+
+  <p>
+    Puedes ver el precio del GLP en tu zona y el ranking por provincias en la
+    <a href="/precios/glp-autogas/">página del GLP</a>, y comprobar qué estaciones lo despachan
+    cerca de ti en el <a href="/">buscador</a>, filtrando por ese combustible.
+  </p>
+
+</GuiaLayout>

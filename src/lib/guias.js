@@ -93,6 +93,138 @@ export const GUIAS = [
     minutos: 7,
     actualizada: '2026-08-12',
   },
+  {
+    slug: 'por-que-sube-la-gasolina',
+    tema: 'El precio',
+    titulo: 'Por qué sube la gasolina de un mes para otro',
+    description:
+      'Qué mueve de verdad el precio del litro: el crudo, el cambio euro-dólar, el margen de refino y la estacionalidad, y por qué el surtidor tarda en reflejarlo.',
+    resumen:
+      'El barril no es lo único, y casi nunca es lo que más manda en la subida de esta semana.',
+    minutos: 9,
+    actualizada: '2026-08-24',
+  },
+  {
+    slug: 'precios-por-provincia',
+    tema: 'El precio',
+    titulo: 'Por qué la gasolina no cuesta lo mismo en cada provincia',
+    description:
+      'De dónde salen las diferencias de precio entre provincias españolas: competencia local, distancia a las refinerías, régimen fiscal de Canarias, Ceuta y Melilla, y densidad de estaciones.',
+    resumen:
+      'Entre la provincia más barata y la más cara hay más de diez céntimos, y no es casualidad.',
+    minutos: 8,
+    actualizada: '2026-08-24',
+  },
+  {
+    slug: 'gasolineras-de-autopista',
+    tema: 'Dónde repostar',
+    titulo: 'Gasolineras de autopista: cuánto cuestan de más y cuándo salir',
+    description:
+      'Por qué el área de servicio cobra más caro, cuánto suele ser la diferencia y en qué casos compensa salir de la autovía a repostar.',
+    resumen:
+      'Salir a repostar cuesta unos minutos. La cuenta de si merece la pena es sencilla.',
+    minutos: 7,
+    actualizada: '2026-08-24',
+  },
+  {
+    slug: 'gasolineras-desatendidas',
+    tema: 'Dónde repostar',
+    titulo: 'Gasolineras desatendidas: cómo funcionan y por qué son más baratas',
+    description:
+      'Qué es una estación automática, qué necesitas para repostar en una, de dónde sale su ahorro y qué limitaciones tienen frente a una atendida.',
+    resumen:
+      'El combustible es el mismo. Lo que quitan es todo lo que hay alrededor del surtidor.',
+    minutos: 8,
+    actualizada: '2026-08-24',
+  },
+  {
+    slug: 'repostar-en-un-viaje-largo',
+    tema: 'Dónde repostar',
+    titulo: 'Cómo planificar el repostaje en un viaje largo',
+    description:
+      'Dónde conviene llenar en una ruta de varios cientos de kilómetros, cuántas paradas hacen falta y por qué salir de casa con el depósito lleno casi siempre sale mejor.',
+    resumen:
+      'En un viaje de 700 km, elegir bien dos paradas vale más que cualquier truco de conducción.',
+    minutos: 8,
+    actualizada: '2026-08-24',
+  },
+  {
+    slug: 'aire-acondicionado-o-ventanillas',
+    tema: 'Gastar menos',
+    titulo: 'Aire acondicionado o ventanillas bajadas: qué gasta más',
+    description:
+      'Cuánto consume de más el aire acondicionado, cuánto la resistencia aerodinámica de llevar las ventanillas abiertas y a partir de qué velocidad se cruzan las dos curvas.',
+    resumen:
+      'La respuesta cambia con la velocidad, y por eso las dos posturas de la discusión tienen su parte de razón.',
+    minutos: 7,
+    actualizada: '2026-08-24',
+  },
+  {
+    slug: 'consumo-en-ciudad',
+    tema: 'Gastar menos',
+    titulo: 'Por qué en ciudad se dispara el consumo',
+    description:
+      'Qué pasa físicamente en un trayecto urbano corto: arranques en frío, aceleraciones continuas y motor sin temperatura, y qué se puede hacer al respecto.',
+    resumen:
+      'No es que la ciudad gaste más: es que los tres primeros kilómetros gastan muchísimo más.',
+    minutos: 8,
+    actualizada: '2026-08-24',
+  },
+  {
+    slug: 'coste-real-de-un-coche',
+    tema: 'Gastar menos',
+    titulo: 'Cuánto cuesta de verdad tu coche al año',
+    description:
+      'Las seis partidas del coste anual de un coche particular: depreciación, seguro, combustible, mantenimiento, impuesto de circulación e ITV, y cuál pesa más de lo que parece.',
+    resumen:
+      'El combustible es la partida en la que más piensas y casi nunca la más cara.',
+    minutos: 9,
+    actualizada: '2026-08-24',
+  },
+  {
+    slug: 'gasolina-e10',
+    tema: 'Combustibles',
+    titulo: 'Gasolina E10: qué es y si tu coche la admite',
+    description:
+      'Qué significa la etiqueta E10 del surtidor, cuánto etanol lleva la gasolina que se vende en España y qué vehículos pueden tener problemas con ella.',
+    resumen:
+      'La etiqueta del surtidor lleva años ahí y casi nadie sabe qué significa la E.',
+    minutos: 7,
+    actualizada: '2026-08-24',
+  },
+  {
+    slug: 'glp-compensa',
+    tema: 'Combustibles',
+    titulo: 'GLP: cuántos kilómetros hacen falta para amortizarlo',
+    description:
+      'Qué cuesta convertir un coche de gasolina a autogás, cuánto se ahorra por kilómetro contando el mayor consumo, y a partir de cuántos kilómetros al año sale a cuenta.',
+    resumen:
+      'El litro cuesta la mitad, pero gastas más litros. La cuenta buena es por kilómetro.',
+    minutos: 9,
+    actualizada: '2026-08-24',
+  },
+  {
+    slug: 'adblue',
+    tema: 'Combustibles',
+    titulo: 'AdBlue: qué es, cuánto gasta y dónde conviene comprarlo',
+    description:
+      'Para qué sirve el AdBlue en un diésel moderno, cada cuántos kilómetros hay que rellenarlo, cuánto cuesta según dónde lo compres y qué pasa si se agota.',
+    resumen:
+      'No es un aditivo ni un capricho: sin él, el coche acaba por no arrancar.',
+    minutos: 7,
+    actualizada: '2026-08-24',
+  },
+  {
+    slug: 'equivocarse-de-combustible',
+    tema: 'Combustibles',
+    titulo: 'Me he equivocado de combustible: qué hacer',
+    description:
+      'Qué hacer si echas gasolina en un diésel o diésel en un gasolina, por qué no hay que arrancar el motor, y qué diferencia hay entre los dos errores.',
+    resumen:
+      'Lo que decidas en el minuto siguiente marca la diferencia entre un vaciado y una avería cara.',
+    minutos: 7,
+    actualizada: '2026-08-24',
+  },
 ];
 
 /**

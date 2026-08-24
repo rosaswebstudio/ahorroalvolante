@@ -1,0 +1,106 @@
+---
+import GuiaLayout from '../../layouts/GuiaLayout.astro';
+
+// La cuenta del desvio desde la autovia. Consumo y precio de referencia, dichos en el texto.
+const CONSUMO = 6.5;
+const PRECIO = 1.6;
+const litrosDesvio = (km: number) => (km * 2 * CONSUMO) / 100;
+const dec = (n: number) => n.toLocaleString('es-ES', { maximumFractionDigits: 1 });
+const eur = (n: number) =>
+  n.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const balance = (km: number, litros: number, ahorroLitro: number) =>
+  litros * ahorroLitro - litrosDesvio(km) * PRECIO;
+---
+<GuiaLayout slug="gasolineras-de-autopista">
+
+  <p>
+    Cualquiera que haya repostado en un área de servicio a mitad de trayecto sabe que se paga de
+    más. Lo que casi nadie tiene claro es cuánto, ni a partir de qué punto compensa salir de la
+    autovía a buscar otra cosa. Las dos preguntas tienen respuesta numérica.
+  </p>
+
+  <h2>Cuánto más caras son</h2>
+
+  <p>
+    La diferencia habitual entre una estación de área de servicio y una estación normal de la misma
+    zona ronda los diez a veinte céntimos por litro, y en los tramos de autopista de peaje puede
+    ser mayor. En un depósito de 50 litros son entre cinco y diez euros, y en una furgoneta o un
+    coche con depósito grande bastante más.
+  </p>
+
+  <h2>Por qué</h2>
+
+  <ul>
+    <li>
+      <strong>Pagan por estar ahí.</strong> Una estación en un área de servicio opera bajo una
+      concesión y paga un canon por la explotación. Ese coste no existe en una gasolinera de
+      polígono.
+    </li>
+    <li>
+      <strong>Abren siempre y con personal.</strong> Veinticuatro horas, todos los días, con tienda,
+      aseos y a menudo cafetería. Todo eso son costes fijos que salen del margen del litro.
+    </li>
+    <li>
+      <strong>Su cliente no puede comparar.</strong> Es la razón principal. Quien va por la autovía
+      con la reserva encendida no tiene alternativa a mano, y el precio se fija sabiéndolo. No es
+      distinto de lo que ocurre en un aeropuerto o en un estadio.
+    </li>
+  </ul>
+
+  <h2>La cuenta de salir a repostar</h2>
+
+  <p>
+    Salir de la autovía tiene dos costes: el combustible que gastas en el desvío y los minutos que
+    pierdes. El primero se calcula fácil. Con un consumo de {dec(CONSUMO)} L/100 km y el litro
+    a {eur(PRECIO)} €, un desvío de ida y vuelta cuesta:
+  </p>
+
+  <ul>
+    <li><strong>2 km de desvío:</strong> {eur(litrosDesvio(2))} litros, unos {eur(litrosDesvio(2) * PRECIO)} €.</li>
+    <li><strong>5 km de desvío:</strong> {eur(litrosDesvio(5))} litros, unos {eur(litrosDesvio(5) * PRECIO)} €.</li>
+    <li><strong>10 km de desvío:</strong> {eur(litrosDesvio(10))} litros, unos {eur(litrosDesvio(10) * PRECIO)} €.</li>
+  </ul>
+
+  <p>
+    Contra eso hay que poner lo que ahorras, que es la diferencia de precio multiplicada por los
+    litros que vas a echar. Con 40 litros y 15 céntimos de diferencia, el balance neto queda así:
+  </p>
+
+  <ul>
+    <li><strong>Desvío de 2 km:</strong> ahorras {eur(balance(2, 40, 0.15))} €.</li>
+    <li><strong>Desvío de 5 km:</strong> ahorras {eur(balance(5, 40, 0.15))} €.</li>
+    <li><strong>Desvío de 10 km:</strong> ahorras {eur(balance(10, 40, 0.15))} €.</li>
+  </ul>
+
+  <p>
+    La conclusión es constante: el combustible del desvío casi nunca es el problema, porque diez
+    kilómetros de más gastan poco más de dos euros. Lo que decide es cuántos litros vas a echar. Un
+    depósito lleno justifica el desvío; añadir diez litros para llegar, no.
+  </p>
+
+  <h2>El coste que no está en la cuenta</h2>
+
+  <p>
+    Los minutos. Salir, encontrar la estación, repostar y volver a incorporarse cuesta entre diez y
+    veinte minutos si no conoces la salida. Ahorrar seis euros a cambio de un cuarto de hora es una
+    decisión razonable cuando vas sobrado y una mala idea cuando llegas justo. Aquí no hay fórmula,
+    pero sí una regla práctica: el desvío que ya ibas a hacer, por comer o por descansar, es
+    gratis; el desvío exclusivo para repostar solo compensa con el depósito muy vacío.
+  </p>
+
+  <h2>La estrategia que evita el problema</h2>
+
+  <p>
+    Lo más barato es no llegar nunca a esa situación. Salir de casa con el depósito lleno, repostado
+    en tu ciudad al precio de tu ciudad, elimina la primera parada de casi cualquier viaje de menos
+    de 600 kilómetros. Y si el viaje es más largo, elegir con antelación en qué población parar
+    convierte la parada obligatoria en una parada barata. Está desarrollado en la guía de
+    <a href="/guias/repostar-en-un-viaje-largo/">planificar el repostaje en un viaje largo</a>.
+  </p>
+
+  <p>
+    Para ver qué hay cerca de una salida concreta, el <a href="/">buscador</a> ordena por cercanía a
+    tu posición, y las páginas de municipio muestran el precio más bajo de los pueblos de alrededor.
+  </p>
+
+</GuiaLayout>

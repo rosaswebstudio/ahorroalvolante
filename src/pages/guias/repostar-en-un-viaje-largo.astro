@@ -1,0 +1,109 @@
+---
+import GuiaLayout from '../../layouts/GuiaLayout.astro';
+
+// Ejemplo de viaje largo. Todas las cifras se dicen en el texto.
+const KM = 700;
+const CONSUMO = 6.5;
+const litros = (KM * CONSUMO) / 100;
+const dec = (n: number) => n.toLocaleString('es-ES', { maximumFractionDigits: 1 });
+const km = (n: number) => n.toLocaleString('es-ES');
+const eur = (n: number) =>
+  n.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+---
+<GuiaLayout slug="repostar-en-un-viaje-largo">
+
+  <p>
+    En un viaje de {km(KM)} kilómetros se gastan del orden de {eur(litros)} litros con un consumo
+    de {dec(CONSUMO)} L/100 km. A quince céntimos de diferencia por litro, elegir bien dónde repostar vale
+    unos {eur(litros * 0.15)} euros. Ninguna técnica de conducción da ese margen en un solo viaje, y
+    sin embargo casi todo el mundo dedica más atención a lo segundo que a lo primero.
+  </p>
+
+  <h2>Regla 1: salir de casa lleno</h2>
+
+  <p>
+    Es la más rentable de todas y la que menos esfuerzo cuesta. En tu ciudad conoces los precios,
+    tienes acceso a las estaciones baratas de siempre y no hay ninguna urgencia. En ruta pagarás lo
+    que haya donde estés cuando se encienda la reserva.
+  </p>
+
+  <p>
+    Con un depósito de 50 litros y un consumo normal, salir lleno cubre más de 700 kilómetros. Es
+    decir, la mayoría de los viajes nacionales se hacen con una sola parada de repostaje, y en
+    muchos casos con ninguna. Llenar la víspera, sin prisa, es la decisión que más ahorra de toda
+    la lista.
+  </p>
+
+  <h2>Regla 2: repostar en población, no en el área de servicio</h2>
+
+  <p>
+    Cuando la parada es inevitable, lo importante es dónde se hace. Las estaciones de área de
+    servicio cobran entre diez y veinte céntimos más por litro que una estación normal de la misma
+    zona, por motivos que están explicados en la guía de
+    <a href="/guias/gasolineras-de-autopista/">gasolineras de autopista</a>.
+  </p>
+
+  <p>
+    La alternativa no es buscar a ciegas: casi todas las salidas de una autovía llevan a una
+    población con al menos una gasolinera a dos o tres kilómetros. La cuenta del desvío casi siempre
+    sale a favor cuando vas a llenar el depósito, porque diez kilómetros de más gastan poco más de
+    dos euros y el ahorro de un depósito completo ronda los siete u ocho.
+  </p>
+
+  <h2>Regla 3: mirar el mapa antes de salir, no en la reserva</h2>
+
+  <p>
+    Cinco minutos la noche anterior valen más que cualquier improvisación con el testigo encendido.
+    Lo práctico es identificar en qué franja de kilómetros vas a necesitar repostar, ver qué
+    poblaciones caen ahí y comprobar los precios. En esta web puedes hacerlo por provincia o
+    directamente por municipio, y las páginas de municipio incluyen los pueblos cercanos con su
+    precio más bajo, que es justo lo que necesitas para decidir entre dos salidas seguidas.
+  </p>
+
+  <p>
+    Ten en cuenta además que el precio no es homogéneo por el camino: cambia de forma apreciable de
+    una provincia a otra, y por razones estables, no aleatorias. Están en la guía de
+    <a href="/guias/precios-por-provincia/">por qué la gasolina no cuesta lo mismo en cada
+    provincia</a>. Si tu ruta atraviesa una provincia claramente más barata, ahí es donde conviene
+    que caiga la parada.
+  </p>
+
+  <h2>Regla 4: llenar, no ir echando</h2>
+
+  <p>
+    Repostar veinte litros aquí y veinte allí multiplica las paradas sin reducir el gasto, y además
+    te obliga a repostar donde estés en lugar de donde te conviene. La estrategia de una sola parada
+    en el sitio elegido es más barata y más rápida.
+  </p>
+
+  <p>
+    La excepción razonable es cuando sabes que vas a pasar por una zona sensiblemente más barata más
+    adelante: en ese caso tiene sentido echar lo justo para llegar y llenar allí. Es la única
+    situación en la que repostar parcialmente ahorra dinero.
+  </p>
+
+  <h2>Regla 5: el viaje de vuelta también cuenta</h2>
+
+  <p>
+    Es el que más se descuida. Si el destino es una zona cara, por ejemplo una isla, una zona de
+    montaña o una comarca con pocas estaciones, conviene volver con el depósito hecho desde el
+    último punto barato del camino, en lugar de repostar el día antes de salir en el sitio más caro
+    del viaje.
+  </p>
+
+  <h2>Lo que no hace falta</h2>
+
+  <p>
+    No hace falta madrugar para repostar, ni evitar los lunes, ni ninguna de las reglas horarias que
+    circulan. Los precios no siguen ese patrón, y está comprobado con los datos en la guía de
+    <a href="/guias/cuando-repostar/">cuándo y dónde repostar más barato</a>. Lo que decide es el
+    sitio, siempre.
+  </p>
+
+  <p>
+    Para preparar la ruta, la <a href="/calcular-gasto-gasolina/">calculadora de coste del viaje</a>
+    estima cuántos litros vas a necesitar y cuánto te va a costar con los precios de hoy, y el
+    <a href="/">buscador</a> te deja comparar estaciones en cualquier provincia del recorrido.
+  </p>
+
+</GuiaLayout>

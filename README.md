@@ -33,22 +33,41 @@ Stack: **Astro 7 + JavaScript vanilla**, **Tailwind CSS v4**. Tema oscuro con ac
 - Lateral fijo 300x600 (sticky, escritorio) + banner inferior (placeholders AdSense).
 - CTA afiliado: comparador de **seguros de coche** (sustituir `href="#"`).
 
-## Guías y umbral de indexación (agosto 2026)
+## Contenido y umbral de páginas (agosto 2026)
 
-AdSense rechazó a mivatio.es (la web hermana) por "contenido de poco valor". Esta web tenía el
-mismo perfil y peor: de 1.190 páginas, 1.175 eran plantilla automática. Dos cambios:
+AdSense rechazó a esta web y a mivatio.es por "contenido de poco valor". El primer intento
+(12-08-2026) fue añadir ocho guías y poner `noindex` a los municipios pequeños. **No funcionó, y
+se volvió a rechazar el 24-08-2026.** El motivo del fallo es importante para no repetirlo:
 
-1. **Sección `/guias/`**: ocho guías escritas, de 1.000 a 1.400 palabras. Índice en
-   `src/lib/guias.js`, layout de artículo en `src/layouts/GuiaLayout.astro`. Las dos páginas de
-   contenido que ya existían (`/diesel-o-gasolina/` y `/calcular-gasto-gasolina/`) se listan en el
-   índice pero NO se mueven de ruta.
-2. **`MIN_ESTACIONES_INDEXABLE`** en `src/lib/datos-build.js`: los municipios con menos de 5
-   estaciones llevan `noindex` y salen del sitemap (508 páginas). Se siguen generando y enlazando
-   desde su provincia. **Es temporal**: igualarlo a `MIN_ESTACIONES_MUNICIPIO` cuando el sitio
-   esté aprobado.
+> `noindex` es una instrucción para el índice de Google Search. **AdSense no consulta ese
+> índice**: su revisión entra por la portada y sigue enlaces internos. Las 504 páginas con
+> `noindex` se seguían generando, se seguían enlazando desde su provincia y seguían llevando el
+> script de anuncios. El revisor veía 1.189 páginas con 11 de contenido escrito, no 683.
 
-El filtro del sitemap (`src/lib/sitemap.js`) no repite el criterio: lee el `noindex` del HTML ya
-generado, así que la regla vive en un único sitio.
+Segunda pasada (24-08-2026), con la web reducida de 1.189 a 345 páginas:
+
+1. **`MIN_ESTACIONES_MUNICIPIO = 10`** en `src/lib/datos-build.js`. Ya no existe
+   `MIN_ESTACIONES_INDEXABLE`: los municipios por debajo del umbral **no se generan**, en vez de
+   generarse ocultos. El umbral no es un truco para pasar la revisión, es la línea por debajo de
+   la cual la página no puede aportar nada: con tres estaciones el ranking son tres filas y la
+   media local es ruido.
+2. **Los municipios pequeños no pierden su dato.** `todosLosMunicipios` alimenta una tabla en la
+   página de provincia con las 100+ localidades y su precio más bajo de 95 y de diésel. La
+   información sigue publicada y la página de provincia gana contenido propio.
+3. **Valor añadido real en los municipios que quedan**: la horquilla de precio dentro del
+   municipio traducida a euros por depósito, y los municipios cercanos de verdad (haversine sobre
+   el centroide de cada uno, radio de 35 km) con su precio más bajo. Las dos cosas son distintas
+   en cada página porque dependen de los datos de ese municipio, no de la plantilla.
+4. **Veinte guías** en `/guias/` (eran ocho), en cuatro temas. Índice en `src/lib/guias.js`,
+   layout en `src/layouts/GuiaLayout.astro`. Seis de ellas se enlazan desde la portada: antes la
+   home no enlazaba ni una sola guía individual y el revisor aterrizaba en un buscador.
+
+Las dos páginas de contenido antiguas (`/diesel-o-gasolina/` y `/calcular-gasto-gasolina/`) se
+listan en el índice de guías pero NO cambian de ruta.
+
+**Aviso para el futuro**: la cola larga por municipio y la política de contenido de AdSense están
+en tensión permanente. Volver a bajar el umbral a 3 después de la aprobación expone la cuenta a
+una acción manual más adelante, con más que perder. Si el sitio crece, que crezca por guías.
 
 ## Comandos
 

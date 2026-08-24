@@ -4,7 +4,7 @@
 // precios, media propia y comparación con su provincia), no una plantilla vacía.
 import Layout from '../../../layouts/Layout.astro';
 import { COMBUSTIBLES } from '../../../lib/gasolineras.js';
-import { resumenPorMunicipio, MIN_ESTACIONES_INDEXABLE } from '../../../lib/datos-build.js';
+import { resumenPorMunicipio } from '../../../lib/datos-build.js';
 
 export async function getStaticPaths() {
   const municipios = await resumenPorMunicipio();
@@ -42,16 +42,15 @@ interface Props {
     total: number;
     combustibles: Record<string, ResumenCombustible | null>;
     mediaProvinciaG95: number | null;
+    cercanos: { nombre: string; slug: string | null; minG95: number; km: number }[];
+    minAqui: number | null;
     hermanos: { nombre: string; slug: string }[];
   };
 }
 
 const { datos } = Astro.props;
-const { prov, provSlug, muniNombre, fecha, total, combustibles, mediaProvinciaG95, hermanos } = datos;
+const { prov, provSlug, muniNombre, fecha, total, combustibles, mediaProvinciaG95, hermanos, cercanos, minAqui } = datos;
 
-// Los pueblos con pocas estaciones se sirven y se enlazan igual, pero no van al indice:
-// lo unico propio de la pagina son tres o cuatro direcciones. Ver datos-build.js.
-const noindex = total < MIN_ESTACIONES_INDEXABLE;
 
 const g95 = combustibles.g95;
 const ga = combustibles.ga;
@@ -65,6 +64,26 @@ const dia = (fecha || '').split(' ')[0];
 const difProv = g95 && mediaProvinciaG95 ? (g95.media - mediaProvinciaG95) / mediaProvinciaG95 : null;
 const masBarato = difProv !== null && difProv < -0.002;
 const masCaro = difProv !== null && difProv > 0.002;
+
+// Deposito de referencia para traducir centimos por litro a euros, que es la unidad en
+// la que la gente decide. 55 L es un deposito de turismo medio.
+const DEPOSITO = 55;
+
+// Lo que se juega el conductor DENTRO del municipio: diferencia entre la estacion mas
+// barata y la mas cara. Es el dato que justifica la pagina, y cambia en cada pueblo.
+const horquilla = g95 ? g95.max - g95.min : null;
+const ahorroDeposito = horquilla !== null ? horquilla * DEPOSITO : null;
+
+// Municipios cercanos donde el litro sale mas barato que aqui. El umbral de medio
+// centimo evita presentar como "mas barato" lo que es la misma cifra con ruido.
+const cercanosBaratos = minAqui !== null
+  ? cercanos.filter((c) => c.minG95 < minAqui - 0.005)
+  : [];
+const mejorCercano = cercanosBaratos[0] ?? null;
+const ahorroCercano = mejorCercano && minAqui !== null
+  ? (minAqui - mejorCercano.minG95) * DEPOSITO
+  : null;
+const km1 = (n: number) => n.toLocaleString(`es-ES`, { maximumFractionDigits: n < 10 ? 1 : 0 });
 
 const mapa = (e: Estacion) =>
   e.lat && e.lng ? `https://www.google.com/maps/search/?api=1&query=${e.lat},${e.lng}` : null;
@@ -93,6 +112,18 @@ if (g95) {
           : `La media de gasolina 95 en ${muniNombre} (${p3(g95.media)} €/L) es prácticamente igual que la de la provincia de ${prov.nombre}. Lo que más ahorra es comparar entre las estaciones del propio municipio.`,
     });
   }
+}
+if (ahorroDeposito !== null && ahorroDeposito >= 2) {
+  faqs.push({
+    q: `¿Cuánto se ahorra repostando en la gasolinera más barata de ${muniNombre}?`,
+    a: `Entre la estación más barata de ${muniNombre} (${p3(g95!.min)} €/L) y la más cara (${p3(g95!.max)} €/L) hay ${p3(horquilla)} € por litro. En un depósito de ${DEPOSITO} litros son ${p2(ahorroDeposito)} € de diferencia por repostaje, sin cambiar de combustible ni de coche: solo eligiendo el surtidor.`,
+  });
+}
+if (mejorCercano && ahorroCercano !== null && ahorroCercano >= 2) {
+  faqs.push({
+    q: `¿Merece la pena repostar fuera de ${muniNombre}?`,
+    a: `A ${km1(mejorCercano.km)} km está ${mejorCercano.nombre}, con gasolina 95 desde ${p3(mejorCercano.minG95)} €/L frente a los ${p3(minAqui)} €/L de ${muniNombre}: unos ${p2(ahorroCercano)} € menos por depósito. Contando la ida y la vuelta el desvío sale a cuenta si ya ibas en esa dirección; si no, gastarías en combustible parte de lo que ahorras.`,
+  });
 }
 faqs.push({
   q: '¿De dónde salen estos precios?',
@@ -137,7 +168,7 @@ const card = 'rounded-2xl border border-borde bg-superficie p-4';
 const colorPrecio = (v: number | null, m: number) =>
   v !== null && v < m ? 'text-barato' : 'text-acento';
 ---
-<Layout title={title} description={description} canonicalPath={rutaCanonica} noindex={noindex}>
+<Layout title={title} description={description} canonicalPath={rutaCanonica}>
   <script type="application/ld+json" slot="head" set:html={JSON.stringify(jsonLd)} />
 
   <div class="min-h-screen w-full bg-fondo">
@@ -199,6 +230,20 @@ const colorPrecio = (v: number | null, m: number) =>
               </div>
             </section>
 
+            <!-- Lo que se juega el conductor eligiendo surtidor dentro del pueblo -->
+            {ahorroDeposito !== null && ahorroDeposito >= 1 && (
+              <section class="px-4 pt-6">
+                <div class="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4">
+                  <p class="text-sm leading-relaxed text-suave">
+                    Entre la gasolinera más barata de {muniNombre} y la más cara hay
+                    <strong class="text-tinta">{p3(horquilla)} € por litro</strong>. En
+                    un depósito de {DEPOSITO} litros eso son <strong class="text-barato">{p2(ahorroDeposito)} €</strong>
+                    de diferencia en el mismo repostaje, con el mismo combustible.
+                  </p>
+                </div>
+              </section>
+            )}
+
             <!-- Todas las gasolineras del municipio (95) -->
             <section class="px-4 pt-8">
               <h2 class="text-base font-bold text-tinta">
@@ -248,6 +293,51 @@ const colorPrecio = (v: number | null, m: number) =>
                 </li>
               ))}
             </ol>
+          </section>
+        )}
+
+        <!-- Donde esta mas barato cerca: la pregunta que la pagina de provincia no responde -->
+        {cercanos.length > 0 && minAqui !== null && (
+          <section class="px-4 pt-8">
+            <h2 class="text-base font-bold text-tinta">Repostar cerca de {muniNombre}</h2>
+            <p class="mt-2 text-sm leading-relaxed text-suave">
+              {mejorCercano && ahorroCercano !== null ? (
+                <>
+                  La gasolina 95 más barata de {muniNombre} está a {p3(minAqui)} €/L.
+                  A {km1(mejorCercano.km)} km, en {mejorCercano.nombre}, baja hasta
+                  <strong class="text-barato">{p3(mejorCercano.minG95)} €/L</strong>:
+                  unos {p2(ahorroCercano)} € menos por depósito. El desvío compensa si ya ibas
+                  hacia allí.
+                </>
+              ) : (
+                <>
+                  La gasolina 95 más barata de {muniNombre} está a {p3(minAqui)} €/L, y ningún
+                  municipio de alrededor la tiene más barata. Repostando aquí no pierdes nada.
+                </>
+              )}
+            </p>
+            <ul class="mt-3 divide-y divide-borde rounded-2xl border border-borde bg-superficie">
+              {cercanos.map((c) => (
+                <li class="flex items-center gap-3 px-4 py-3">
+                  <div class="min-w-0 flex-1">
+                    {c.slug ? (
+                      <a href={`/gasolineras-baratas/${provSlug}/${c.slug}/`} class="truncate text-sm font-semibold text-tinta hover:text-acento">{c.nombre}</a>
+                    ) : (
+                      <p class="truncate text-sm font-semibold text-tinta">{c.nombre}</p>
+                    )}
+                    <p class="text-xs text-suave">a {km1(c.km)} km</p>
+                  </div>
+                  <div class="shrink-0 text-right">
+                    <p class={c.minG95 < minAqui ? `text-base font-bold text-barato` : `text-base font-bold text-suave`}>{p3(c.minG95)}</p>
+                    <p class="text-[10px] font-semibold text-tenue">€/L desde</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+            <p class="mt-2 text-xs text-tenue">
+              Municipios a menos de 35 km en línea recta, ordenados por precio. La distancia es
+              entre centros aproximados, no por carretera.
+            </p>
           </section>
         )}
 

@@ -58,11 +58,19 @@ interface Props {
     municipiosBaratos: MediaMunicipio[];
     municipiosCaros: MediaMunicipio[];
     municipiosConPagina: MunicipioPagina[];
+    todosLosMunicipios: {
+      nombre: string;
+      slug: string | null;
+      total: number;
+      minG95: number | null;
+      mediaG95: number | null;
+      minGa: number | null;
+    }[];
   };
 }
 
 const { datos } = Astro.props;
-const { prov, slug, fecha, total, combustibles, municipiosBaratos, municipiosCaros, municipiosConPagina } = datos;
+const { prov, slug, fecha, total, combustibles, municipiosBaratos, municipiosCaros, municipiosConPagina, todosLosMunicipios } = datos;
 
 const g95 = combustibles.g95;
 const ga = combustibles.ga;
@@ -356,20 +364,48 @@ const colorPrecio = (v: number | null, m: number) =>
           </section>
         )}
 
-        <!-- Municipios con página propia (enlazado interno hacia los pueblos) -->
-        {municipiosConPagina.length > 0 && (
+        <!-- Todos los municipios de la provincia, con precio. Los que no llegan al umbral
+             de pagina propia (ver MIN_ESTACIONES_MUNICIPIO) publican aqui su dato: la
+             informacion no se pierde, simplemente no gasta una URL casi vacia. -->
+        {todosLosMunicipios.length > 0 && (
           <section class="px-4 pt-8">
-            <h2 class="text-base font-bold text-tinta">Gasolineras baratas por municipio en {prov.nombre}</h2>
+            <h2 class="text-base font-bold text-tinta">La gasolina 95 municipio a municipio en {prov.nombre}</h2>
             <p class="mt-2 text-sm leading-relaxed text-suave">
-              Consulta las gasolineras más baratas de cada pueblo o ciudad de la provincia con datos
-              actualizados a diario.
+              Precio más bajo de gasolina 95 en cada uno de los {todosLosMunicipios.length} municipios
+              de {prov.nombre} con al menos una gasolinera en el listado oficial. Los
+              municipios con suficientes estaciones para comparar tienen además su propia página.
             </p>
-            <div class="mt-3 flex flex-wrap gap-x-3 gap-y-1.5">
-              {municipiosConPagina.map((m) => (
-                <a href={`/gasolineras-baratas/${slug}/${m.slug}/`}
-                  class="text-xs text-suave hover:text-acento">{m.nombre}</a>
-              ))}
+            <div class="mt-3 overflow-x-auto rounded-2xl border border-borde bg-superficie">
+              <table class="w-full text-left text-sm">
+                <thead class="border-b border-borde text-xs uppercase tracking-wide text-tenue">
+                  <tr>
+                    <th scope="col" class="px-4 py-2.5 font-semibold">Municipio</th>
+                    <th scope="col" class="px-3 py-2.5 text-right font-semibold">Gasolineras</th>
+                    <th scope="col" class="px-3 py-2.5 text-right font-semibold">95 desde</th>
+                    <th scope="col" class="px-4 py-2.5 text-right font-semibold">Diésel desde</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-borde">
+                  {todosLosMunicipios.map((m) => (
+                    <tr>
+                      <th scope="row" class="px-4 py-2.5 font-medium text-tinta">
+                        {m.slug ? (
+                          <a href={`/gasolineras-baratas/${slug}/${m.slug}/`} class="hover:text-acento">{m.nombre}</a>
+                        ) : (
+                          <span>{m.nombre}</span>
+                        )}
+                      </th>
+                      <td class="px-3 py-2.5 text-right text-suave">{m.total}</td>
+                      <td class="px-3 py-2.5 text-right font-semibold text-barato">{p3(m.minG95)}</td>
+                      <td class="px-4 py-2.5 text-right font-semibold text-tinta">{p3(m.minGa)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
+            <p class="mt-2 text-xs text-tenue">
+              Precios en €/L del listado oficial del Ministerio, actualizados el {fecha}.
+            </p>
           </section>
         )}
 

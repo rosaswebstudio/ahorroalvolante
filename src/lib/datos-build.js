@@ -3,19 +3,19 @@
 // Fuente: misma API oficial del Ministerio que usa el buscador (ver gasolineras.js).
 import { API_BASE, COMBUSTIBLES, PROVINCIAS, slugProvincia, slugify } from './gasolineras.js';
 
-// A partir de cuántas gasolineras un pueblo tiene página propia. Por debajo, la página
-// sería demasiado pobre (un "ranking" de una o dos estaciones no informa), así que esos
-// pueblos solo aparecen mencionados dentro de la página de su provincia.
-export const MIN_ESTACIONES_MUNICIPIO = 3;
-
-// A partir de cuantas gasolineras ese pueblo, ademas de tener pagina, se OFRECE al
-// buscador. Entre MIN_ESTACIONES_MUNICIPIO y este numero la pagina existe y se enlaza
-// desde su provincia igual que el resto, pero lleva noindex: con tres o cuatro
-// estaciones lo unico propio son cuatro direcciones y dos precios, y son mas de 500
-// paginas practicamente iguales entre si. Eso es lo que Google llama contenido
-// replicado a escala, y es el motivo por el que AdSense rechazo a mivatio.es.
-// TEMPORAL: ponerlo igual que MIN_ESTACIONES_MUNICIPIO cuando el sitio este aprobado.
-export const MIN_ESTACIONES_INDEXABLE = 5;
+// A partir de cuántas gasolineras un pueblo tiene página propia.
+//
+// El número no es una preferencia estética: es la línea por debajo de la cual la página
+// no puede aportar nada. Con tres o cuatro estaciones el "ranking" son tres filas, la
+// media local es ruido estadístico y la horquilla entre la más barata y la más cara no
+// da para una recomendación. Todo lo que se le añadiera sería relleno idéntico al de los
+// otros mil pueblos, que es exactamente lo que Google llama contenido replicado a escala
+// y el motivo del rechazo de AdSense por "contenido de poco valor".
+//
+// Los municipios por debajo del umbral NO desaparecen: se listan con sus precios dentro
+// de la página de su provincia (ver todosLosMunicipios), que así gana contenido propio
+// en lugar de perderlo. Simplemente no tienen URL propia.
+export const MIN_ESTACIONES_MUNICIPIO = 10;
 
 // A partir de cuántas estaciones una marca tiene página propia. En el listado del
 // Ministerio hay más de 3.000 "rótulos" distintos, pero la inmensa mayoría son
@@ -38,6 +38,28 @@ const coord = (v) => {
 };
 
 const media = (xs) => xs.reduce((a, b) => a + b, 0) / xs.length;
+
+// Distancia en km entre dos puntos (haversine). Se usa en el build para saber que
+// municipios de la provincia estan de verdad al lado, y no solo alfabeticamente cerca.
+const distanciaKm = (aLat, aLng, bLat, bLng) => {
+  const R = 6371;
+  const rad = (d) => (d * Math.PI) / 180;
+  const dLat = rad(bLat - aLat);
+  const dLng = rad(bLng - aLng);
+  const h =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(rad(aLat)) * Math.cos(rad(bLat)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+};
+
+// Centro aproximado de un municipio: media de las coordenadas de sus estaciones.
+// Suficiente para ordenar vecinos por cercania; no pretende ser el centro geografico.
+const centroide = (lista) => {
+  const lats = lista.map((e) => e.lat).filter((v) => v != null);
+  const lngs = lista.map((e) => e.lng).filter((v) => v != null);
+  if (!lats.length || !lngs.length) return null;
+  return { lat: media(lats), lng: media(lngs) };
+};
 
 let cache = null;
 
@@ -183,6 +205,27 @@ export async function resumenPorProvincia() {
           .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))
       : [];
 
+    // TODOS los municipios de la provincia con sus precios, tengan pagina propia o no.
+    // Los que no llegan al umbral viven aqui: el dato sigue publicado y enlazado, pero sin
+    // gastar una URL en una pagina que solo tendria tres filas. Ver MIN_ESTACIONES_MUNICIPIO.
+    const todosLosMunicipios = munis
+      ? [...munis.values()]
+          .filter((m) => m.nombre)
+          .map((m) => {
+            const g95 = m.lista.map((e) => e.p.g95).filter((v) => v != null);
+            const ga = m.lista.map((e) => e.p.ga).filter((v) => v != null);
+            return {
+              nombre: m.nombre,
+              slug: m.lista.length >= MIN_ESTACIONES_MUNICIPIO ? m.slug : null,
+              total: m.lista.length,
+              minG95: g95.length ? Math.min(...g95) : null,
+              mediaG95: g95.length ? media(g95) : null,
+              minGa: ga.length ? Math.min(...ga) : null,
+            };
+          })
+          .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))
+      : [];
+
     return {
       prov,
       slug: slugProvincia(prov),
@@ -192,6 +235,7 @@ export async function resumenPorProvincia() {
       municipiosBaratos: municipios.slice(0, 5),
       municipiosCaros: hayParaDosListas ? municipios.slice(-5).reverse() : [],
       municipiosConPagina,
+      todosLosMunicipios,
     };
   });
 }
@@ -413,6 +457,25 @@ export async function resumenPorMunicipio() {
     for (const m of munis.values()) for (const e of m.lista) if (e.p.g95 != null) g95Prov.push(e.p.g95);
     const mediaProvinciaG95 = g95Prov.length ? media(g95Prov) : null;
 
+    // Indice de vecinos: centro aproximado y precio minimo de cada municipio de la
+    // provincia, incluidos los que no tienen pagina propia. Es lo que permite decirle al
+    // lector si le compensa cruzar al pueblo de al lado, que es la pregunta real detras
+    // de "gasolineras baratas en X" y lo unico que esta pagina puede responder y la de
+    // la provincia no.
+    const vecinos = [...munis.values()]
+      .filter((m) => m.nombre && m.lista.length >= 3)
+      .map((m) => {
+        const g95 = m.lista.map((e) => e.p.g95).filter((v) => v != null);
+        return {
+          nombre: m.nombre,
+          slug: m.lista.length >= MIN_ESTACIONES_MUNICIPIO ? m.slug : null,
+          idMuni: m.idMuni,
+          centro: centroide(m.lista),
+          minG95: g95.length ? Math.min(...g95) : null,
+        };
+      })
+      .filter((v) => v.centro && v.minG95 != null);
+
     const conPagina = [...munis.values()]
       .filter((m) => m.lista.length >= MIN_ESTACIONES_MUNICIPIO && m.nombre)
       .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
@@ -423,7 +486,26 @@ export async function resumenPorMunicipio() {
         // Pueblos pequeños: caben todas las estaciones, se limita solo por prudencia.
         combustibles[c.id] = resumirCombustible(m.lista, c.id, 30);
       }
-      // Hasta 12 pueblos cercanos alfabéticamente para navegar, sin volcar toda la provincia.
+      // Municipios cercanos de verdad (haversine sobre el centro de cada uno), ordenados
+      // por precio: primero los que estan mas baratos que este. Cada pagina saca una lista
+      // distinta porque depende de donde esta el pueblo y de lo que cuesta el litro aqui.
+      const centro = centroide(m.lista);
+      const minAqui = combustibles.g95 ? combustibles.g95.min : null;
+      const cercanos = centro
+        ? vecinos
+            .filter((v) => v.idMuni !== m.idMuni)
+            .map((v) => ({
+              nombre: v.nombre,
+              slug: v.slug,
+              minG95: v.minG95,
+              km: distanciaKm(centro.lat, centro.lng, v.centro.lat, v.centro.lng),
+            }))
+            .filter((v) => v.km <= 35)
+            .sort((a, b) => a.minG95 - b.minG95 || a.km - b.km)
+            .slice(0, 6)
+        : [];
+
+      // Navegacion: el resto de municipios con pagina, alfabeticamente.
       const hermanos = conPagina
         .filter((x) => x.slug !== m.slug)
         .slice(0, 12)
@@ -438,6 +520,8 @@ export async function resumenPorMunicipio() {
         total: m.lista.length,
         combustibles,
         mediaProvinciaG95,
+        cercanos,
+        minAqui,
         hermanos,
       });
     }
