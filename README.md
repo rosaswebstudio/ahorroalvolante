@@ -50,9 +50,12 @@ alojar decenas de logotipos de petroleras en una web con publicidad es un riesgo
   de 300 por pantalla para que un zoom muy alejado no meta mil nodos en el DOM de golpe.
   El encuadre inicial usa las 20 primeras del orden activo: encuadrar la provincia entera
   dejaria el mapa tan lejos que no se leeria ningun precio.
-- **Zoom con rueda tras tocar el mapa**. Siempre activa secuestra el scroll de quien solo
-  pasaba por encima bajando por la portada; siempre apagada obliga a usar los botones. Se
-  enciende al hacer clic o tocar dentro y se apaga al salir el puntero o al clicar fuera.
+- **Zoom con rueda tras hacer clic en el mapa**, y se apaga al hacer clic fuera. Solo con
+  el clic: **nada de mouseenter/mouseleave**. Enganchar el estado al hover fue un fallo que
+  hacia el zoom intermitente, porque cada `moveend` repinta los marcadores y `clearLayers`
+  borra del DOM el que tuvieras bajo el cursor, lo que dispara un `mouseleave` fantasma que
+  apagaba la rueda justo despues de cada zoom. Mientras esta apagada se dice en un cartel
+  dentro del mapa, que no intercepta el raton para no estorbar al arrastre.
 ## SEO / Monetización
 
 - H1 + intro + FAQ (actualización cada 30 min, low cost vs marca, cuándo repostar...) +

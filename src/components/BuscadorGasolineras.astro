@@ -297,14 +297,11 @@ const field = 'w-full rounded-lg border border-borde bg-fondo px-3 py-2 text-sm 
         // El recuento lo dispara el propio mapa al terminar cada movimiento, no render:
         // al arrastrar o alejarte aparecen mas gasolineras y el texto tiene que seguirlas.
         ctxMapa = await mod.crearMapa(mapaBox, (info: any) => {
-          const hint = mapaBox.dataset.activo === '1'
-            ? ''
-            : ' Toca el mapa para hacer zoom con la rueda.';
           mapaNota.textContent = info.recortadas
-            ? `Viendo ${info.enPantalla} gasolineras de las ${info.total} del filtro. En esta zona hay más de las que caben: acércate para verlas.` + hint
+            ? `Viendo ${info.enPantalla} gasolineras de las ${info.total} del filtro. En esta zona hay más de las que caben: acércate para verlas.`
             : info.enPantalla === info.total
-              ? `Las ${info.total} gasolineras del filtro, en pantalla.` + hint
-              : `Viendo ${info.enPantalla} de ${info.total} gasolineras. Muévete o aléjate para ver el resto.` + hint;
+              ? `Las ${info.total} gasolineras del filtro, en pantalla. Toca una chincheta para ver la dirección y si te compensa.`
+              : `Viendo ${info.enPantalla} de ${info.total} gasolineras. Muévete o aléjate para ver el resto.`;
         });
         (ctxMapa as any).mod = mod;
       } catch {

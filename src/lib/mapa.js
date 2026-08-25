@@ -47,18 +47,25 @@ const tema = () =>
 let L = null;
 
 function engancharHoja() {
-  if (document.querySelector('link[data-leaflet]')) return;
-  const link = document.createElement('link');
-  link.rel = 'stylesheet';
-  link.href = hojaUrl;
-  link.dataset.leaflet = '1';
-  document.head.appendChild(link);
+  const ya = document.querySelector('link[data-leaflet]');
+  if (ya) return Promise.resolve();
+  return new Promise((listo) => {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = hojaUrl;
+    link.dataset.leaflet = '1';
+    // Si la hoja fallara, seguir sin ella es mejor que quedarse esperando: el mapa se
+    // veria mal pero funcionaria.
+    link.onload = () => listo();
+    link.onerror = () => listo();
+    document.head.appendChild(link);
+  });
 }
 
 /** Carga Leaflet y su CSS bajo demanda. Idempotente. */
 export async function cargarLeaflet() {
   if (L) return L;
-  engancharHoja();
+  await engancharHoja();
   const mod = await import('leaflet');
   L = mod.default ?? mod;
   return L;
@@ -70,6 +77,10 @@ export async function cargarLeaflet() {
  */
 export async function crearMapa(nodo, onCambio) {
   const Lf = await cargarLeaflet();
+
+  // El cartel de la rueda se posiciona respecto al contenedor. Leaflet ya lo pone en
+  // relative por CSS, pero dejarlo escrito aqui hace que no dependa de esa hoja.
+  nodo.style.position = 'relative';
 
   const mapa = Lf.map(nodo, {
     // Arranca desactivado y se enciende al tocar el mapa. Ver el bloque de la rueda.
@@ -92,23 +103,49 @@ export async function crearMapa(nodo, onCambio) {
   //
   // Con la rueda siempre activa, quien baja por la portada y pasa el puntero por encima del
   // mapa se queda atrapado haciendo zoom en vez de seguir bajando: es de las cosas que mas
-  // molestan de un mapa incrustado. Con la rueda siempre apagada hay que usar los botones,
-  // que es lo que habia y era incomodo.
+  // molestan de un mapa incrustado. Con la rueda siempre apagada hay que usar los botones.
   //
-  // El punto medio: en cuanto tocas el mapa (clic, arrastre o dedo) la rueda queda activa
-  // mientras el puntero este encima. Si solo pasabas por encima bajando por la pagina, la
-  // pagina sigue bajando. En movil no aplica: el pellizco ya hacia zoom desde el principio.
-  const encender = () => mapa.scrollWheelZoom.enable();
-  const apagar = () => mapa.scrollWheelZoom.disable();
-  const activar = () => { nodo.dataset.activo = '1'; encender(); };
+  // Asi que la rueda se activa al hacer clic dentro del mapa y se desactiva al hacer clic
+  // fuera. Y NADA MAS: nada de encender y apagar segun entre o salga el puntero.
+  //
+  // Ese era justo el fallo de la primera version. Cada moveend repinta los marcadores, y
+  // repintar hace clearLayers, que borra del DOM el marcador que tuvieras bajo el cursor.
+  // Al desaparecer ese elemento el navegador recalcula el hover y dispara mouseleave en el
+  // contenedor sin que el raton se haya movido, lo que apagaba la rueda justo despues de
+  // cada zoom. Como dependia de si habia o no una chincheta debajo, parecia aleatorio.
+  //
+  // Con el estado atado solo al clic, es deterministico. Y para que no haya que adivinarlo,
+  // se dice en pantalla mientras esta apagada.
+  let activo = false;
 
-  nodo.addEventListener('mousedown', activar);
-  nodo.addEventListener('touchstart', activar, { passive: true });
-  nodo.addEventListener('mouseenter', () => { if (nodo.dataset.activo === '1') encender(); });
-  nodo.addEventListener('mouseleave', apagar);
+  // El cartel no intercepta el raton (pointer-events:none): el mapa se puede arrastrar y
+  // pinchar desde el primer momento, lo unico que esta condicionado es la rueda.
+  const cartel = document.createElement("div");
+  cartel.textContent = "Haz clic en el mapa para hacer zoom con la rueda";
+  cartel.style.cssText =
+    "position:absolute;left:50%;bottom:10px;transform:translateX(-50%);z-index:900;" +
+    "pointer-events:none;padding:5px 10px;border-radius:999px;white-space:nowrap;" +
+    "font:600 11px/1.2 system-ui,-apple-system,Segoe UI,sans-serif;color:#fff;" +
+    "background:rgba(11,13,18,.82);box-shadow:0 1px 4px rgba(0,0,0,.45);max-width:92%;" +
+    "overflow:hidden;text-overflow:ellipsis";
+
+  // Solo tiene sentido donde hay rueda. En tactil el pellizco ya hacia zoom desde siempre.
+  const conRaton = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+  if (conRaton) nodo.appendChild(cartel);
+
+  const setActivo = (v) => {
+    if (v === activo) return;
+    activo = v;
+    if (v) mapa.scrollWheelZoom.enable();
+    else mapa.scrollWheelZoom.disable();
+    cartel.style.display = v ? "none" : "";
+  };
+
+  nodo.addEventListener("mousedown", () => setActivo(true));
+  nodo.addEventListener("touchstart", () => setActivo(true), { passive: true });
   // Un clic fuera del mapa significa que has vuelto a la pagina.
-  document.addEventListener('mousedown', (ev) => {
-    if (!nodo.contains(ev.target)) { nodo.dataset.activo = '0'; apagar(); }
+  document.addEventListener("mousedown", (ev) => {
+    if (!nodo.contains(ev.target)) setActivo(false);
   });
 
   function sincronizarTema() {
