@@ -26,6 +26,26 @@ Stack: **Astro 7 + JavaScript vanilla**, **Tailwind CSS v4**. Tema oscuro con ac
   color del precio (verde barata → rojo cara, relativo a la zona), enlace "Cómo llegar"
   (Google Maps) y botón de actualizar.
 
+## Mapa
+
+Vista alternativa a la lista dentro del buscador, sobre los mismos datos ya filtrados.
+Marcadores coloreados por precio con la escala de la lista y el precio escrito dentro del
+propio marcador: en un mapa de gasolineras el precio es el dato, y obligar a pinchar cada
+chincheta lo haria inutil. **Sin logos de marca a proposito**: son marcas registradas y
+alojar decenas de logotipos de petroleras en una web con publicidad es un riesgo evitable.
+
+- **Leaflet 1.9.4** por npm, detras de un `import()` dinamico en `src/lib/mapa.js`: no se
+  descarga mientras se use la lista. La hoja de estilos se pide con `?url` y se engancha a
+  mano al abrir el mapa; con un import de CSS normal, Vite la mete en el `<link>` de la
+  pagina y esos 16 KB bloquearian el render en todas las visitas.
+- **Teselas de CARTO** (`dark_all` / `light_all`, segun el tema de la web) sobre cartografia
+  de OpenStreetMap, con la atribucion visible que exigen sus terminos. Hoy responden sin
+  clave; la clave gratuita de carto.com/basemaps/apikey da cobertura de uso razonable si el
+  trafico crece.
+- **El servidor de teselas de la OSMF queda descartado a proposito**: su politica dice que no
+  hay SLA y que pueden cortar el acceso sin aviso. No es una base para una funcion de
+  producto. Stadia Maps tampoco sirve: su plan gratuito es solo para uso no comercial.
+- Tope de `MAX_MARCADORES` (120) por rendimiento en movil; se avisa debajo del mapa.
 ## SEO / Monetización
 
 - H1 + intro + FAQ (actualización cada 30 min, low cost vs marca, cuándo repostar...) +

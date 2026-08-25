@@ -121,6 +121,21 @@ const field = 'w-full rounded-lg border border-borde bg-fondo px-3 py-2 text-sm 
     </div>
 
     <!-- Lista -->
+    <!-- Lista o mapa sobre los MISMOS datos ya filtrados: combustible, provincia, municipio
+         y busqueda por texto valen para las dos vistas. Un mapa con otro criterio seria otra
+         herramienta y habria que explicarla. -->
+    <div class="mt-4 flex items-center justify-between gap-3">
+      <div class="flex gap-1 rounded-lg border border-borde bg-fondo p-1 text-sm">
+        <button id="gs-vista-lista" type="button" class="rounded-md px-3 py-1 font-medium">Lista</button>
+        <button id="gs-vista-mapa" type="button" class="rounded-md px-3 py-1 font-medium">Mapa</button>
+      </div>
+    </div>
+
+    <!-- El mapa se monta solo si se pide: Leaflet y sus teselas no se descargan mientras se
+         use la lista, que es lo que hace casi todo el mundo y lo que ve el primer visitante. -->
+    <div id="gs-mapa" class="mt-3 hidden h-[26rem] w-full overflow-hidden rounded-xl border border-borde sm:h-[32rem]"></div>
+    <p id="gs-mapa-nota" class="mt-2 hidden text-[11px] leading-relaxed text-tenue"></p>
+
     <div id="gs-lista" class="mt-4 space-y-1.5"></div>
     <button id="gs-mas" type="button" class="mt-3 hidden w-full rounded-lg border border-borde px-4 py-2 text-sm font-medium text-tinta transition hover:border-suave">Mostrar más gasolineras</button>
 
@@ -163,6 +178,10 @@ const field = 'w-full rounded-lg border border-borde bg-fondo px-3 py-2 text-sm 
   const ordenDistBtn = $('gs-orden-dist') as HTMLButtonElement;
   const ordenNetoBtn = $('gs-orden-neto') as HTMLButtonElement;
   const litrosSel = $('gs-litros') as HTMLSelectElement;
+  const mapaBox = $('gs-mapa')!;
+  const mapaNota = $('gs-mapa-nota')!;
+  const vistaListaBtn = $('gs-vista-lista') as HTMLButtonElement;
+  const vistaMapaBtn = $('gs-vista-mapa') as HTMLButtonElement;
   const notaDesvio = $('gs-nota-desvio')!;
   const avisoUbicacion = $('gs-aviso-ubicacion')!;
 
@@ -171,6 +190,11 @@ const field = 'w-full rounded-lg border border-borde bg-fondo px-3 py-2 text-sm 
   // Radio de error en metros que declara el navegador para userPos.
   let precisionM = 0;
   let orden: 'precio' | 'dist' | 'neto' = 'precio';
+  let vista: 'lista' | 'mapa' = 'lista';
+  // Contexto del mapa: null mientras no se haya pedido. Leaflet no se descarga hasta
+  // entonces, asi que la portada no paga nada por una funcion que casi nadie abre.
+  let ctxMapa: any = null;
+  let montandoMapa = false;
 
   // Consumo de referencia para valorar el desvio, en L/100 km. Un turismo medio. No se
   // pregunta al usuario a proposito: el resultado apenas se mueve entre 6 y 8 L, y un campo
@@ -249,6 +273,42 @@ const field = 'w-full rounded-lg border border-borde bg-fondo px-3 py-2 text-sm 
     statsBox.classList.toggle('hidden', !v);
     statsBox.classList.toggle('grid', v);
   };
+
+  const setVista = (v: 'lista' | 'mapa') => {
+    vista = v;
+    const on = 'rounded-md px-3 py-1 font-medium bg-amber-500 text-[#0B0D12]';
+    const off = 'rounded-md px-3 py-1 font-medium text-suave';
+    vistaListaBtn.className = v === 'lista' ? on : off;
+    vistaMapaBtn.className = v === 'mapa' ? on : off;
+    mapaBox.classList.toggle('hidden', v !== 'mapa');
+    mapaNota.classList.toggle('hidden', v !== 'mapa');
+    lista.classList.toggle('hidden', v !== 'lista');
+  };
+
+  /** Monta Leaflet la primera vez que se pide el mapa y repinta. */
+  async function abrirMapa() {
+    if (montandoMapa) return;
+    if (!ctxMapa) {
+      montandoMapa = true;
+      mapaNota.textContent = 'Cargando el mapa…';
+      mapaNota.classList.remove('hidden');
+      try {
+        const mod = await import('../lib/mapa.js');
+        ctxMapa = await mod.crearMapa(mapaBox);
+        (ctxMapa as any).mod = mod;
+      } catch {
+        mapaNota.textContent = 'No se ha podido cargar el mapa. La lista sigue funcionando.';
+        montandoMapa = false;
+        setVista('lista');
+        return;
+      }
+      montandoMapa = false;
+    }
+    setVista('mapa');
+    // Leaflet mide el contenedor al crearse; si estaba oculto, midio cero.
+    ctxMapa.mapa.invalidateSize();
+    render();
+  }
 
   const setOrden = (o: 'precio' | 'dist' | 'neto') => {
     orden = o;
@@ -472,6 +532,15 @@ const field = 'w-full rounded-lg border border-borde bg-fondo px-3 py-2 text-sm 
     // una precision que no tenemos. Ahi se dice que se queda en nada, que es la verdad.
     const UMBRAL = 0.3;
     const euros = (n: number) => Math.abs(n).toLocaleString(`es-ES`, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const textoDesvio = (e: any): string => {
+      if (!ref) return '';
+      if (e.id === ref.id) return 'La más cercana a ti.';
+      const n = e.neto;
+      if (n == null) return '';
+      if (n > UMBRAL) return `Compensa: te ahorras ${euros(n)} € echando ${litros} L.`;
+      if (n < -UMBRAL) return `No compensa: el desvío cuesta ${euros(n)} € más de lo que ahorras.`;
+      return 'Se queda en nada: el desvío se lleva el ahorro.';
+    };
     const lineaDesvio = (e: any) => {
       if (!ref) return ``;
       if (e.id === ref.id) return `<p class="text-[11px] leading-snug text-tenue">La más cercana a ti. Es la referencia de la comparación.</p>`;
@@ -540,7 +609,18 @@ const field = 'w-full rounded-lg border border-borde bg-fondo px-3 py-2 text-sm 
       avisoUbicacion.className = AVISO + ` hidden`;
     }
 
-    masBtn.classList.toggle('hidden', l.length <= visibles);
+    masBtn.classList.toggle('hidden', vista !== 'lista' || l.length <= visibles);
+
+    if (vista === 'mapa' && ctxMapa) {
+      const r = (ctxMapa as any).mod.pintarMapa(
+        ctxMapa, l, fuel, min, max,
+        { colorFor, fmt, esc, textoDesvio },
+        posFiable ? userPos : null,
+      );
+      mapaNota.textContent = r.pintados < r.total
+        ? `Mostrando ${r.pintados} de ${r.total} gasolineras, las primeras del orden elegido. Afina con el municipio o la búsqueda para verlas todas.`
+        : `${r.total} gasolineras en el mapa. Toca una chincheta para ver la dirección y si te compensa.`;
+    }
   }
 
   async function load(force = false) {
@@ -731,6 +811,11 @@ const field = 'w-full rounded-lg border border-borde bg-fondo px-3 py-2 text-sm 
   ordenPrecioBtn.addEventListener('click', () => { setOrden('precio'); render(); });
   ordenDistBtn.addEventListener('click', () => { if (userPos) { setOrden('dist'); render(); } });
   ordenNetoBtn.addEventListener('click', () => { if (userPos) { setOrden('neto'); render(); } });
+
+  setVista('lista');
+
+  vistaListaBtn.addEventListener('click', () => { setVista('lista'); render(); });
+  vistaMapaBtn.addEventListener('click', () => { abrirMapa(); });
 
   // Los litros cambian el ahorro de forma proporcional, asi que se recuerdan: quien echa
   // siempre 30 L no tiene que volver a decirlo en cada visita.
