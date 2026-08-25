@@ -45,7 +45,14 @@ alojar decenas de logotipos de petroleras en una web con publicidad es un riesgo
 - **El servidor de teselas de la OSMF queda descartado a proposito**: su politica dice que no
   hay SLA y que pueden cortar el acceso sin aviso. No es una base para una funcion de
   producto. Stadia Maps tampoco sirve: su plan gratuito es solo para uso no comercial.
-- Tope de `MAX_MARCADORES` (120) por rendimiento en movil; se avisa debajo del mapa.
+- **Carga por pantalla, no por tope**: se pintan las estaciones que caen dentro de lo que
+  estas viendo y el resto aparecen al moverte o alejarte (`moveend`). Solo queda un limite
+  de 300 por pantalla para que un zoom muy alejado no meta mil nodos en el DOM de golpe.
+  El encuadre inicial usa las 20 primeras del orden activo: encuadrar la provincia entera
+  dejaria el mapa tan lejos que no se leeria ningun precio.
+- **Zoom con rueda tras tocar el mapa**. Siempre activa secuestra el scroll de quien solo
+  pasaba por encima bajando por la portada; siempre apagada obliga a usar los botones. Se
+  enciende al hacer clic o tocar dentro y se apaga al salir el puntero o al clicar fuera.
 ## SEO / Monetización
 
 - H1 + intro + FAQ (actualización cada 30 min, low cost vs marca, cuándo repostar...) +

@@ -294,7 +294,18 @@ const field = 'w-full rounded-lg border border-borde bg-fondo px-3 py-2 text-sm 
       mapaNota.classList.remove('hidden');
       try {
         const mod = await import('../lib/mapa.js');
-        ctxMapa = await mod.crearMapa(mapaBox);
+        // El recuento lo dispara el propio mapa al terminar cada movimiento, no render:
+        // al arrastrar o alejarte aparecen mas gasolineras y el texto tiene que seguirlas.
+        ctxMapa = await mod.crearMapa(mapaBox, (info: any) => {
+          const hint = mapaBox.dataset.activo === '1'
+            ? ''
+            : ' Toca el mapa para hacer zoom con la rueda.';
+          mapaNota.textContent = info.recortadas
+            ? `Viendo ${info.enPantalla} gasolineras de las ${info.total} del filtro. En esta zona hay más de las que caben: acércate para verlas.` + hint
+            : info.enPantalla === info.total
+              ? `Las ${info.total} gasolineras del filtro, en pantalla.` + hint
+              : `Viendo ${info.enPantalla} de ${info.total} gasolineras. Muévete o aléjate para ver el resto.` + hint;
+        });
         (ctxMapa as any).mod = mod;
       } catch {
         mapaNota.textContent = 'No se ha podido cargar el mapa. La lista sigue funcionando.';
@@ -612,14 +623,11 @@ const field = 'w-full rounded-lg border border-borde bg-fondo px-3 py-2 text-sm 
     masBtn.classList.toggle('hidden', vista !== 'lista' || l.length <= visibles);
 
     if (vista === 'mapa' && ctxMapa) {
-      const r = (ctxMapa as any).mod.pintarMapa(
+      (ctxMapa as any).mod.pintarMapa(
         ctxMapa, l, fuel, min, max,
         { colorFor, fmt, esc, textoDesvio },
         posFiable ? userPos : null,
       );
-      mapaNota.textContent = r.pintados < r.total
-        ? `Mostrando ${r.pintados} de ${r.total} gasolineras, las primeras del orden elegido. Afina con el municipio o la búsqueda para verlas todas.`
-        : `${r.total} gasolineras en el mapa. Toca una chincheta para ver la dirección y si te compensa.`;
     }
   }
 
