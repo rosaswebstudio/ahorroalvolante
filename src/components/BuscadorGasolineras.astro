@@ -75,7 +75,21 @@ const field = 'w-full rounded-lg border border-borde bg-fondo px-3 py-2 text-sm 
       <div class="flex gap-1 rounded-lg border border-borde bg-fondo p-1 text-sm">
         <button id="gs-orden-precio" type="button" class="rounded-md px-3 py-1 font-medium">Más baratas</button>
         <button id="gs-orden-dist" type="button" class="rounded-md px-3 py-1 font-medium" disabled>Más cercanas</button>
+        <button id="gs-orden-neto" type="button" class="rounded-md px-3 py-1 font-medium" disabled>Más rentables</button>
       </div>
+      <!-- Litros del repostaje. El ahorro de irse a otra gasolinera es la diferencia de
+           precio por los litros que eches, asi que sin este dato la cuenta del desvio no
+           existe: dar por hecho un deposito lleno infla el numero para quien echa 20 L. -->
+      <label class="inline-flex items-center gap-1.5 rounded-lg border border-borde bg-fondo px-2 py-1.5 text-sm text-suave">
+        <span>Voy a echar</span>
+        <select id="gs-litros" aria-label="Litros que vas a repostar" class="bg-transparent font-semibold text-tinta outline-none">
+          <option value="20">20 L</option>
+          <option value="30">30 L</option>
+          <option value="40" selected>40 L</option>
+          <option value="50">50 L</option>
+          <option value="60">60 L</option>
+        </select>
+      </label>
       <!-- En móvil salta a su propia línea y la ocupa entera. Antes se iba a la derecha
            con `ml-auto` y dejaba un hueco vacío a su izquierda, como si faltara algo. -->
       <input id="gs-filtro" type="search" placeholder="Marca, calle…" aria-label="Buscar por marca o calle" class={`${field} max-w-none sm:ml-auto sm:max-w-56 sm:flex-1`} />
@@ -104,6 +118,16 @@ const field = 'w-full rounded-lg border border-borde bg-fondo px-3 py-2 text-sm 
     <div id="gs-lista" class="mt-4 space-y-1.5"></div>
     <button id="gs-mas" type="button" class="mt-3 hidden w-full rounded-lg border border-borde px-4 py-2 text-sm font-medium text-tinta transition hover:border-suave">Mostrar más gasolineras</button>
 
+    <!-- Los supuestos, a la vista. Un ahorro calculado sin decir sobre que se calcula es un
+         numero bonito y nada mas; y si el lector no puede rehacer la cuenta, no se la cree. -->
+    <p id="gs-nota-desvio" class="mt-3 hidden text-[11px] leading-relaxed text-tenue">
+      El ahorro compara cada gasolinera con <strong class="text-suave">la más cercana a ti</strong>,
+      que es la que usarías sin pensarlo. Descuenta el combustible del desvío contando ida y
+      vuelta y un consumo de 7 L/100 km. La distancia es en línea recta corregida al alza, no una
+      ruta calculada, así que tómala como una estimación: si la gasolinera te pilla de camino,
+      ahorras más de lo que dice aquí.
+    </p>
+
     <!-- Pie -->
     <div class="mt-4 flex items-center justify-between gap-3">
       <p id="gs-fuente" class="text-xs leading-snug text-suave">
@@ -131,10 +155,23 @@ const field = 'w-full rounded-lg border border-borde bg-fondo px-3 py-2 text-sm 
   const masBtn = $('gs-mas')!;
   const ordenPrecioBtn = $('gs-orden-precio') as HTMLButtonElement;
   const ordenDistBtn = $('gs-orden-dist') as HTMLButtonElement;
+  const ordenNetoBtn = $('gs-orden-neto') as HTMLButtonElement;
+  const litrosSel = $('gs-litros') as HTMLSelectElement;
+  const notaDesvio = $('gs-nota-desvio')!;
 
   let data: any = null;
   let userPos: { lat: number; lng: number } | null = null;
-  let orden: 'precio' | 'dist' = 'precio';
+  let orden: 'precio' | 'dist' | 'neto' = 'precio';
+
+  // Consumo de referencia para valorar el desvio, en L/100 km. Un turismo medio. No se
+  // pregunta al usuario a proposito: el resultado apenas se mueve entre 6 y 8 L, y un campo
+  // mas es una excusa para no usar la funcion.
+  const CONSUMO_DESVIO = 7;
+  // La distancia que sabemos calcular es en linea recta (haversine). Por carretera siempre
+  // es mayor, y el factor que se usa habitualmente para aproximarla ronda 1,3. Es una
+  // aproximacion y en la web se dice que lo es: no es una ruta calculada.
+  const FACTOR_VIAL = 1.3;
+  const LITROS_KEY = 'gs_litros';
   let visibles = 25;
   // Municipio guardado de la última visita: no se puede aplicar hasta que la provincia
   // haya cargado y sepamos qué municipios existen.
@@ -197,12 +234,13 @@ const field = 'w-full rounded-lg border border-borde bg-fondo px-3 py-2 text-sm 
     statsBox.classList.toggle('grid', v);
   };
 
-  const setOrden = (o: 'precio' | 'dist') => {
+  const setOrden = (o: 'precio' | 'dist' | 'neto') => {
     orden = o;
     const on = 'rounded-md px-3 py-1 font-medium bg-amber-500 text-[#0B0D12]';
     const off = 'rounded-md px-3 py-1 font-medium text-suave';
     ordenPrecioBtn.className = o === 'precio' ? on : off;
     ordenDistBtn.className = o === 'dist' ? on : off;
+    ordenNetoBtn.className = o === 'neto' ? on : off;
   };
 
   /**
@@ -367,6 +405,7 @@ const field = 'w-full rounded-lg border border-borde bg-fondo px-3 py-2 text-sm 
       lista.innerHTML = '';
       mostrarStats(false);
       masBtn.classList.add('hidden');
+      notaDesvio.classList.add('hidden');
       status.textContent = muni
         ? `No hay gasolineras con ${fuelLabel} en ${muni}${filtro ? ' que coincidan con la búsqueda' : ''}.`
         : 'No hay gasolineras con ese combustible y filtro.';
@@ -380,10 +419,49 @@ const field = 'w-full rounded-lg border border-borde bg-fondo px-3 py-2 text-sm 
     ($('gs-max') as HTMLElement).textContent = fmt(max) + ' €';
     mostrarStats(true);
 
-    l.sort((a: any, b: any) => (orden === 'dist' && userPos) ? a.dist - b.dist : a.p[fuel] - b.p[fuel]);
+    // ¿Compensa moverse? La referencia es la gasolinera MAS CERCANA a ti de las que salen
+    // en la lista, sea cara o barata: es la que usarias sin pensar, asi que es contra la que
+    // hay que medir. Comparar contra la mas cercana "que ademas sea barata" perderia la
+    // respuesta mas util, que es "quedate donde estas, ya tienes la mejor al lado".
+    //
+    // El coste del desvio se cuenta IDA Y VUELTA sobre los kilometros de MAS que hay que
+    // hacer. Es la hipotesis conservadora: si la gasolinera te pilla de camino, el coste real
+    // es menor y el ahorro que enseñamos se queda corto, que es el lado por el que hay que
+    // equivocarse. La distancia es en linea recta, y por eso se corrige con un factor.
+    const litros = Number(litrosSel.value) || 40;
+    const conDist = userPos ? l.filter((e: any) => Number.isFinite(e.dist)) : [];
+    const ref = conDist.length ? conDist.reduce((a: any, b: any) => (b.dist < a.dist ? b : a)) : null;
+    const neto = (e: any): number | null => {
+      if (!ref || e.id === ref.id || !Number.isFinite(e.dist)) return null;
+      const kmExtra = Math.max(0, e.dist - ref.dist) * FACTOR_VIAL * 2;
+      const ahorro = (ref.p[fuel] - e.p[fuel]) * litros;
+      const n = ahorro - ((kmExtra * CONSUMO_DESVIO) / 100) * e.p[fuel];
+      return Number.isFinite(n) ? n : null;
+    };
+    if (ref) l.forEach((e: any) => { e.neto = neto(e); });
+
+    l.sort((a: any, b: any) => {
+      if (orden === 'dist' && userPos) return a.dist - b.dist;
+      if (orden === 'neto' && ref) return (b.neto ?? 0) - (a.neto ?? 0);
+      return a.p[fuel] - b.p[fuel];
+    });
 
     status.textContent = `${l.length} gasolineras con ${fuelLabel}${muni ? ' en ' + muni : ''} · ordenadas por ${orden === 'dist' ? 'cercanía' : 'precio'}`;
 
+    // Media palabra de margen: por debajo de 30 centimos el resultado esta dentro del error
+    // de estimar la distancia y el consumo, asi que decir "ahorras 12 centimos" seria fingir
+    // una precision que no tenemos. Ahi se dice que se queda en nada, que es la verdad.
+    const UMBRAL = 0.3;
+    const euros = (n: number) => Math.abs(n).toLocaleString(`es-ES`, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const lineaDesvio = (e: any) => {
+      if (!ref) return ``;
+      if (e.id === ref.id) return `<p class="truncate text-[11px] text-tenue">La más cercana a ti. Es la referencia de la comparación.</p>`;
+      const n = e.neto;
+      if (n == null) return ``;
+      if (n > UMBRAL) return `<p class="truncate text-[11px] font-semibold text-barato">Compensa: te ahorras ${euros(n)} € echando ${litros} L, ya descontado el desvío.</p>`;
+      if (n < -UMBRAL) return `<p class="truncate text-[11px] text-tenue">No compensa: el desvío te cuesta ${euros(n)} € más de lo que ahorras.</p>`;
+      return `<p class="truncate text-[11px] text-tenue">Se queda en nada: lo que ahorras se lo lleva el desvío.</p>`;
+    };
     const favIds = new Set(leerFavs().map((f) => f.id));
     lista.innerHTML = l.slice(0, visibles).map((e: any) => {
       const p = e.p[fuel];
@@ -400,6 +478,7 @@ const field = 'w-full rounded-lg border border-borde bg-fondo px-3 py-2 text-sm 
           <p class="truncate text-sm font-semibold text-tinta">${esc(e.rotulo)}</p>
           <p class="truncate text-xs text-suave">${esc(e.dir)} · ${esc(e.loc || e.muni)}</p>
           ${e.horario ? `<p class="truncate text-[11px] text-tenue">${esc(e.horario)}</p>` : ''}
+          ${lineaDesvio(e)}
         </div>
         <div class="shrink-0 text-right">
           ${e.dist != null ? `<p class="font-mono text-xs text-suave">${e.dist < 10 ? e.dist.toFixed(1) : Math.round(e.dist)} km</p>` : ''}
@@ -409,6 +488,7 @@ const field = 'w-full rounded-lg border border-borde bg-fondo px-3 py-2 text-sm 
       </div>`;
     }).join('');
 
+    notaDesvio.classList.toggle('hidden', !ref);
     masBtn.classList.toggle('hidden', l.length <= visibles);
   }
 
@@ -417,6 +497,7 @@ const field = 'w-full rounded-lg border border-borde bg-fondo px-3 py-2 text-sm 
     $('gs-refresh-icon')!.classList.add('spin');
     lista.innerHTML = '';
     masBtn.classList.add('hidden');
+    notaDesvio.classList.add('hidden');
     try {
       data = await cargarProvincia(provSel.value, force);
       ($('gs-fuente') as HTMLElement).textContent =
@@ -582,6 +663,7 @@ const field = 'w-full rounded-lg border border-borde bg-fondo px-3 py-2 text-sm 
   provSel.addEventListener('change', () => {
     userPos = null;
     ordenDistBtn.disabled = true;
+    ordenNetoBtn.disabled = true;
     setOrden('precio');
     // El municipio pertenece a la provincia anterior: no tiene sentido conservarlo.
     muniSel.value = '';
@@ -597,6 +679,15 @@ const field = 'w-full rounded-lg border border-borde bg-fondo px-3 py-2 text-sm 
   filtroInp.addEventListener('input', () => { visibles = 25; render(); });
   ordenPrecioBtn.addEventListener('click', () => { setOrden('precio'); render(); });
   ordenDistBtn.addEventListener('click', () => { if (userPos) { setOrden('dist'); render(); } });
+  ordenNetoBtn.addEventListener('click', () => { if (userPos) { setOrden('neto'); render(); } });
+
+  // Los litros cambian el ahorro de forma proporcional, asi que se recuerdan: quien echa
+  // siempre 30 L no tiene que volver a decirlo en cada visita.
+  try { const g = localStorage.getItem(LITROS_KEY); if (g) litrosSel.value = g; } catch { /* sin acceso */ }
+  litrosSel.addEventListener('change', () => {
+    try { localStorage.setItem(LITROS_KEY, litrosSel.value); } catch { /* sin espacio */ }
+    render();
+  });
   masBtn.addEventListener('click', () => { visibles += 25; render(); });
   $('gs-refresh')!.addEventListener('click', () => load(true));
 
@@ -608,7 +699,8 @@ const field = 'w-full rounded-lg border border-borde bg-fondo px-3 py-2 text-sm 
         userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
         const prov = provinciaMasCercana(userPos.lat, userPos.lng);
         ordenDistBtn.disabled = false;
-        setOrden('dist');
+        ordenNetoBtn.disabled = false;
+        setOrden('neto');
         // Ordenar por cercanía dentro de un solo municipio no tiene sentido: se quita
         // el filtro para que salgan también las de los pueblos de al lado.
         muniSel.value = '';
