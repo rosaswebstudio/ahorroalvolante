@@ -62,6 +62,20 @@ const DEPOSITO = 55;
 const g95 = marca.combustibles.g95;
 const dia = fecha ? fecha.split(' ')[0] : '';
 
+// Combustible de referencia para la conclusion en euros. La gasolina 95 es la que permite
+// comparar cadenas entre si, pero hay redes que no la despachan (IDS y similares, orientadas
+// a gasoleo). Sin esto esas paginas se quedaban en una tabla de medias sin decir si la marca
+// sale cara o barata, que es la unica pregunta que trae aqui al lector.
+const refId = marca.combustibles.g95
+  ? 'g95'
+  : (COMBUSTIBLES.map((c) => c.id)
+      .filter((id) => marca.combustibles[id])
+      .sort((a, b) => marca.combustibles[b]!.n - marca.combustibles[a]!.n)[0] ?? null);
+const ref = refId ? marca.combustibles[refId] : null;
+const refLabel = refId ? COMBUSTIBLES.find((c) => c.id === refId)!.label : null;
+const refBarata = ref ? ref.vsNacional !== null && ref.vsNacional < 0 : null;
+const refDeposito = ref?.vsNacional != null ? Math.abs(ref.vsNacional) * DEPOSITO : 0;
+
 // ¿Barata o cara? Lo dice el dato, no una etiqueta puesta a mano.
 const esBarata = g95 ? g95.vsNacional < 0 : null;
 const difDeposito = g95?.vsNacional != null ? Math.abs(g95.vsNacional) * DEPOSITO : 0;
@@ -87,6 +101,12 @@ if (g95) {
   faqs.push({
     q: `¿Cuánto cuesta llenar el depósito en ${marca.nombre}?`,
     a: `Con su media de ${p3(g95.media)} €/L, llenar ${DEPOSITO} litros de gasolina 95 sale por unos ${p2(g95.media * DEPOSITO)} €. Dentro de la propia cadena hay diferencias: la estación más barata está a ${p3(g95.min)} €/L y la más cara a ${p3(g95.max)} €/L, así que conviene mirar la concreta que tengas cerca.`,
+  });
+}
+if (!g95 && ref && refLabel) {
+  faqs.push({
+    q: `¿Es cara ${marca.nombre}?`,
+    a: `En ${refLabel}, que es lo que despacha en la mayoría de sus estaciones, su media es de ${p3(ref.media)} €/L, ${cent(ref.vsNacional!)} céntimos ${refBarata ? "por debajo" : "por encima"} de la media nacional. En un depósito de ${DEPOSITO} litros son unos ${p2(refDeposito)} € ${refBarata ? "menos" : "más"} que repostando en una estación de precio medio. No entra en el ranking general de marcas porque ese se hace con la gasolina 95.`,
   });
 }
 faqs.push({
@@ -185,7 +205,7 @@ const colorSegun = (v: number | null) => (v == null ? 'text-tinta' : v < 0 ? 'te
                     <p class="shrink-0 font-mono text-base font-bold text-tinta">{p3(s.media)} <span class="text-xs text-tenue">€/L</span></p>
                   </div>
                   <p class="mt-1 text-xs text-tenue">
-                    {s.n} estaciones · de {p3(s.min)} a {p3(s.max)} €/L
+                    {s.n} {s.n === 1 ? 'estación' : 'estaciones'} · de {p3(s.min)} a {p3(s.max)} €/L
                     {s.vsNacional != null && (
                       <> · <span class={colorSegun(s.vsNacional)}>{cent(s.vsNacional)} cent</span> frente a la media nacional</>
                     )}

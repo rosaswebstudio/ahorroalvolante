@@ -23,6 +23,13 @@ export const MIN_ESTACIONES_MUNICIPIO = 10;
 // dos gasolineras y llamarlo "el precio de la marca X" no informa de nada.
 export const MIN_ESTACIONES_MARCA = 20;
 
+// Cuantas estaciones de una marca tienen que comunicar un combustible para publicar su
+// media. El mismo razonamiento que MIN_ESTACIONES_MARCA, pero aplicado dentro de la pagina:
+// Ballenoil tiene 408 gasolineras y solo una comunica gasolina 98, asi que llamar a ese
+// precio "la 98 de Ballenoil" y rankear la marca por el es inventarse un dato. Un combustible
+// por debajo de este umbral no se publica ni entra en el ranking.
+export const MIN_MUESTRA_MARCA = 5;
+
 // Descarta precios absurdos (registros mal comunicados) antes de hacer medias.
 const PRECIO_MIN = 0.4;
 const PRECIO_MAX = 4;
@@ -391,7 +398,7 @@ export async function resumenPorMarca() {
       const combustibles = {};
       for (const c of COMBUSTIBLES) {
         const precios = g.lista.map((e) => e.p[c.id]).filter((v) => v != null);
-        combustibles[c.id] = precios.length
+        combustibles[c.id] = precios.length >= MIN_MUESTRA_MARCA
           ? {
               n: precios.length,
               media: media(precios),
@@ -431,6 +438,10 @@ export async function resumenPorMarca() {
           .slice(0, 10),
       };
     })
+    // Una marca que no supera el umbral en NINGUN combustible se queda sin pagina: seria una
+    // ficha con un titulo, un reparto por provincias y ni un solo precio. Le pasa a las redes
+    // de gas (Naturgy, Molgas), que estan en el listado pero apenas comunican carburante.
+    .filter((m) => COMBUSTIBLES.some((c) => m.combustibles[c.id]))
     // Orden por defecto: de la marca más barata a la más cara en gasolina 95, que es
     // la pregunta real ("¿cuál es la más barata?"), no el tamaño de la red.
     .sort((a, b) => (a.combustibles.g95?.media ?? Infinity) - (b.combustibles.g95?.media ?? Infinity));
