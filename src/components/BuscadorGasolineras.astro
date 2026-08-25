@@ -474,12 +474,12 @@ const field = 'w-full rounded-lg border border-borde bg-fondo px-3 py-2 text-sm 
     const euros = (n: number) => Math.abs(n).toLocaleString(`es-ES`, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const lineaDesvio = (e: any) => {
       if (!ref) return ``;
-      if (e.id === ref.id) return `<p class="truncate text-[11px] text-tenue">La más cercana a ti. Es la referencia de la comparación.</p>`;
+      if (e.id === ref.id) return `<p class="text-[11px] leading-snug text-tenue">La más cercana a ti. Es la referencia de la comparación.</p>`;
       const n = e.neto;
       if (n == null) return ``;
-      if (n > UMBRAL) return `<p class="truncate text-[11px] font-semibold text-barato">Compensa: te ahorras ${euros(n)} € echando ${litros} L, ya descontado el desvío.</p>`;
-      if (n < -UMBRAL) return `<p class="truncate text-[11px] text-tenue">No compensa: el desvío te cuesta ${euros(n)} € más de lo que ahorras.</p>`;
-      return `<p class="truncate text-[11px] text-tenue">Se queda en nada: lo que ahorras se lo lleva el desvío.</p>`;
+      if (n > UMBRAL) return `<p class="text-[11px] font-semibold leading-snug text-barato">Compensa: te ahorras ${euros(n)} € echando ${litros} L, ya descontado el desvío.</p>`;
+      if (n < -UMBRAL) return `<p class="text-[11px] leading-snug text-tenue">No compensa: el desvío te cuesta ${euros(n)} € más de lo que ahorras.</p>`;
+      return `<p class="text-[11px] leading-snug text-tenue">Se queda en nada: lo que ahorras se lo lleva el desvío.</p>`;
     };
     const favIds = new Set(leerFavs().map((f) => f.id));
     lista.innerHTML = l.slice(0, visibles).map((e: any) => {
@@ -488,22 +488,28 @@ const field = 'w-full rounded-lg border border-borde bg-fondo px-3 py-2 text-sm 
       const color = colorFor(t);
       const maps = `https://www.google.com/maps/dir/?api=1&destination=${e.lat},${e.lng}`;
       return `
-      <div class="flex items-center gap-3 rounded-xl border border-borde bg-fondo px-3 py-2.5">
-        <div class="w-20 shrink-0 text-center">
-          <span class="font-mono text-base font-bold" style="color:${color}">${fmt(p)}</span>
-          <span class="block text-[10px] text-tenue">€/litro</span>
+      <!-- Dos filas a proposito. En una sola, el movil dejaba la columna del medio tan
+           estrecha que cortaba la direccion y, peor, cortaba el ahorro: "Compensa: te aho..."
+           esconde justo la cifra por la que existe la linea. Sacando "Cómo llegar" a su propia
+           fila, el nombre y la direccion recuperan ancho y el ahorro se lee entero. -->
+      <div class="rounded-xl border border-borde bg-fondo px-3 py-2.5">
+        <div class="flex items-center gap-3">
+          <div class="w-[4.5rem] shrink-0 text-center sm:w-20">
+            <span class="font-mono text-base font-bold" style="color:${color}">${fmt(p)}</span>
+            <span class="block text-[10px] text-tenue">€/litro</span>
+          </div>
+          <div class="min-w-0 flex-1">
+            <p class="truncate text-sm font-semibold text-tinta">${esc(e.rotulo)}</p>
+            <p class="truncate text-xs text-suave">${esc(e.dir)} · ${esc(e.loc || e.muni)}</p>
+            ${e.horario ? `<p class="truncate text-[11px] text-tenue">${esc(e.horario)}</p>` : ''}
+          </div>
+          ${posFiable && Number.isFinite(e.dist) ? `<p class="shrink-0 font-mono text-xs text-suave">${e.dist < 10 ? e.dist.toFixed(1) : Math.round(e.dist)} km</p>` : ''}
+          ${botonFav(e.id, favIds.has(e.id))}
         </div>
-        <div class="min-w-0 flex-1">
-          <p class="truncate text-sm font-semibold text-tinta">${esc(e.rotulo)}</p>
-          <p class="truncate text-xs text-suave">${esc(e.dir)} · ${esc(e.loc || e.muni)}</p>
-          ${e.horario ? `<p class="truncate text-[11px] text-tenue">${esc(e.horario)}</p>` : ''}
-          ${lineaDesvio(e)}
+        <div class="mt-2 flex items-center justify-between gap-3">
+          <div class="min-w-0 flex-1">${lineaDesvio(e)}</div>
+          <a href="${maps}" target="_blank" rel="noopener nofollow" class="shrink-0 rounded-md border border-borde px-2 py-1 text-[11px] font-medium text-acento transition hover:border-amber-500">Cómo llegar</a>
         </div>
-        <div class="shrink-0 text-right">
-          ${posFiable && Number.isFinite(e.dist) ? `<p class="font-mono text-xs text-suave">${e.dist < 10 ? e.dist.toFixed(1) : Math.round(e.dist)} km</p>` : ''}
-          <a href="${maps}" target="_blank" rel="noopener nofollow" class="mt-0.5 inline-block rounded-md border border-borde px-2 py-1 text-[11px] font-medium text-acento transition hover:border-amber-500">Cómo llegar</a>
-        </div>
-        ${botonFav(e.id, favIds.has(e.id))}
       </div>`;
     }).join('');
 
@@ -739,11 +745,34 @@ const field = 'w-full rounded-lg border border-borde bg-fondo px-3 py-2 text-sm 
   $('gs-geo')!.addEventListener('click', () => {
     if (!('geolocation' in navigator)) { status.textContent = 'Tu navegador no permite la geolocalización.'; return; }
     status.textContent = 'Obteniendo tu ubicación…';
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-        precisionM = Number.isFinite(pos.coords.accuracy) ? pos.coords.accuracy : 0;
-        const prov = provinciaMasCercana(userPos.lat, userPos.lng);
+
+    // Por que no basta con getCurrentPosition: devuelve UNA foto, la primera que cumpla las
+    // opciones dentro del timeout. Si el GPS todavia no ha fijado (y tarda segundos), esa foto
+    // es la de la red, con error de kilometros. Las apps de mapas no hacen eso: se suscriben y
+    // van refinando segun mejora la señal. Aqui se hace lo mismo durante unos segundos y nos
+    // quedamos siempre con la mejor lectura, repintando cuando mejora de verdad.
+    let mejor = Infinity;
+    let primera = true;
+    let watchId = 0;
+    // Si la primera lectura entra antes de que watchPosition haya devuelto su id, parar() no
+    // tendria nada que limpiar y el GPS se quedaria abierto. Se anota y se limpia despues.
+    let debeParar = false;
+    const parar = () => {
+      if (watchId) { navigator.geolocation.clearWatch(watchId); watchId = 0; }
+      else debeParar = true;
+    };
+
+    const usar = async (pos: GeolocationPosition) => {
+      const acc = Number.isFinite(pos.coords.accuracy) ? pos.coords.accuracy : Infinity;
+      // Solo se acepta una lectura si mejora la anterior en algo apreciable: si no, cada
+      // actualizacion del GPS repintaria la lista y saltaria bajo el dedo.
+      if (!primera && acc > mejor * 0.8) return;
+      mejor = acc;
+      userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      precisionM = Number.isFinite(acc) ? acc : 0;
+
+      if (primera) {
+        primera = false;
         ordenDistBtn.disabled = false;
         ordenNetoBtn.disabled = false;
         setOrden('neto');
@@ -752,12 +781,29 @@ const field = 'w-full rounded-lg border border-borde bg-fondo px-3 py-2 text-sm 
         muniSel.value = '';
         sincronizarCombo();
         guardarPref({ muni: '' });
-        if (prov.id !== provSel.value) { provSel.value = prov.id; await load(); }
-        else render();
+      }
+
+      // Con 100 m ya no hay nada que ganar para esto: la decision es entre gasolineras que
+      // estan a kilometros unas de otras.
+      if (acc <= 100) parar();
+
+      const prov = provinciaMasCercana(userPos.lat, userPos.lng);
+      if (prov.id !== provSel.value) { provSel.value = prov.id; await load(); }
+      else render();
+    };
+
+    watchId = navigator.geolocation.watchPosition(
+      usar,
+      () => {
+        parar();
+        if (primera) status.textContent = 'No se pudo obtener tu ubicación (permiso denegado o conexión no segura). Elige provincia manualmente.';
       },
-      () => { status.textContent = 'No se pudo obtener tu ubicación (permiso denegado o conexión no segura). Elige provincia manualmente.'; },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
     );
+    if (debeParar) parar();
+    // Techo de tiempo: pasados 12 s nos quedamos con lo que haya. Mantener el GPS abierto
+    // gasta bateria y a partir de ahi ya no suele mejorar.
+    setTimeout(parar, 12000);
   });
 
   // Preferencias de la última visita (combustible y provincia).
