@@ -82,7 +82,7 @@ const field = 'w-full rounded-lg border border-borde bg-fondo px-3 py-2 text-sm 
            existe: dar por hecho un deposito lleno infla el numero para quien echa 20 L. -->
       <label class="inline-flex items-center gap-1.5 rounded-lg border border-borde bg-fondo px-2 py-1.5 text-sm text-suave">
         <span>Voy a echar</span>
-        <select id="gs-litros" aria-label="Litros que vas a repostar" class="bg-transparent font-semibold text-tinta outline-none">
+        <select id="gs-litros" aria-label="Litros que vas a repostar" class="bg-fondo font-semibold text-tinta outline-none">
           <option value="20">20 L</option>
           <option value="30">30 L</option>
           <option value="40" selected>40 L</option>
@@ -161,6 +161,17 @@ const field = 'w-full rounded-lg border border-borde bg-fondo px-3 py-2 text-sm 
     </div>
   </div>
 </section>
+
+<style>
+  /* El desplegable de un <select> lo dibuja el sistema operativo, no la pagina. Sin
+     color y fondo explicitos en las <option>, en Windows el popup sale sobre blanco
+     heredando el texto claro del tema oscuro: opciones invisibles hasta pasar el raton
+     por encima, que es cuando el sistema aplica su propio resaltado. */
+  #buscador select option {
+    background-color: var(--color-fondo);
+    color: var(--color-tinta);
+  }
+</style>
 
 <script>
   import { cargarProvincia, distanciaKm, provinciaMasCercana, COMBUSTIBLES, leerPref, guardarPref } from '../lib/gasolineras.js';
