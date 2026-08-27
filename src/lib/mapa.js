@@ -29,7 +29,7 @@ import hojaUrl from 'leaflet/dist/leaflet.css?url';
 // Va en claro a proposito: es una clave de mapas, viaja en la URL de cada tesela y por
 // tanto es publica por definicion, como en cualquier web con mapa. No es un secreto y no
 // hay nada que esconder aqui; lo que la protege es el dominio autorizado al pedirla.
-const CARTO_KEY = '';
+const CARTO_KEY = 'cb1_2c03_1_1c40d98b67a26ae3cfe6258e';
 
 // Rutas tal y como las documenta CARTO, con el prefijo rastertiles. Comprobado que
 // responden los cuatro subdominios (abcd), las teselas @2x y hasta el zoom 20.
