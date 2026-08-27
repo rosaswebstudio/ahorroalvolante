@@ -21,9 +21,25 @@ import hojaUrl from 'leaflet/dist/leaflet.css?url';
 // El servidor de teselas de la propia OSMF queda descartado a proposito: su politica dice
 // explicitamente que no hay SLA y que pueden cortar el acceso sin aviso si el uso les
 // molesta. Eso no es una base sobre la que montar una funcion de un producto.
+// La clave de CARTO va aqui. Sin ella el mapa funciona igual, pero las teselas raster
+// llevan encima una marca de agua de "API key required". La clave es gratuita (5 millones
+// de teselas al mes, uso comercial incluido), se pide en carto.com/basemaps/apikey y no
+// necesita cuenta ni datos de pago.
+//
+// Va en claro a proposito: es una clave de mapas, viaja en la URL de cada tesela y por
+// tanto es publica por definicion, como en cualquier web con mapa. No es un secreto y no
+// hay nada que esconder aqui; lo que la protege es el dominio autorizado al pedirla.
+const CARTO_KEY = '';
+
+// Rutas tal y como las documenta CARTO, con el prefijo rastertiles. Comprobado que
+// responden los cuatro subdominios (abcd), las teselas @2x y hasta el zoom 20.
+const estilo = (nombre) =>
+  'https://{s}.basemaps.cartocdn.com/rastertiles/' + nombre + '/{z}/{x}/{y}{r}.png' +
+  (CARTO_KEY ? '?key=' + CARTO_KEY : '');
+
 const TILES = {
-  oscuro: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-  claro: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+  oscuro: estilo('dark_all'),
+  claro: estilo('light_all'),
 };
 
 const ATRIBUCION =
@@ -88,7 +104,7 @@ export async function crearMapa(nodo, onCambio) {
     attributionControl: true,
   });
 
-  let capaTiles = Lf.tileLayer(TILES[tema()], { attribution: ATRIBUCION, maxZoom: 19 }).addTo(mapa);
+  let capaTiles = Lf.tileLayer(TILES[tema()], { attribution: ATRIBUCION, subdomains: 'abcd', maxZoom: 20 }).addTo(mapa);
   const capaMarcas = Lf.layerGroup().addTo(mapa);
   const capaUsuario = Lf.layerGroup().addTo(mapa);
   let temaPintado = tema();
@@ -152,7 +168,7 @@ export async function crearMapa(nodo, onCambio) {
     if (tema() === temaPintado) return;
     temaPintado = tema();
     mapa.removeLayer(capaTiles);
-    capaTiles = Lf.tileLayer(TILES[temaPintado], { attribution: ATRIBUCION, maxZoom: 19 }).addTo(mapa);
+    capaTiles = Lf.tileLayer(TILES[temaPintado], { attribution: ATRIBUCION, subdomains: 'abcd', maxZoom: 20 }).addTo(mapa);
   }
 
   /** Marcador de una estacion, con el precio escrito dentro. */
