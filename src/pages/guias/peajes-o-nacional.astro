@@ -1,0 +1,144 @@
+---
+import GuiaLayout from '../../layouts/GuiaLayout.astro';
+---
+<GuiaLayout slug="peajes-o-nacional">
+
+  <p>
+    En el momento de salir de viaje aparece la pregunta de siempre: autopista de peaje o nacional.
+    La intuición dice que la nacional es gratis y la autopista cuesta dinero, así que la nacional
+    ahorra. La intuición se equivoca con bastante frecuencia, y aquí está la cuenta para saber
+    cuándo.
+  </p>
+
+  <h2>La nacional también cuesta dinero</h2>
+
+  <p>
+    Lo que cambia es dónde se paga, no si se paga. Un recorrido por carretera convencional, frente
+    al mismo por autopista, suele suponer:
+  </p>
+
+  <ul>
+    <li>
+      <strong>Más kilómetros.</strong> Las autopistas trazan recto; las nacionales atraviesan
+      pueblos, rodean montañas y hacen curvas. Un 10 o un 15 % más de distancia es lo habitual, y a
+      veces bastante más.
+    </li>
+    <li>
+      <strong>Más consumo por kilómetro en algunos tramos.</strong> Esto es menos intuitivo. A
+      velocidad constante de 90 km/h, una nacional gasta menos por kilómetro que una autopista a
+      120. Pero una nacional con rotondas, travesías, semáforos, adelantamientos y cambios de ritmo
+      constantes puede gastar igual o más, porque cada frenada es energía tirada.
+    </li>
+    <li>
+      <strong>Más tiempo.</strong> La diferencia de velocidad media entre una autopista y una
+      nacional con travesías es grande. En un trayecto de 300 km puede ser más de una hora.
+    </li>
+    <li>
+      <strong>Más desgaste.</strong> Frenos y embrague trabajan mucho más en carretera convencional
+      que en autopista. No se nota en el viaje, se nota en la revisión.
+    </li>
+  </ul>
+
+  <h2>La cuenta, paso a paso</h2>
+
+  <p>
+    Para comparar de verdad hacen falta cuatro números, todos fáciles de conseguir:
+  </p>
+
+  <ol>
+    <li>
+      <strong>Kilómetros por cada ruta.</strong> Cualquier navegador te da las dos, con y sin
+      peajes.
+    </li>
+    <li>
+      <strong>Tu consumo real</strong> en cada tipo de vía. Si no lo sabes, una aproximación
+      razonable: en autovía a 120 km/h, un 15-20 % más que el consumo medio de tu coche; en
+      nacional a 90 km/h constantes, un 10 % menos.
+    </li>
+    <li>
+      <strong>El precio del litro</strong> donde vas a repostar.
+    </li>
+    <li>
+      <strong>El importe del peaje</strong> del tramo.
+    </li>
+  </ol>
+
+  <p>
+    Con eso, el coste de combustible de cada ruta es kilómetros ÷ 100 × consumo × precio del litro.
+    Si al de la autopista le sumas el peaje y sigue saliendo por debajo, la decisión está tomada.
+    Si sale por encima, la diferencia es lo que te está costando la hora que ahorras, y ahí ya
+    decides tú.
+  </p>
+
+  <p>
+    Un ejemplo con números redondos. Un trayecto de 200 km por autopista frente a 225 km por
+    nacional, con un coche que hace 7,5 L/100 en autopista y 6,5 L/100 en nacional, a 1,60 €/L:
+  </p>
+
+  <ul>
+    <li><strong>Autopista:</strong> 200 ÷ 100 × 7,5 × 1,60 = 24,00 € de combustible.</li>
+    <li><strong>Nacional:</strong> 225 ÷ 100 × 6,5 × 1,60 = 23,40 € de combustible.</li>
+  </ul>
+
+  <p>
+    La diferencia de combustible es de 60 céntimos. Si el peaje cuesta 14 €, la nacional ahorra
+    13,40 € y cuesta una hora larga más. Si el peaje cuesta 4 €, ahorra 3,40 €, y entonces la
+    pregunta es si tu hora vale más o menos que eso.
+  </p>
+
+  <h2>Cuándo gana claramente la autopista</h2>
+
+  <ul>
+    <li>
+      <strong>Cuando viajáis varios.</strong> El peaje se paga una vez y se reparte entre todos; la
+      hora ahorrada, en cambio, se la ahorra cada uno. Con cuatro personas, un peaje de 16 € son 4 €
+      por cabeza por ganar una hora.
+    </li>
+    <li>
+      <strong>Cuando la alternativa es una nacional con travesías.</strong> Las carreteras
+      convencionales que atraviesan pueblos uno detrás de otro destrozan la media y disparan el
+      consumo urbano.
+    </li>
+    <li>
+      <strong>Con caravana, remolque o el coche muy cargado.</strong> Las subidas y las
+      aceleraciones repetidas de la nacional penalizan muchísimo más con peso.
+    </li>
+    <li>
+      <strong>De noche o con cansancio.</strong> El argumento de seguridad no es menor: la
+      siniestralidad por kilómetro es sensiblemente más baja en autopista que en carretera
+      convencional, por el trazado y por la separación de sentidos.
+    </li>
+  </ul>
+
+  <h2>Cuándo gana la nacional</h2>
+
+  <ul>
+    <li>
+      <strong>Peajes caros en trayectos largos</strong>, viajando solo y sin prisa.
+    </li>
+    <li>
+      <strong>Cuando la nacional es una vía rápida sin travesías</strong>, que es el mejor de los
+      casos: velocidad decente, pocas paradas y consumo bajo.
+    </li>
+    <li>
+      <strong>Cuando el viaje es el plan.</strong> Si vas a parar a comer, a ver un pueblo o a
+      hacer fotos, el tiempo deja de ser un coste.
+    </li>
+  </ul>
+
+  <h2>El error que sale caro</h2>
+
+  <p>
+    Evitar un peaje de 5 € y después repostar en una estación de área de servicio que está 15
+    céntimos por litro por encima de la media. Llenar 50 litros allí cuesta 7,50 € de más: se ha
+    perdido el ahorro del peaje y algo más, sin ganar nada.
+  </p>
+
+  <p>
+    Lo coherente es decidir la ruta por la cuenta completa y luego <strong>planificar dónde
+    repostas</strong> con los precios reales delante, que suele mover más dinero que la propia
+    elección de carretera. En esta web puedes ver el precio oficial de las gasolineras de cualquier
+    municipio del recorrido antes de salir.
+  </p>
+
+</GuiaLayout>

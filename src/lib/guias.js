@@ -335,6 +335,138 @@ export const GUIAS = [
     minutos: 8,
     actualizada: '2026-08-25',
   },
+  {
+    slug: 'repostar-en-portugal-o-francia',
+    tema: 'Dónde repostar',
+    titulo: 'Repostar en Portugal o en Francia: cuándo compensa cruzar',
+    description:
+      'Por qué el combustible cuesta distinto a un lado y otro de la frontera, cuántos kilómetros de desvío aguanta el ahorro y qué conviene saber antes de llenar fuera de España.',
+    resumen:
+      'La diferencia es real, pero vive y muere en los kilómetros de desvío. Aquí está la cuenta.',
+    minutos: 8,
+    actualizada: '2026-10-07',
+  },
+  {
+    slug: 'apurar-la-reserva',
+    tema: 'Dónde repostar',
+    titulo: 'Apurar la reserva: qué pasa de verdad en el depósito',
+    description:
+      'Cuántos kilómetros quedan cuando se enciende la luz, qué hay de cierto en lo de la suciedad del fondo y por qué la bomba de combustible es el motivo real para no apurar.',
+    resumen:
+      'La suciedad del fondo es un mito. El problema es otro, y sale más caro.',
+    minutos: 7,
+    actualizada: '2026-10-07',
+  },
+  {
+    slug: 'deposito-lleno-o-medio',
+    tema: 'Gastar menos',
+    titulo: '¿Llevar medio depósito ahorra combustible?',
+    description:
+      'Cuánto pesa el combustible, qué parte del consumo depende del peso y por qué llenar a medias para ahorrar sale casi siempre peor que llenar del todo.',
+    resumen:
+      'El peso sí cuenta. Pero la cuenta, hecha hasta el final, sale al revés de lo que parece.',
+    minutos: 7,
+    actualizada: '2026-10-07',
+  },
+  {
+    slug: 'trayectos-cortos-y-arranques-en-frio',
+    tema: 'Gastar menos',
+    titulo: 'Por qué los trayectos cortos disparan el consumo',
+    description:
+      'Lo que gasta un motor hasta alcanzar su temperatura, cuántos kilómetros tarda, qué le pasa al aceite y al catalizador y qué hacer si tu uso es casi todo urbano y de poca distancia.',
+    resumen:
+      'Los primeros kilómetros pueden costar el doble que los siguientes cincuenta.',
+    minutos: 9,
+    actualizada: '2026-10-07',
+  },
+  {
+    slug: 'peajes-o-nacional',
+    tema: 'Gastar menos',
+    titulo: 'Autopista de peaje o nacional: la cuenta completa',
+    description:
+      'Cómo comparar el precio del peaje con el combustible y el tiempo que ahorra, por qué la nacional no siempre sale más barata y cuándo el peaje se paga solo.',
+    resumen:
+      'La nacional no es gratis: se paga en consumo, en tiempo y en desgaste.',
+    minutos: 9,
+    actualizada: '2026-10-07',
+  },
+  {
+    slug: 'coche-o-tren',
+    tema: 'Gastar menos',
+    titulo: 'Coche o tren: cómo comparar el coste de verdad',
+    description:
+      'Qué hay que meter en la cuenta además del combustible para comparar un viaje en coche con el mismo en tren, y a partir de cuántos viajeros cambia el resultado.',
+    resumen:
+      'Con una persona casi siempre gana el tren. Con cuatro, casi nunca.',
+    minutos: 8,
+    actualizada: '2026-10-07',
+  },
+  {
+    slug: 'hibrido-consumo-real',
+    tema: 'Combustibles',
+    titulo: 'Un híbrido, ¿gasta de verdad lo que dicen?',
+    description:
+      'Dónde ahorra realmente un híbrido, por qué en autovía la ventaja casi desaparece, en qué se diferencian el híbrido normal y el enchufable y cuántos kilómetros hacen falta para amortizar el sobreprecio.',
+    resumen:
+      'En ciudad el ahorro es grande y real. En autovía, el folleto y el surtidor dejan de coincidir.',
+    minutos: 10,
+    actualizada: '2026-10-07',
+  },
+  {
+    slug: 'aditivos-de-combustible',
+    tema: 'Combustibles',
+    titulo: 'Aditivos y limpiadores de inyección: qué hacen y qué no',
+    description:
+      'Qué lleva ya el combustible que compras, qué puede hacer un aditivo de bote, en qué casos tiene sentido y por qué ninguno baja el consumo de forma apreciable.',
+    resumen:
+      'No bajan el consumo. Pero hay un caso concreto en el que sí sirven de algo.',
+    minutos: 7,
+    actualizada: '2026-10-07',
+  },
+  {
+    slug: 'franquicia-del-seguro',
+    tema: 'Lo que cuesta el coche',
+    titulo: 'La franquicia del seguro: cuándo conviene y cuándo no',
+    description:
+      'Qué es exactamente una franquicia, cuánto baja la prima, cómo calcular si compensa en tu caso y qué pasa cuando el daño cuesta menos que la franquicia.',
+    resumen:
+      'Rebaja la prima cada año y te cuesta solo cuando hay parte. Toda la decisión está en una cuenta.',
+    minutos: 8,
+    actualizada: '2026-10-07',
+  },
+  {
+    slug: 'bajar-el-precio-del-seguro',
+    tema: 'Lo que cuesta el coche',
+    titulo: 'Cómo bajar el precio del seguro sin quedarte sin cobertura',
+    description:
+      'Qué factores mueven de verdad la prima, qué coberturas suelen sobrar, qué pasa al cambiar de compañía con la bonificación y cuándo conviene renegociar en lugar de cambiar.',
+    resumen:
+      'Lo que más baja la prima no es el descuento de captación: es el perfil que declaras.',
+    minutos: 9,
+    actualizada: '2026-10-07',
+  },
+  {
+    slug: 'alquilar-coche-el-deposito',
+    tema: 'Lo que cuesta el coche',
+    titulo: 'El depósito del coche de alquiler: las tres políticas y cuál elegir',
+    description:
+      'Lleno-lleno, lleno-vacío y depósito prepagado: cuánto cuesta cada una, dónde está el margen de la empresa y qué hacer para no pagar el combustible dos veces.',
+    resumen:
+      'Solo una de las tres opciones juega a tu favor. Las otras dos están diseñadas al revés.',
+    minutos: 7,
+    actualizada: '2026-10-07',
+  },
+  {
+    slug: 'neumaticos-all-season',
+    tema: 'Neumáticos y mantenimiento',
+    titulo: 'Neumáticos all season: a quién le compensan y a quién no',
+    description:
+      'Qué cambia entre un neumático de verano, uno de invierno y uno all season, qué significan los símbolos M+S y 3PMSF, y cómo decidir según dónde vivas y cuántos kilómetros hagas.',
+    resumen:
+      'No son un invierno barato ni un verano malo. Son otra cosa, y dependen del sitio donde vivas.',
+    minutos: 9,
+    actualizada: '2026-10-07',
+  },
 ];
 
 /**

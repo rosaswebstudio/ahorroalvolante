@@ -2,6 +2,8 @@
 // No importar desde el navegador: descarga el listado nacional entero (~12 MB).
 // Fuente: misma API oficial del Ministerio que usa el buscador (ver gasolineras.js).
 import { API_BASE, COMBUSTIBLES, PROVINCIAS, slugProvincia, slugify } from './gasolineras.js';
+import { analisisMunicipio, analisisMarca, analisisProvincia, clasificarRedes } from './analisis.js';
+import historico from '../data/historico.json';
 
 // A partir de cuántas gasolineras un pueblo tiene página propia.
 //
@@ -191,6 +193,17 @@ export async function resumenPorProvincia() {
     porId.get(id).push(reducir(raw));
   }
 
+  // Contexto para el analisis escrito: media del pais y ranking de las 52 provincias.
+  const g95Nac = [...porId.values()].flat().map((e) => e.p.g95).filter((v) => v != null);
+  const mediaNacionalG95 = g95Nac.length ? media(g95Nac) : null;
+  const ordenProvincias = PROVINCIAS.map((p) => {
+    const ps = (porId.get(p.id) ?? []).map((e) => e.p.g95).filter((v) => v != null);
+    return ps.length ? { id: p.id, media: media(ps) } : null;
+  })
+    .filter(Boolean)
+    .sort((a, b) => a.media - b.media);
+  const puestoProv = new Map(ordenProvincias.map((x, i) => [x.id, i + 1]));
+
   return PROVINCIAS.map((prov) => {
     const lista = porId.get(prov.id) ?? [];
     const combustibles = {};
@@ -233,6 +246,33 @@ export async function resumenPorProvincia() {
           .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))
       : [];
 
+    // Reparto de estaciones por municipio: cuantos pueblos de la provincia se quedan con
+    // una o dos gasolineras y, por tanto, sin competencia que comparar. Cambia mucho
+    // entre Madrid y Soria, y es lo que hace que esta lectura no sea intercambiable.
+    const reparto = munis
+      ? {
+          totalMunis: [...munis.values()].filter((m) => m.nombre).length,
+          conUna: [...munis.values()].filter((m) => m.nombre && m.lista.length === 1).length,
+          conDos: [...munis.values()].filter((m) => m.nombre && m.lista.length === 2).length,
+        }
+      : null;
+
+    const analisis = analisisProvincia({
+      provincia: prov.nombre,
+      lista,
+      municipios: municipios.map((m) => ({ nombre: m.muni, media: m.media })),
+      ctx: {
+        mediaNacionalG95,
+        rankingProv: puestoProv.has(prov.id)
+          ? { pos: puestoProv.get(prov.id), total: ordenProvincias.length }
+          : null,
+        reparto,
+        serie: historico?.provincias?.[prov.id]?.g95
+          ? { fechas: historico.fechas, valores: historico.provincias[prov.id].g95 }
+          : null,
+      },
+    });
+
     return {
       prov,
       slug: slugProvincia(prov),
@@ -243,6 +283,7 @@ export async function resumenPorProvincia() {
       municipiosCaros: hayParaDosListas ? municipios.slice(-5).reverse() : [],
       municipiosConPagina,
       todosLosMunicipios,
+      analisis,
     };
   });
 }
@@ -424,6 +465,20 @@ export async function resumenPorMarca() {
         .filter(Boolean)
         .sort((a, b) => b.n - a.n);
 
+      // Lectura escrita de la cadena (ver src/lib/analisis.js): si el precio lo pone la
+      // central o cada estacion, si la red es nacional o de una sola zona, que gama
+      // vende de verdad. Dos cadenas con la misma media reciben textos distintos porque
+      // son negocios distintos.
+      const analisis = analisisMarca({
+        nombre: g.nombre,
+        lista: g.lista,
+        provincias: provs,
+        nacional: {
+          brecha:
+            nacional.ga && nacional.g95 ? nacional.ga.media - nacional.g95.media : null,
+        },
+      });
+
       return {
         clave,
         nombre: g.nombre,
@@ -431,6 +486,7 @@ export async function resumenPorMarca() {
         total: g.lista.length,
         combustibles,
         provincias: provs,
+        analisis,
         // Las más baratas de esa marca en toda España: sirven de prueba del dato.
         baratas: [...g.lista]
           .filter((e) => e.p.g95 != null)
@@ -457,6 +513,16 @@ export async function resumenPorMunicipio() {
   const { fecha, estaciones } = await cargarNacional();
   const agrupado = agruparPorMunicipio(estaciones);
   const salida = [];
+
+  // Contexto nacional que necesita el analisis escrito de cada municipio: con que vara
+  // se mide si una cadena es barata, y cuanto separa el pais al diesel de la gasolina.
+  const todasNac = estaciones.map(reducir);
+  const g95Nac = todasNac.map((e) => e.p.g95).filter((v) => v != null);
+  const gaNac = todasNac.map((e) => e.p.ga).filter((v) => v != null);
+  const mediaNacionalG95 = g95Nac.length ? media(g95Nac) : null;
+  const brechaNacional =
+    gaNac.length && mediaNacionalG95 != null ? media(gaNac) - mediaNacionalG95 : null;
+  const redes = mediaNacionalG95 != null ? clasificarRedes(todasNac, mediaNacionalG95) : new Map();
 
   for (const prov of PROVINCIAS) {
     const munis = agrupado.get(prov.id);
@@ -491,6 +557,24 @@ export async function resumenPorMunicipio() {
       .filter((m) => m.lista.length >= MIN_ESTACIONES_MUNICIPIO && m.nombre)
       .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
 
+    // Ranking de municipios de la provincia por precio medio de gasolina 95. Sirve para
+    // decirle a cada pueblo que puesto ocupa en su propia provincia, que es una respuesta
+    // distinta en cada pagina y que no se puede sacar de la tabla de precios.
+    const ordenProv = [...munis.values()]
+      .map((m) => {
+        const ps = m.lista.map((e) => e.p.g95).filter((v) => v != null);
+        return ps.length >= 3 ? { idMuni: m.idMuni, media: media(ps) } : null;
+      })
+      .filter(Boolean)
+      .sort((a, b) => a.media - b.media);
+    const puestoDe = new Map(ordenProv.map((x, i) => [x.idMuni, i + 1]));
+
+    // Serie historica propia de la provincia (ver src/data/historico.json): el Ministerio
+    // publica la foto del dia, no el pasado. Esto es dato que solo existe aqui.
+    const serieProv = historico?.provincias?.[prov.id]?.g95
+      ? { fechas: historico.fechas, valores: historico.provincias[prov.id].g95 }
+      : null;
+
     for (const m of conPagina) {
       const combustibles = {};
       for (const c of COMBUSTIBLES) {
@@ -522,6 +606,23 @@ export async function resumenPorMunicipio() {
         .slice(0, 12)
         .map((x) => ({ nombre: x.nombre, slug: x.slug }));
 
+      // Lectura escrita de este municipio: ver src/lib/analisis.js. Es lo que separa una
+      // pagina con criterio de una tabla con el nombre del pueblo encima.
+      const analisis = analisisMunicipio({
+        muni: m.nombre,
+        provincia: prov.nombre,
+        lista: m.lista,
+        ctx: {
+          redes,
+          brechaNacional,
+          mediaNacionalG95,
+          ranking: puestoDe.has(m.idMuni)
+            ? { pos: puestoDe.get(m.idMuni), total: ordenProv.length }
+            : null,
+          serie: serieProv,
+        },
+      });
+
       salida.push({
         prov: { id: prov.id, nombre: prov.nombre },
         provSlug,
@@ -534,6 +635,7 @@ export async function resumenPorMunicipio() {
         cercanos,
         minAqui,
         hermanos,
+        analisis,
       });
     }
   }

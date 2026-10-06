@@ -45,11 +45,12 @@ interface Props {
     cercanos: { nombre: string; slug: string | null; minG95: number; km: number }[];
     minAqui: number | null;
     hermanos: { nombre: string; slug: string }[];
+    analisis: { bloques: { id: string; h: string; p: string[] }[]; resumen: string | null };
   };
 }
 
 const { datos } = Astro.props;
-const { prov, provSlug, muniNombre, fecha, total, combustibles, mediaProvinciaG95, hermanos, cercanos, minAqui } = datos;
+const { prov, provSlug, muniNombre, fecha, total, combustibles, mediaProvinciaG95, hermanos, cercanos, minAqui, analisis } = datos;
 
 
 const g95 = combustibles.g95;
@@ -338,6 +339,30 @@ const colorPrecio = (v: number | null, m: number) =>
               Municipios a menos de 35 km en línea recta, ordenados por precio. La distancia es
               entre centros aproximados, no por carretera.
             </p>
+          </section>
+        )}
+
+        <!-- Lectura del mercado local. No es relleno: cada bloque sale de mirar la
+             estructura de la competencia de ESTE municipio (cuantas cadenas, si hay
+             redes de bajo coste, si los precios estan clavados, horarios, puesto en la
+             provincia y como ha ido el precio provincial estos meses), asi que dice
+             cosas distintas en cada pueblo. Ver src/lib/analisis.js. -->
+        {analisis.bloques.length > 0 && (
+          <section class="px-4 pt-10">
+            <h2 class="text-lg font-bold text-tinta">Qué dicen los precios de {muniNombre}</h2>
+            <p class="mt-1 text-xs text-tenue">
+              Lectura de los datos de hoy, calculada para este municipio.
+            </p>
+            <div class="mt-5 grid gap-6">
+              {analisis.bloques.map((b) => (
+                <div>
+                  <h3 class="text-sm font-bold text-acento">{b.h}</h3>
+                  {b.p.map((texto) => (
+                    <p class="mt-2 text-sm leading-relaxed text-suave">{texto}</p>
+                  ))}
+                </div>
+              ))}
+            </div>
           </section>
         )}
 

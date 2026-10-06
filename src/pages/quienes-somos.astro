@@ -1,48 +1,137 @@
 ---
 import LegalLayout from '../layouts/LegalLayout.astro';
+import { MIN_ESTACIONES_MUNICIPIO, MIN_ESTACIONES_MARCA } from '../lib/datos-build.js';
+import { GUIAS } from '../lib/guias.js';
 ---
 <LegalLayout
   title="Quiénes somos | Ahorro al Volante"
-  description="Qué es Ahorro al Volante, quién está detrás y de dónde salen los datos de precios de carburantes."
+  description="Qué es Ahorro al Volante, quién está detrás, de dónde salen los datos de precios de carburantes y cómo se calcula todo lo que publicamos."
   canonicalPath="/quienes-somos"
 >
   <h1>Quiénes somos</h1>
   <p>
     Ahorro al Volante es una web independiente que ayuda a los conductores a repostar más barato.
     Es un proyecto de <strong>Rosas Web Studio</strong>, a cargo de Miguel Rosas Granados, dedicado
-    a crear herramientas útiles y gratuitas para el día a día.
+    a crear herramientas útiles y gratuitas para el día a día. La web se publicó en julio de 2026 y
+    se actualiza a diario.
   </p>
 
   <h2>Qué hacemos</h2>
   <p>
     Reunimos en un solo sitio, fácil de usar, los precios de la gasolina y el gasóleo de todas las
     estaciones de servicio de España, para que puedas ver de un vistazo cuáles son las más baratas
-    cerca de ti. Además, ofrecemos una calculadora que estima cuánto te costará un viaje en coche
-    según el consumo, el precio del combustible y las condiciones del trayecto.
+    cerca de ti. Sobre esos datos construimos tres cosas:
   </p>
+  <ul>
+    <li>
+      <strong>Un buscador por cercanía</strong> que ordena las gasolineras por distancia real a
+      donde estás y te dice si compensa el desvío, no solo cuál es la más barata.
+    </li>
+    <li>
+      <strong>Páginas por municipio, provincia y marca</strong> con los precios del día y, sobre
+      todo, con una lectura de lo que esos precios significan en ese sitio concreto: cuánto hay
+      entre la estación más barata y la más cara, si hay cadenas de bajo coste compitiendo, cuántas
+      abren 24 horas y cómo ha evolucionado el precio en la provincia en los últimos meses.
+    </li>
+    <li>
+      <strong>{GUIAS.length} guías escritas</strong> sobre el precio del combustible, el consumo, el
+      mantenimiento y lo que de verdad cuesta tener un coche. No son fichas automáticas: están
+      escritas una a una y llevan la fecha de su última revisión.
+    </li>
+  </ul>
 
   <h2>De dónde salen los datos</h2>
   <p>
     Los precios proceden del listado oficial que todas las estaciones están obligadas por ley a
     comunicar al <strong>Ministerio para la Transición Ecológica y el Reto Demográfico</strong>
-    (Geoportal de Gasolineras), que se actualiza aproximadamente cada 30 minutos. Nosotros no
-    fijamos ni modificamos esos precios: los mostramos tal cual, de forma más clara y ordenada.
-    No tenemos ninguna relación con el Ministerio ni con ninguna estación o marca de combustible.
+    (Geoportal de Gasolineras), a través de su API pública. Se actualiza aproximadamente cada 30
+    minutos. Nosotros no fijamos ni modificamos esos precios: los mostramos tal cual, de forma más
+    clara y ordenada. No tenemos ninguna relación con el Ministerio ni con ninguna estación o marca
+    de combustible.
   </p>
+  <p>
+    El buscador de la portada consulta la API en directo desde tu propio navegador, así que lo que
+    ves ahí es el dato del momento. Las páginas de municipio, provincia y marca se regeneran a
+    diario y llevan impresa la fecha y hora exactas de los datos que muestran.
+  </p>
+
+  <h2>Cómo calculamos lo que publicamos</h2>
+  <p>
+    Preferimos explicar los criterios a que haya que adivinarlos:
+  </p>
+  <ul>
+    <li>
+      <strong>Medias.</strong> Se calculan sobre las estaciones que comunican ese combustible, no
+      sobre todas. Antes de promediar se descartan los registros con precios imposibles, que
+      aparecen de vez en cuando por errores de comunicación.
+    </li>
+    <li>
+      <strong>Qué municipios tienen página propia.</strong> Solo los que tienen al menos
+      {MIN_ESTACIONES_MUNICIPIO} gasolineras. Por debajo de ese número no hay competencia
+      suficiente para que una media local signifique algo ni para recomendar nada. Los demás
+      municipios no desaparecen: sus precios se publican dentro de la página de su provincia.
+    </li>
+    <li>
+      <strong>Qué marcas tienen página propia.</strong> Solo las que tienen al menos
+      {MIN_ESTACIONES_MARCA} estaciones en España. En el listado oficial hay miles de rótulos
+      distintos, pero la mayoría son estaciones independientes que aparecen una sola vez;
+      promediar dos surtidores y llamarlo «el precio de la marca» no informaría de nada.
+    </li>
+    <li>
+      <strong>Cadenas baratas y caras.</strong> No hay ninguna lista hecha a mano. Una cadena se
+      considera barata o cara comparando su media nacional con la media del país ese mismo día, con
+      un umbral de 3 céntimos. Sale del dato, y puede cambiar.
+    </li>
+    <li>
+      <strong>Depósito de referencia.</strong> Cuando traducimos céntimos por litro a euros usamos
+      55 litros, un depósito de turismo medio, y para las cifras anuales 12.000 km a 6,5 L/100 km.
+      Lo decimos siempre que lo usamos para que puedas rehacer la cuenta con tus números.
+    </li>
+    <li>
+      <strong>Histórico propio.</strong> El Ministerio publica la foto del día, no el pasado.
+      Nosotros guardamos cada día la media nacional y la de cada provincia, y con eso construimos
+      la evolución de precios que ves en las páginas de provincia. Ese dato no existe en la fuente
+      original: lo generamos aquí.
+    </li>
+  </ul>
+
+  <h2>Qué no hacemos</h2>
+  <ul>
+    <li>No cobramos a ninguna gasolinera por aparecer, ni por aparecer antes.</li>
+    <li>No alteramos el orden de los listados por motivos comerciales: se ordenan por precio.</li>
+    <li>No pedimos registro, ni correo, ni creamos cuentas de usuario.</li>
+    <li>
+      No enviamos tu ubicación a ningún servidor. Si la compartes, se usa solo en tu navegador para
+      ordenar las gasolineras por cercanía.
+    </li>
+  </ul>
 
   <h2>Cómo nos financiamos</h2>
   <p>
     La web es y seguirá siendo gratuita. Para mantenerla nos financiamos con publicidad y con
     enlaces de afiliación: si contratas algo a través de alguno de nuestros enlaces, podemos
     recibir una comisión sin coste adicional para ti. Esto nunca influye en los precios que te
-    mostramos, que son siempre los oficiales.
+    mostramos, que son siempre los oficiales, ni en el orden en que aparecen las estaciones.
+  </p>
+
+  <h2>Errores y correcciones</h2>
+  <p>
+    Trabajamos con datos de terceros y con cálculos propios, así que puede haber errores. Si ves
+    un precio que no cuadra con el surtidor, lo más probable es que la estación no haya comunicado
+    todavía su cambio al Ministerio: la obligación legal es comunicar los precios, pero no en tiempo
+    real, y ese desfase lo explicamos en la guía
+    <a href="/guias/de-donde-salen-los-precios/">de dónde salen estos precios</a>.
+  </p>
+  <p>
+    Si detectas un error en un cálculo, en un dato o en el texto de una guía, escríbenos desde la
+    <a href="/contacto">página de contacto</a>. Corregimos y actualizamos la fecha de revisión de la
+    página afectada.
   </p>
 
   <h2>Nuestro compromiso</h2>
   <p>
-    Datos oficiales, sin registros y sin trucos. Tu ubicación, si la compartes, solo se usa en tu
-    navegador para ordenar las gasolineras por cercanía y nunca se envía a ningún servidor. Puedes
-    consultar los detalles en nuestra <a href="/privacidad">política de privacidad</a> o escribirnos
-    desde la <a href="/contacto">página de contacto</a>.
+    Datos oficiales, cálculos explicados, sin registros y sin trucos. Puedes consultar los detalles
+    del tratamiento de datos en nuestra <a href="/privacidad">política de privacidad</a> y las
+    condiciones de uso en el <a href="/aviso-legal">aviso legal</a>.
   </p>
 </LegalLayout>

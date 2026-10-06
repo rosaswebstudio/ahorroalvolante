@@ -66,11 +66,12 @@ interface Props {
       mediaG95: number | null;
       minGa: number | null;
     }[];
+    analisis: { bloques: { id: string; h: string; p: string[] }[] };
   };
 }
 
 const { datos } = Astro.props;
-const { prov, slug, fecha, total, combustibles, municipiosBaratos, municipiosCaros, municipiosConPagina, todosLosMunicipios } = datos;
+const { prov, slug, fecha, total, combustibles, municipiosBaratos, municipiosCaros, municipiosConPagina, todosLosMunicipios, analisis } = datos;
 
 const g95 = combustibles.g95;
 const ga = combustibles.ga;
@@ -274,6 +275,28 @@ const colorPrecio = (v: number | null, m: number) =>
         </section>
 
         <TendenciaPrecios ambito={prov.nombre} fechas={historico.fechas} series={seriesTendencia} />
+
+        <!-- Lectura del mercado provincial: como esta la provincia frente al pais, cuanto
+             separa al municipio mas barato del mas caro, cuantos pueblos se quedan sin
+             competencia y como ha ido el precio estos meses. Ver src/lib/analisis.js. -->
+        {analisis.bloques.length > 0 && (
+          <section class="px-4 pt-10">
+            <h2 class="text-lg font-bold text-tinta">Cómo está el mercado en {prov.nombre}</h2>
+            <p class="mt-1 text-xs text-tenue">
+              Lectura de los datos de las {total} estaciones de la provincia.
+            </p>
+            <div class="mt-5 grid gap-6">
+              {analisis.bloques.map((b) => (
+                <div>
+                  <h3 class="text-sm font-bold text-acento">{b.h}</h3>
+                  {b.p.map((texto) => (
+                    <p class="mt-2 text-sm leading-relaxed text-suave">{texto}</p>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         <!-- Diésel -->
         {ga && (

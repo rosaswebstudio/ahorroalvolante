@@ -39,6 +39,7 @@ interface Marca {
   combustibles: Record<string, Stats | null>;
   provincias: { nombre: string; slug: string; n: number }[];
   baratas: Estacion[];
+  analisis: { bloques: { id: string; h: string; p: string[] }[] };
 }
 
 interface Props {
@@ -246,6 +247,27 @@ const colorSegun = (v: number | null) => (v == null ? 'text-tinta' : v < 0 ? 'te
                 <a href={`/gasolineras-baratas/${p.slug}/`} class="rounded-lg border border-borde bg-superficie px-3 py-1.5 text-xs font-medium text-suave transition-colors hover:border-acento hover:text-acento">
                   {p.nombre} <span class="text-tenue">({p.n})</span>
                 </a>
+              ))}
+            </div>
+          </section>
+        )}
+
+        <!-- Lectura de la cadena: si el precio lo pone la central o cada estacion, si la
+             red es nacional o de una sola zona, que gama despacha de verdad y horarios.
+             Sale de los datos de la propia marca (ver src/lib/analisis.js), asi que
+             Repsol y Ballenoil no reciben el mismo texto con el nombre cambiado. -->
+        {marca.analisis && marca.analisis.bloques.length > 0 && (
+          <section class="px-4 pt-10">
+            <h2 class="text-lg font-bold text-tinta">Cómo funciona {marca.nombre}</h2>
+            <p class="mt-1 text-xs text-tenue">Lectura de los datos de sus {marca.total} estaciones.</p>
+            <div class="mt-5 grid gap-6">
+              {marca.analisis.bloques.map((bl) => (
+                <div>
+                  <h3 class="text-sm font-bold text-acento">{bl.h}</h3>
+                  {bl.p.map((texto) => (
+                    <p class="mt-2 text-sm leading-relaxed text-suave">{texto}</p>
+                  ))}
+                </div>
               ))}
             </div>
           </section>
